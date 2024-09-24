@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd0779c58ff58864c84ff4e0972298f2, type: 3}
+  m_Name: Adapter
+  m_EditorClassIdentifier: 
+  m_room: {fileID: 11400000, guid: 1890137f2b5d39846b315e7c6636c1c9, type: 2}
+  m_user: {fileID: 11400000, guid: 8922ebaf503d60247b46e1e143b8ab0b, type: 2}
