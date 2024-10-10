@@ -59,7 +59,6 @@ namespace TLab.NetworkedVR.Network.WebRTC
         {
             WHIP,
             WHEP,
-            OPEN_CHANNEL
         };
 
         [System.Serializable]
@@ -80,27 +79,6 @@ namespace TLab.NetworkedVR.Network.WebRTC
             TRICCLE,
             VANILLA,
         };
-
-        public static WebRTCClient OpenChannel(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, UnityEvent<string> onResponse, UnityEvent<byte[]> onDataChannelMessage, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
-        {
-            var client = new WebRTCClient(adapter, stream, onResponse, onDataChannelMessage, mono, iceExchangeOption);
-
-            client.CreatePeerConnection(ClientType.OPEN_CHANNEL, dataChannelCnf);
-
-            mono.StartCoroutine(client.CreateOffer());
-
-            return client;
-        }
-
-        public static WebRTCClient OpenChannel(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, UnityAction<string> onResponse, UnityAction<byte[]> onDataChannelMessage, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
-        {
-            return OpenChannel(mono, adapter, stream, dataChannelCnf, CreateOnResponse(onResponse), CreateOnDataChannelMessage(onDataChannelMessage), iceExchangeOption);
-        }
-
-        public static WebRTCClient OpenChannel(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
-        {
-            return OpenChannel(mono, adapter, stream, dataChannelCnf, CreateOnResponse(null), CreateOnDataChannelMessage(null), iceExchangeOption);
-        }
 
         public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, UnityEvent<string> onResponse, UnityEvent<byte[]> onDataChannelMessage, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
@@ -493,9 +471,6 @@ namespace TLab.NetworkedVR.Network.WebRTC
                     break;
                 case ClientType.WHEP:
                     action = "whep";
-                    break;
-                case ClientType.OPEN_CHANNEL:
-                    action = "open_channel";
                     break;
             }
 

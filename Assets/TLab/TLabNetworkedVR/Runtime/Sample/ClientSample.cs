@@ -13,9 +13,9 @@ namespace TLab.NetworkedVR.Sample
         private ScrollRect m_scrollRect;
         private Transform m_scrollViewContent;
 
-        private Adapter m_adapter;
+        protected Adapter m_adapter;
 
-        private const string STREAM = "defualt";
+        protected const string STREAM = "defualt";
 
         private string THIS_NAME => "[" + this.GetType() + "] ";
 
@@ -29,6 +29,8 @@ namespace TLab.NetworkedVR.Sample
         public virtual void Open() { }
 
         public virtual void Close() { }
+
+        public virtual void Send(string message) { }
 
         public void Join()
         {

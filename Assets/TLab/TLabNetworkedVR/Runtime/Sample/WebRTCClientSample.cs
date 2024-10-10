@@ -10,7 +10,7 @@ namespace TLab.NetworkedVR.Sample
 
         public override void Open()
         {
-            m_client = WebRTCClient.OpenChannel(this, m_adapter, STREAM, new RTCDataChannelInit(), OnResponse, OnDataChannelMessage);
+            m_client = WebRTCClient.Whep(this, m_adapter, STREAM, new RTCDataChannelInit(), false, false, OnMessage, OnDataChannelMessage);
         }
 
         public override void Close()
@@ -18,7 +18,7 @@ namespace TLab.NetworkedVR.Sample
             m_client?.HangUpDataChannel();
         }
 
-        public void DataChannelSend(string message)
+        public override void Send(string message)
         {
             m_client.DataChannelSend(Encoding.UTF8.GetBytes(message));
         }
