@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using TLab.NetworkedVR.Interact;
+using TLab.SFU.Interact;
 
 namespace TLab.VRClassroom.Editor
 {

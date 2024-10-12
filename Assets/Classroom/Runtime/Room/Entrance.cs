@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TLab.VKeyborad;
-using TLab.NetworkedVR.Network;
-using TLab.NetworkedVR.Network.Util;
-using TLab.NetworkedVR.Network.Security;
+using TLab.SFU.Network;
+using TLab.SFU.Network.Util;
+using TLab.SFU.Network.Security;
 
 namespace TLab.VRClassroom
 {

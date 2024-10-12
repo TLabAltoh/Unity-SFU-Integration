@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using TLab.NetworkedVR.Network;
+using TLab.SFU.Network;
 
 namespace TLab.VRClassroom
 {

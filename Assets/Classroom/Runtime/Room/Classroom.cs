@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Oculus.Interaction;
 using TLab.VKeyborad;
-using TLab.NetworkedVR.Network;
+using TLab.SFU.Network;
 
 namespace TLab.VRClassroom
 {

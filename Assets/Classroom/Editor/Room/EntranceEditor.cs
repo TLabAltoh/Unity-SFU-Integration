@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using TLab.NetworkedVR.Network.Security;
+using TLab.SFU.Network.Security;
 
 namespace TLab.VRClassroom.Editor
 {

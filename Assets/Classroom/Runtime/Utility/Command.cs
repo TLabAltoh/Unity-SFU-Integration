@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TLab.NetworkedVR.Network.Util
+namespace TLab.SFU.Network.Util
 {
     public static class Command
     {

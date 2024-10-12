@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7074e6aa310a96c4aa7f515f6c458e31, type: 3}
+  m_Name: Room Config
+  m_EditorClassIdentifier: 
+  m_host: 127.0.0.1
+  m_port: 7777
+  m_prefix: http
+  m_createOffer:
+    room_name: default
+    room_capacity: 2
+    room_pass: password
+    needs_host: 0
+    is_public: 0
+    master_key: password
+    description: description
