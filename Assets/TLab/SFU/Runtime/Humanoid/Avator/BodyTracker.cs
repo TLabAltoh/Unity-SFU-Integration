@@ -134,7 +134,7 @@ namespace TLab.SFU.Humanoid
 
             if (m_initialized && m_self)
             {
-                SyncRTCTransform();
+                SyncTransformViaWebRTC();
             }
         }
 

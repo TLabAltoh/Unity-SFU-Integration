@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
+using System.Threading.Tasks;
 
 namespace TLab.SFU.Network
 {
@@ -84,6 +85,39 @@ namespace TLab.SFU.Network
 #endif
                 yield return new WaitForSeconds(0.1f);
             }
+        }
+
+        public bool connected
+        {
+            get
+            {
+                if (m_socket == null)
+                {
+                    return false;
+                }
+                return m_socket.State == WebSocketState.Open;
+            }
+        }
+
+        public override Task Send(byte[] bytes)
+        {
+            return m_socket.Send(bytes);
+        }
+
+        public override Task SendText(string text)
+        {
+            return m_socket.SendText(text);
+        }
+
+        public override Task HangUp()
+        {
+            if (m_socket == null)
+            {
+                Debug.Log(THIS_NAME + "Socket is already null");
+                return base.HangUp();
+            }
+
+            return m_socket.Close();
         }
     }
 }

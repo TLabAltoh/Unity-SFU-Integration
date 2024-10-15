@@ -134,7 +134,7 @@ namespace TLab.VRClassroom
 
             if (m_enableSync)
             {
-                m_syncTransformer.SyncRTCTransform();
+                m_syncTransformer.SyncTransformViaWebRTC();
             }
         }
     }

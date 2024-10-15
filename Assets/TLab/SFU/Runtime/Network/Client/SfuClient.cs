@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -22,11 +23,11 @@ namespace TLab.SFU.Network
             m_onReceive = onReceive;
         }
 
-        public virtual void SendText(string text) { }
+        public virtual Task SendText(string text) { return Task.Run(() => { }); }
 
-        public virtual void Send(byte[] bytes) { }
+        public virtual Task Send(byte[] bytes) { return Task.Run(() => { }); }
 
-        public virtual void HangUp() { }
+        public virtual Task HangUp() { return Task.Run(() => { }); }
 
         public static UnityEvent<byte[]> CreateOnReceive(params UnityAction<byte[]>[] @actions)
         {

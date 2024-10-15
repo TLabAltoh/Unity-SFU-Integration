@@ -98,7 +98,7 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
-        protected static unsafe void LongCopy(byte* src, byte* dst, int count)
+        protected unsafe void LongCopy(byte* src, byte* dst, int count)
         {
             // https://github.com/neuecc/MessagePack-CSharp/issues/117
 
@@ -132,10 +132,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public virtual void OnRTCMessage(string dst, string src, byte[] bytes)
-        {
-
-        }
+        public virtual void OnReceive(string dst, string src, byte[] bytes) { }
 
         public virtual void SetSyncEnable(bool active)
         {
@@ -186,20 +183,11 @@ namespace TLab.SFU.Network
             m_state = State.INITIALIZED;
         }
 
-        protected virtual void Awake()
-        {
+        protected virtual void Awake() { }
 
-        }
+        protected virtual void Start() { }
 
-        protected virtual void Start()
-        {
-
-        }
-
-        protected virtual void Update()
-        {
-
-        }
+        protected virtual void Update() { }
 
         protected virtual void OnDestroy()
         {

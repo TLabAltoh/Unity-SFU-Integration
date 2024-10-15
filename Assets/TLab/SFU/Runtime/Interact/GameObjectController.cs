@@ -255,7 +255,7 @@ namespace TLab.SFU.Interact
                 }
             }
 
-            SyncState();
+            SyncTransformViaWebSocket();
 
             var obj = new MCH_GrabbLock
             {
@@ -603,13 +603,13 @@ namespace TLab.SFU.Interact
                     m_rotation.UpdateOneHandLogic();
                 }
 
-                SyncRTCTransform();
+                SyncTransformViaWebRTC();
             }
             else
             {
                 if (m_grabState.isFree && m_scale.UpdateHandleLogic())
                 {
-                    SyncRTCTransform();
+                    SyncTransformViaWebRTC();
                 }
             }
         }

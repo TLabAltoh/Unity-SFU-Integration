@@ -242,30 +242,33 @@ namespace TLab.SFU.Network
             m_syncFromOutside = true;
         }
 
-        public override void OnRTCMessage(string dst, string src, byte[] bytes)
+        public override void OnReceive(string dst, string src, byte[] bytes)
         {
             float[] rtcTransform = new float[10];
 
             unsafe
             {
-                fixed (byte* iniP = bytes)  // transform
-                fixed (float* iniD = &(rtcTransform[0]))
+                fixed (byte* subBytesPtr = bytes)  // transform
+                fixed (float* transformPtr = &(rtcTransform[0]))
                 {
-                    LongCopy(iniP, (byte*)iniD, bytes.Length);
+                    LongCopy(subBytesPtr + 2, (byte*)transformPtr, rtcTransform.Length * sizeof(float));
+
+                    var transformerState = new WebTransformerState
+                    {
+                        id = m_networkedId.id,
+                        gravity = *((bool*)&(subBytesPtr[0])),
+                        rigidbody = *((bool*)&(subBytesPtr[1])),
+                        position = new WebVector3 { x = rtcTransform[0], y = rtcTransform[1], z = rtcTransform[2] },
+                        rotation = new WebVector4 { x = rtcTransform[3], y = rtcTransform[4], z = rtcTransform[5], w = rtcTransform[6] },
+                        scale = new WebVector3 { x = rtcTransform[7], y = rtcTransform[8], z = rtcTransform[9] },
+                    };
+
+                    SyncTransformFromOutside(transformerState);
                 }
             }
-
-            var transformerState = new WebTransformerState
-            {
-                position = new WebVector3 { x = rtcTransform[0], y = rtcTransform[1], z = rtcTransform[2] },
-                rotation = new WebVector4 { x = rtcTransform[3], y = rtcTransform[4], z = rtcTransform[5], w = rtcTransform[6] },
-                scale = new WebVector3 { x = rtcTransform[7], y = rtcTransform[8], z = rtcTransform[9] }
-            };
-
-            SyncTransformFromOutside(transformerState);
         }
 
-        public virtual void SyncRTCTransform()
+        public virtual void SyncTransformViaWebRTC()
         {
             if (!m_enableSync)
             {
@@ -273,12 +276,6 @@ namespace TLab.SFU.Network
             }
 
             CashRbTransform();
-
-            // transform
-            // (3 + 4 + 3) * 4 = 40 byte
-
-            // id
-            // 1 + (...)
 
             float[] rtcTransform = new float[10];
 
@@ -295,35 +292,38 @@ namespace TLab.SFU.Network
             rtcTransform[8] = transform.localScale.y;
             rtcTransform[9] = transform.localScale.z;
 
-            byte[] id = System.Text.Encoding.UTF8.GetBytes(m_networkedId.id);
-            byte[] packet = new byte[1 + m_networkedId.id.Length + rtcTransform.Length * sizeof(float)];
+            byte[] idBytes = System.Text.Encoding.UTF8.GetBytes(m_networkedId.id);
 
-            packet[0] = (byte)m_networkedId.id.Length;
+            int headerBytesLen = 1 + idBytes.Length; // idLength (1) + id (...)
+            int subBytesLen = 2 + rtcTransform.Length * sizeof(float);  // rbUsed (1) + rbGravity (1) + transform ((3 + 4 + 3) * 4)
 
-            int nameBytesLen = m_networkedId.id.Length;
-            int subBytesStart = 1 + nameBytesLen;
-            int subBytesLen = rtcTransform.Length * sizeof(float);
+            byte[] packet = new byte[headerBytesLen + subBytesLen];
 
             unsafe
             {
-                fixed (byte* iniP = packet, iniD = id)  // id
+                fixed (byte* packetPtr = packet, idBytesPtr = idBytes)
                 {
-                    LongCopy(iniD, iniP + 1, nameBytesLen);
-                }
+                    packetPtr[0] = (byte)idBytes.Length;
+                    LongCopy(idBytesPtr, packetPtr + 1, idBytes.Length);
 
-                fixed (byte* iniP = packet) // transform
-                fixed (float* iniD = &(rtcTransform[0]))
-                {
-                    LongCopy((byte*)iniD, iniP + 1 + nameBytesLen, subBytesLen);
+                    bool rbUsed = m_rbState.used, rbGravity = m_rbState.gravity;
+
+                    packetPtr[headerBytesLen + 0] = (byte)(&rbUsed);
+                    packetPtr[headerBytesLen + 1] = (byte)(&rbGravity);
+
+                    fixed (float* transformPtr = &(rtcTransform[0]))
+                    {
+                        LongCopy((byte*)transformPtr, packetPtr + headerBytesLen + 2, subBytesLen - 2);
+                    }
                 }
             }
 
-            SyncClient.instance.RTCChannelSend(packet);
+            SyncClient.instance.SendRTC(packet);
 
             m_syncFromOutside = false;
         }
 
-        public virtual void SyncState()
+        public virtual void SyncTransformViaWebSocket()
         {
             if (!m_enableSync)
             {
@@ -447,16 +447,6 @@ namespace TLab.SFU.Network
 
                 mchCallbackRegisted = true;
             }
-        }
-
-        protected override void Start()
-        {
-            base.Start();
-        }
-
-        protected override void Update()
-        {
-            base.Update();
         }
 
         protected override void OnDestroy()

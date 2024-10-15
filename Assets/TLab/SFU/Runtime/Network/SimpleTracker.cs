@@ -94,7 +94,7 @@ namespace TLab.SFU.Network
 
             if (m_self)
             {
-                SyncRTCTransform();
+                SyncTransformViaWebRTC();
             }
         }
 

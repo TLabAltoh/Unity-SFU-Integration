@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
 using Unity.WebRTC;
@@ -350,7 +351,7 @@ namespace TLab.SFU.Network
             return config;
         }
 
-        public override void HangUp()
+        public override Task HangUp()
         {
             if (m_dc != null)
             {
@@ -380,6 +381,8 @@ namespace TLab.SFU.Network
                 m_pc.Close();
                 m_pc = null;
             }
+
+            return base.HangUp();
         }
 
         public void CreatePeerConnection(ClientType clientType, RTCDataChannelInit dataChannelCnf)
@@ -532,7 +535,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override void Send(byte[] bytes)
+        public override Task Send(byte[] bytes)
         {
             if (m_dc != null)
             {
@@ -541,11 +544,13 @@ namespace TLab.SFU.Network
                     m_dc.Send(bytes);
                 }
             }
+
+            return base.Send(bytes);
         }
 
-        public override void SendText(string text)
+        public override Task SendText(string text)
         {
-            Send(Encoding.UTF8.GetBytes(text));
+            return Send(Encoding.UTF8.GetBytes(text));
         }
     }
 }

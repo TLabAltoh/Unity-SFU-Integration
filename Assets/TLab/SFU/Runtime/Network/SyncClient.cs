@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
-using NativeWebSocket;
 using static TLab.SFU.ComponentExtention;
 
 namespace TLab.SFU.Network
@@ -18,8 +16,7 @@ namespace TLab.SFU.Network
         [SerializeField] private Transform[] m_instantiateAnchors;
         [SerializeField] private Transform[] m_respownAnchors;
 
-        private static WebSocket m_masterChannel;
-
+        private static WebSocketClient m_masterChannel;
         private static WebRTCClient m_rtcChannel;
 
         private static PhysicsUpdateType m_physicsUpdateType = PhysicsUpdateType.NONE;
@@ -29,7 +26,7 @@ namespace TLab.SFU.Network
         public delegate void MasterChannelCallback(MasterChannelJson obj);
         private static Hashtable m_masterChannelCallbacks = new Hashtable();
 
-        private IAsyncEnumerator<int> m_connectMasterChannelTask = null;
+        private IEnumerator m_connectMasterChannelTask = null;
 
         public static SyncClient instance;
 
@@ -102,7 +99,7 @@ namespace TLab.SFU.Network
                     return false;
                 }
 
-                return m_masterChannel.State == WebSocketState.Open;
+                return m_masterChannel.connected;
             }
         }
 
@@ -262,13 +259,13 @@ namespace TLab.SFU.Network
             }
         }
 
-        private async IAsyncEnumerator<int> ConnectMasterChannelTask()
+        private IEnumerator ConnectMasterChannelTask()
         {
-            yield return 0;
+            yield return null;
 
             CloseMasterChannel();
 
-            yield return 0;
+            yield return null;
 
             #region ADD_CALLBACKS
 
@@ -433,24 +430,7 @@ namespace TLab.SFU.Network
 #endif
             #endregion ADD_CALLBACKS
 
-            m_masterChannel = new WebSocket("ws://");   // TODO:
-
-            m_masterChannel.OnOpen += () =>
-            {
-                Debug.Log(THIS_NAME + "Connection open!");
-            };
-
-            m_masterChannel.OnError += (e) =>
-            {
-                Debug.Log(THIS_NAME + "Error! :" + e);
-            };
-
-            m_masterChannel.OnClose += (e) =>
-            {
-                Debug.Log(THIS_NAME + "Connection closed! :" + e);
-            };
-
-            m_masterChannel.OnMessage += (bytes) =>
+            m_masterChannel = WebSocketClient.Open(this, m_adapter, "master", (bytes) =>
             {
                 var message = System.Text.Encoding.UTF8.GetString(bytes);
 
@@ -461,9 +441,7 @@ namespace TLab.SFU.Network
                     var callback = m_masterChannelCallbacks[obj.messageType] as MasterChannelCallback;
                     callback.Invoke(obj);
                 }
-            };
-
-            await m_masterChannel.Connect();
+            });
 
             m_connectMasterChannelTask = null;
 
@@ -502,11 +480,7 @@ namespace TLab.SFU.Network
 
         public async void CloseMasterChannel()
         {
-            if (m_masterChannel != null)
-            {
-                await m_masterChannel.Close();
-            }
-
+            await m_masterChannel?.HangUp();
             m_masterChannel = null;
         }
 
@@ -514,88 +488,83 @@ namespace TLab.SFU.Network
 
         #region RTC_CHANNEL
 
-        private static unsafe void LongCopy(byte* src, byte* dst, int count)
+        public void OnReceiveRTC(string dst, string src, byte[] bytes)
         {
-            // https://github.com/neuecc/MessagePack-CSharp/issues/117
-
-            while (count >= 8)
+            unsafe void LongCopy(byte* src, byte* dst, int count)
             {
-                *(ulong*)dst = *(ulong*)src;
-                dst += 8;
-                src += 8;
-                count -= 8;
-            }
+                // https://github.com/neuecc/MessagePack-CSharp/issues/117
 
-            if (count >= 4)
-            {
-                *(uint*)dst = *(uint*)src;
-                dst += 4;
-                src += 4;
-                count -= 4;
-            }
-
-            if (count >= 2)
-            {
-                *(ushort*)dst = *(ushort*)src;
-                dst += 2;
-                src += 2;
-                count -= 2;
-            }
-
-            if (count >= 1)
-            {
-                *dst = *src;
-            }
-        }
-
-        public void RTCChannelOnMessage(string dst, string src, byte[] bytes)
-        {
-            var nameBytesLen = bytes[0];
-            var subBytesStart = 1 + nameBytesLen;
-            var subBytesLen = bytes.Length - subBytesStart;
-
-            var nameBytes = new byte[nameBytesLen];
-
-            unsafe
-            {
-                fixed (byte* iniP = nameBytes, iniD = bytes)    // id
+                while (count >= 8)
                 {
-                    LongCopy(iniD + 1, iniP, nameBytesLen);
+                    *(ulong*)dst = *(ulong*)src;
+                    dst += 8;
+                    src += 8;
+                    count -= 8;
+                }
+
+                if (count >= 4)
+                {
+                    *(uint*)dst = *(uint*)src;
+                    dst += 4;
+                    src += 4;
+                    count -= 4;
+                }
+
+                if (count >= 2)
+                {
+                    *(ushort*)dst = *(ushort*)src;
+                    dst += 2;
+                    src += 2;
+                    count -= 2;
+                }
+
+                if (count >= 1)
+                {
+                    *dst = *src;
                 }
             }
 
-            var targetName = System.Text.Encoding.UTF8.GetString(nameBytes);
+            var idBytes = new byte[bytes[0]];
+            var headerBytesLen = 1 + idBytes.Length;
+            var subBytesLen = bytes.Length - headerBytesLen;
 
-            var networkedObject = NetworkedObject.GetById(targetName);
+            unsafe
+            {
+                fixed (byte* idBytesPtr = idBytes, bytesPtr = bytes)    // hedder
+                {
+                    LongCopy(bytesPtr + 1, idBytesPtr, idBytes.Length);
+                }
+            }
+
+            var targetId = System.Text.Encoding.UTF8.GetString(idBytes);
+
+            var networkedObject = NetworkedObject.GetById(targetId);
             if (networkedObject == null)
             {
-                Debug.LogError($"Networked object not found: {targetName}");
+                Debug.LogError($"Networked object not found: {targetId}");
 
                 return;
             }
 
             var subBytes = new byte[subBytesLen];
-            System.Array.Copy(bytes, subBytesStart, subBytes, 0, subBytesLen);
+            System.Array.Copy(bytes, headerBytesLen, subBytes, 0, subBytesLen);
 
-            networkedObject.OnRTCMessage(dst, src, subBytes);
+            networkedObject.OnReceive(dst, src, subBytes);
         }
 
-        public void RTCChannelSend(byte[] bytes)
+        public void SendRTC(byte[] bytes)
         {
-            if (rtcChannelEnabled)
-            {
-                m_rtcChannel.Send(bytes);
-            }
+            m_rtcChannel?.Send(bytes);
+        }
+
+        public void SendTextRTC(string text)
+        {
+            m_rtcChannel?.SendText(text);
         }
 
         public void CloseRTCChannel()
         {
-            if (m_rtcChannel != null)
-            {
-                // TODO:
-                //m_rtcChannel.Exit();
-            }
-
+            m_rtcChannel?.HangUp();
             m_rtcChannel = null;
         }
 
@@ -611,16 +580,9 @@ namespace TLab.SFU.Network
             ConnectMasterChannel();
         }
 
-        private async void Update()
+        private void Update()
         {
-            if (m_connectMasterChannelTask != null)
-            {
-                await m_connectMasterChannelTask.MoveNextAsync();
-            }
-
-#if !UNITY_WEBGL || UNITY_EDITOR
-            m_masterChannel?.DispatchMessageQueue();
-#endif
+            m_connectMasterChannelTask?.MoveNext();
         }
 
         private void OnDestroy()
