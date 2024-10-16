@@ -53,11 +53,10 @@ namespace TLab.VRClassroom
         {
             instance = this;
 
-            SyncClient.RegisterMasterChannelCallback(nameof(MCH_MiniTest), (obj) =>
+            SyncClient.RegisterMasterChannelCallback(nameof(MCH_MiniTest), (from, obj) =>
             {
                 var json = JsonUtility.FromJson<MCH_MiniTest>(obj.message);
-
-                m_scores[obj.srcIndex] = json.score;
+                m_scores[from] = json.score;
             });
         }
 

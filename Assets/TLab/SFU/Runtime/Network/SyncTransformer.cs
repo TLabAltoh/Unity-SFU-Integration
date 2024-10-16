@@ -438,13 +438,12 @@ namespace TLab.SFU.Network
 
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_SyncTransform), (obj) =>
+                SyncClient.RegisterMasterChannelCallback(nameof(MCH_SyncTransform), (from, obj) =>
                 {
                     var json = JsonUtility.FromJson<MCH_SyncTransform>(obj.message);
 
                     GetById(json.networkedId)?.SyncTransformFromOutside(json.transformState);
                 });
-
                 mchCallbackRegisted = true;
             }
         }

@@ -97,10 +97,6 @@ namespace TLab.SFU.Network
     public class MasterChannelJson
     {
         public string messageType;
-
-        public int srcIndex;
-        public int dstIndex;
-
         public string message;
     }
 

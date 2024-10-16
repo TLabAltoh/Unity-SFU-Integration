@@ -228,7 +228,7 @@ namespace TLab.SFU.Network
         {
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(m_storeName, (obj) =>
+                SyncClient.RegisterMasterChannelCallback(m_storeName, (from, obj) =>
                 {
                     // TODO:
 

@@ -242,13 +242,12 @@ namespace TLab.SFU.Network
         {
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_SyncAnim), (obj) =>
+                SyncClient.RegisterMasterChannelCallback(nameof(MCH_SyncAnim), (from, obj) =>
                 {
                     var json = JsonUtility.FromJson<MCH_SyncAnim>(obj.message);
 
                     GetById(json.networkedId)?.SyncAnimFromOutside(json.animState);
                 });
-
                 mchCallbackRegisted = true;
             }
         }

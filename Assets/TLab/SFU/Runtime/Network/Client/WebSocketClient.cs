@@ -1,8 +1,11 @@
 using System.Collections;
+using System;
+using System.Threading.Tasks;
+using System.Text;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
-using System.Threading.Tasks;
 
 namespace TLab.SFU.Network
 {
@@ -70,9 +73,8 @@ namespace TLab.SFU.Network
         private void CancelReceiveTask()
         {
             if (m_receiveTask != null)
-            {
                 m_mono.StopCoroutine(m_receiveTask);
-            }
+
             m_receiveTask = null;
         }
 
@@ -99,14 +101,16 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override Task Send(byte[] bytes)
+        public override Task Send(int to, byte[] bytes)
         {
-            return m_socket.Send(bytes);
+            var hedder = BitConverter.GetBytes(to);
+            var packet = hedder.Concat(bytes);
+            return m_socket.Send(packet.ToArray());
         }
 
-        public override Task SendText(string text)
+        public override Task SendText(int to, string text)
         {
-            return m_socket.SendText(text);
+            return Send(to, Encoding.UTF8.GetBytes(text));
         }
 
         public override Task HangUp()

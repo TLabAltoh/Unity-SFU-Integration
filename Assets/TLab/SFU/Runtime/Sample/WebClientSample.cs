@@ -8,7 +8,7 @@ namespace TLab.SFU.Sample
     {
         private SfuClient m_client;
 
-        private bool m_useWebRTC = false;
+        private bool m_useWebRTC = true;
 
         public override void Open()
         {
@@ -22,17 +22,17 @@ namespace TLab.SFU.Sample
 
         public override void SendText(string message)
         {
-            m_client.Send(Encoding.UTF8.GetBytes(message));
+            m_client.Send(m_adapter.user.id, Encoding.UTF8.GetBytes(message));
         }
 
         public override void Send(byte[] bytes)
         {
-            m_client.Send(bytes);
+            m_client.Send(m_adapter.user.id, bytes);
         }
 
         public void OnReceive(byte[] bytes)
         {
-            OnMessage(this.gameObject.name + ": " + Encoding.UTF8.GetString(bytes));
+            OnMessage(this.gameObject.name + ": " + Encoding.UTF8.GetString(bytes, 8, bytes.Length - 8));
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
+using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
@@ -190,6 +191,9 @@ namespace TLab.SFU.Network
 
         private void CancelSignalingTask()
         {
+            m_signalingSocket?.Close();
+            m_signalingSocket = null;
+
             if (m_signalingTask != null)
             {
                 m_mono.StopCoroutine(m_signalingTask);
@@ -235,6 +239,7 @@ namespace TLab.SFU.Network
                     Debug.Log(THIS_NAME + "IceConnectionState: Completed");
                     break;
                 case RTCIceConnectionState.Connected:
+                    CancelSignalingTask();
                     Debug.Log(THIS_NAME + "IceConnectionState: Connected");
                     break;
                 case RTCIceConnectionState.Disconnected:
@@ -535,22 +540,24 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override Task Send(byte[] bytes)
+        public override Task Send(int to, byte[] bytes)
         {
             if (m_dc != null)
             {
                 if (m_dc.ReadyState == RTCDataChannelState.Open)
                 {
-                    m_dc.Send(bytes);
+                    var hedder = BitConverter.GetBytes(to);
+                    var packet = hedder.Concat(bytes);
+                    m_dc.Send(packet.ToArray());
                 }
             }
 
-            return base.Send(bytes);
+            return base.Send(to, bytes);
         }
 
-        public override Task SendText(string text)
+        public override Task SendText(int to, string text)
         {
-            return Send(Encoding.UTF8.GetBytes(text));
+            return Send(to, Encoding.UTF8.GetBytes(text));
         }
     }
 }

@@ -23,9 +23,9 @@ namespace TLab.SFU.Network
             m_onReceive = onReceive;
         }
 
-        public virtual Task SendText(string text) { return Task.Run(() => { }); }
+        public virtual Task SendText(int to, string text) { return Task.Run(() => { }); }
 
-        public virtual Task Send(byte[] bytes) { return Task.Run(() => { }); }
+        public virtual Task Send(int to, byte[] bytes) { return Task.Run(() => { }); }
 
         public virtual Task HangUp() { return Task.Run(() => { }); }
 
@@ -33,10 +33,7 @@ namespace TLab.SFU.Network
         {
             var @event = new UnityEvent<byte[]>();
             foreach (var @action in @actions)
-            {
                 @event.AddListener(@action);
-            }
-
             return @event;
         }
     }

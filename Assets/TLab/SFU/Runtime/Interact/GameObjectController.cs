@@ -545,7 +545,7 @@ namespace TLab.SFU.Interact
 
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_GrabbLock), (obj) =>
+                SyncClient.RegisterMasterChannelCallback(nameof(MCH_GrabbLock), (from, obj) =>
                 {
                     var json = JsonUtility.FromJson<MCH_GrabbLock>(obj.message);
 
@@ -562,7 +562,7 @@ namespace TLab.SFU.Interact
                     }
                 });
 
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_DivideGrabber), (obj) =>
+                SyncClient.RegisterMasterChannelCallback(nameof(MCH_DivideGrabber), (from, obj) =>
                 {
                     var json = JsonUtility.FromJson<MCH_DivideGrabber>(obj.message);
 
