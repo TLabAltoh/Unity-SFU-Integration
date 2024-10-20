@@ -73,7 +73,7 @@ namespace TLab.SFU.Sample
             m_adapter = AdapterSample.instance.GetClone();
         }
 
-        private void Start()
+        protected virtual void Start()
         {
             m_messageInput = GetComponentInChildren<TMP_InputField>();
 
@@ -89,7 +89,7 @@ namespace TLab.SFU.Sample
             StartCoroutine(CloneAdapter());
         }
 
-        private void Update()
+        protected virtual void Update()
         {
             if (m_forceScrollToTail && !UnityEngine.Input.GetMouseButton(0))
                 m_scrollRect.verticalNormalizedPosition = 0.0f;

@@ -1,18 +1,55 @@
 using System.Text;
+using UnityEngine;
 using Unity.WebRTC;
 using TLab.SFU.Network;
 
 namespace TLab.SFU.Sample
 {
+    [RequireComponent(typeof(AudioSource))]
     public class WebClientSample : ClientSample
     {
         private SfuClient m_client;
 
         private bool m_useWebRTC = true;
+        private bool m_useAudio = true;
+
+        private AudioSource m_audioSource;
+
+        private string THIS_NAME => "[" + this.GetType() + "] ";
 
         public override void Open()
         {
-            m_client = m_useWebRTC ? WebRTCClient.Whep(this, m_adapter, STREAM, OnReceive, new RTCDataChannelInit(), false, false) : WebSocketClient.Open(this, m_adapter, STREAM, OnReceive);
+            if (m_useWebRTC)
+            {
+                if (m_useAudio && m_adapter.user.id == 0)
+                {
+                    StartAudio();
+                    m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnReceive, new RTCDataChannelInit(), null, m_audioSource, null);
+                }
+                else
+                {
+                    m_client = WebRTCClient.Whep(this, m_adapter, STREAM, OnReceive, new RTCDataChannelInit(), false, m_useAudio, OnAddTrack);
+                }
+            }
+            else
+            {
+                m_client = WebSocketClient.Open(this, m_adapter, STREAM, OnReceive);
+            }
+        }
+
+        private void OnAddTrack(MediaStreamTrackEvent e)
+        {
+            Debug.Log(THIS_NAME + "Receive track: " + e.Track.Id);
+        }
+
+        private void StartAudio()
+        {
+            var clip = Resources.Load<AudioClip>("Sample/sin_mono");
+            if (!clip)
+                Debug.LogError(THIS_NAME + "Audio clip is null !");
+            m_audioSource.loop = true;
+            m_audioSource.clip = clip;
+            m_audioSource.Play();
         }
 
         public override void Close()
@@ -32,7 +69,14 @@ namespace TLab.SFU.Sample
 
         public void OnReceive(byte[] bytes)
         {
-            OnMessage(this.gameObject.name + ": " + Encoding.UTF8.GetString(bytes, 8, bytes.Length - 8));
+            OnMessage(Encoding.UTF8.GetString(bytes, 8, bytes.Length - 8));
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+
+            m_audioSource = GetComponent<AudioSource>();
         }
     }
 }

@@ -5489,7 +5489,7 @@ GameObject:
   - component: {fileID: 183181524888327477}
   - component: {fileID: 183181524888327465}
   m_Layer: 7
-  m_Name: OVRCameraRig_Custom
+  m_Name: TVRCameraRig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

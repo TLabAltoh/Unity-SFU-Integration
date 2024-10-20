@@ -18,6 +18,7 @@ namespace TLab.SFU.Network
 
         private MediaStream m_sMediaStream;
         private MediaStream m_rMediaStream;
+        private UnityEvent<MediaStreamTrackEvent> m_onAddTrack;
 
         private ClientType m_clientType;
         private IceExchangeOption m_iceExchangeOption;
@@ -67,14 +68,16 @@ namespace TLab.SFU.Network
         {
             public bool is_candidate;
             public string sdp;
+            public string session;
             public string candidate;
 
             public Signaling() { }
 
-            public Signaling(bool is_candidate, string sdp, string candidate)
+            public Signaling(bool is_candidate, string sdp, string session, string candidate)
             {
                 this.is_candidate = is_candidate;
                 this.sdp = sdp;
+                this.session = session;
                 this.candidate = candidate;
             }
         };
@@ -100,9 +103,17 @@ namespace TLab.SFU.Network
             VANILLA,
         };
 
-        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static UnityEvent<MediaStreamTrackEvent> CreateOnAddTrack(params UnityAction<MediaStreamTrackEvent>[] @actions)
         {
-            var client = new WebRTCClient(mono, adapter, stream, onReceive, iceExchangeOption);
+            var @event = new UnityEvent<MediaStreamTrackEvent>();
+            foreach (var @action in @actions)
+                @event.AddListener(@action);
+            return @event;
+        }
+
+        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        {
+            var client = new WebRTCClient(mono, adapter, stream, onReceive, onAddTrack, iceExchangeOption);
 
             client.CreatePeerConnection(ClientType.WHIP, dataChannelCnf);
 
@@ -121,19 +132,19 @@ namespace TLab.SFU.Network
             return client;
         }
 
-        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, UnityAction<byte[]> onReceive, string stream, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<byte[]> onReceive, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            return Whip(mono, adapter, stream, CreateOnReceive(onReceive), dataChannelCnf, videoSource, audioSource, iceExchangeOption);
+            return Whip(mono, adapter, stream, CreateOnReceive(onReceive), dataChannelCnf, videoSource, audioSource, CreateOnAddTrack(onAddTrack), iceExchangeOption);
         }
 
         public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            return Whip(mono, adapter, stream, CreateOnReceive(null), dataChannelCnf, videoSource, audioSource, iceExchangeOption);
+            return Whip(mono, adapter, stream, CreateOnReceive(null), dataChannelCnf, videoSource, audioSource, CreateOnAddTrack(null), iceExchangeOption);
         }
 
-        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            var client = new WebRTCClient(mono, adapter, stream, onReceive, iceExchangeOption);
+            var client = new WebRTCClient(mono, adapter, stream, onReceive, onAddTrack, iceExchangeOption);
 
             client.CreatePeerConnection(ClientType.WHEP, dataChannelCnf);
 
@@ -152,29 +163,30 @@ namespace TLab.SFU.Network
             return client;
         }
 
-        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<byte[]> onReceive, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<byte[]> onReceive, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            return Whep(mono, adapter, stream, CreateOnReceive(onReceive), dataChannelCnf, receiveVideo, receiveAudio, iceExchangeOption);
+            return Whep(mono, adapter, stream, CreateOnReceive(onReceive), dataChannelCnf, receiveVideo, receiveAudio, CreateOnAddTrack(onAddTrack), iceExchangeOption);
         }
 
         public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            return Whep(mono, adapter, stream, CreateOnReceive(null), dataChannelCnf, receiveVideo, receiveAudio, iceExchangeOption);
+            return Whep(mono, adapter, stream, CreateOnReceive(null), dataChannelCnf, receiveVideo, receiveAudio, CreateOnAddTrack(null), iceExchangeOption);
         }
 
-        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) : base(mono, adapter, stream, onReceive)
+        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) : base(mono, adapter, stream, onReceive)
         {
             m_iceExchangeOption = iceExchangeOption;
+            m_onAddTrack = onAddTrack;
         }
 
-        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<byte[]> onReceive, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) :
-            this(mono, adapter, stream, CreateOnReceive(onReceive), iceExchangeOption)
+        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<byte[]> onReceive, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) :
+            this(mono, adapter, stream, CreateOnReceive(onReceive), CreateOnAddTrack(onAddTrack), iceExchangeOption)
         {
 
         }
 
         public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) :
-            this(mono, adapter, stream, CreateOnReceive(null), iceExchangeOption)
+            this(mono, adapter, stream, CreateOnReceive(null), CreateOnAddTrack(null), iceExchangeOption)
         {
 
         }
@@ -290,7 +302,6 @@ namespace TLab.SFU.Network
         {
             var track = new AudioStreamTrack(audioSource);
 
-            // One transceiver is added at this timing, so AddTransceiver does not need to be executed.
             var sender = m_pc.AddTrack(track, m_sMediaStream);
 
             var transceiver = m_pc.GetTransceivers().First(t => t.Sender == sender);
@@ -304,7 +315,8 @@ namespace TLab.SFU.Network
 
         public void InitAudioReceiver()
         {
-            m_pc.AddTransceiver(TrackKind.Audio);
+            var transceiver = m_pc.AddTransceiver(TrackKind.Audio);
+            transceiver.Direction = RTCRtpTransceiverDirection.RecvOnly;
         }
 
         public void InitVideoSender(Texture2D videoSource)
@@ -312,18 +324,15 @@ namespace TLab.SFU.Network
             // TODO:
 
 #if false
-            if (m_streamVideoOnConnect)
-            {
                 var track = new VideoStreamTrack(m_videoStreamSrc);
-
-                m_pcDic[dst].AddTrack(track, m_sMediaStream);
-            }
+                m_pc.AddTrack(track, m_sMediaStream);
 #endif
         }
 
         public void InitVideReceiver()
         {
-            m_pc.AddTransceiver(TrackKind.Video);
+            var transceiver = m_pc.AddTransceiver(TrackKind.Video);
+            transceiver.Direction = RTCRtpTransceiverDirection.RecvOnly;
         }
 
         private void OnSetLocalSuccess()
@@ -356,6 +365,14 @@ namespace TLab.SFU.Network
             return config;
         }
 
+        private void DisposeMediaTrack()
+        {
+            m_sMediaStream?.Dispose();
+            m_sMediaStream = null;
+            m_rMediaStream?.Dispose();
+            m_rMediaStream = null;
+        }
+
         public override Task HangUp()
         {
             if (m_dc != null)
@@ -371,14 +388,14 @@ namespace TLab.SFU.Network
                     if (transceiver.Sender != null)
                     {
                         transceiver.Sender.Track.Stop();
-                        m_sMediaStream.RemoveTrack(transceiver.Sender.Track);
+                        m_sMediaStream?.RemoveTrack(transceiver.Sender.Track);
                         transceiver.Sender.Track.Dispose();
                     }
 
                     if (transceiver.Receiver != null)
                     {
                         transceiver.Receiver.Track.Stop();
-                        m_rMediaStream.RemoveTrack(transceiver.Receiver.Track);
+                        m_rMediaStream?.RemoveTrack(transceiver.Receiver.Track);
                         transceiver.Receiver.Track.Dispose();
                     }
                 }
@@ -386,6 +403,8 @@ namespace TLab.SFU.Network
                 m_pc.Close();
                 m_pc = null;
             }
+
+            DisposeMediaTrack();
 
             return base.HangUp();
         }
@@ -398,6 +417,10 @@ namespace TLab.SFU.Network
             {
                 HangUp();
             }
+
+            m_sMediaStream = new MediaStream();
+            m_rMediaStream = new MediaStream();
+            m_rMediaStream.OnAddTrack += (eventTrack) => m_onAddTrack.Invoke(eventTrack);
 
             var configuration = GetSelectedSdpSemantics();
             m_pc = new RTCPeerConnection(ref configuration);
@@ -470,7 +493,7 @@ namespace TLab.SFU.Network
                         OnSetSessionDescriptionError(ref error);
                     }
 
-                    Debug.Log("[Signaling] Answer received");
+                    Debug.Log("[Signaling] Answer received: " + desc.sdp);
                 }
             };
             _ = m_signalingSocket.Connect();
@@ -495,7 +518,7 @@ namespace TLab.SFU.Network
                 while (m_candidates.Count > 0)
                 {
                     var candidate = m_candidates.Dequeue();
-                    var signaling = new Signaling(true, "", candidate.Candidate);
+                    var signaling = new Signaling(true, "", "", candidate.Candidate);
                     var json = JsonUtility.ToJson(signaling);
                     _ = m_signalingSocket.SendText(json);
 
