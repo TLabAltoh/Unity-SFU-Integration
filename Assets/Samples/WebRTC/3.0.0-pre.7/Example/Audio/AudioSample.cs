@@ -212,9 +212,16 @@ namespace Unity.WebRTC
 
         void OnPause()
         {
-            var transceiver1 = _pc1.GetTransceivers().First();
-            var track = transceiver1.Sender.Track;
-            track.Enabled = false;
+            //var transceiver1 = _pc1.GetTransceivers().First();
+            //var track = transceiver1.Sender.Track;
+            //track.Enabled = false;
+
+            foreach (var transceiver in _pc1.GetTransceivers())
+            {
+                var param = transceiver.Sender.GetParameters();
+                param.encodings[0].active = false;
+                transceiver.Sender.SetParameters(param);
+            }
 
             buttonResume.gameObject.SetActive(true);
             buttonPause.gameObject.SetActive(false);
@@ -222,9 +229,16 @@ namespace Unity.WebRTC
 
         void OnResume()
         {
-            var transceiver1 = _pc1.GetTransceivers().First();
-            var track = transceiver1.Sender.Track;
-            track.Enabled = true;
+            //var transceiver1 = _pc1.GetTransceivers().First();
+            //var track = transceiver1.Sender.Track;
+            //track.Enabled = true;
+
+            foreach (var transceiver in _pc1.GetTransceivers())
+            {
+                var param = transceiver.Sender.GetParameters();
+                param.encodings[0].active = true;
+                transceiver.Sender.SetParameters(param);
+            }
 
             buttonResume.gameObject.SetActive(false);
             buttonPause.gameObject.SetActive(true);

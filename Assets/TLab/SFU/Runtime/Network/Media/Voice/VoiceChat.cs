@@ -55,9 +55,7 @@ namespace TLab.SFU.Network
         private string GetMicrophone()
         {
             if (Microphone.devices.Length > 0)
-            {
                 return Microphone.devices[0];
-            }
 
             return null;
         }
@@ -113,9 +111,9 @@ namespace TLab.SFU.Network
             WebRTCClient.Whip(this, SyncClient.adapter, "voice", null, null, microphoneSource);
         }
 
-        public void OnPauseAudio(bool active)
+        public void Pause(bool active)
         {
-            m_mediaChannel.OnPauseAudio(active);
+            m_mediaChannel.Pause(active);
         }
 
         private void InitializeDPSBuffer()

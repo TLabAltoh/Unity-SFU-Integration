@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using TLab.SFU.Network;
 
 namespace TLab.SFU.Sample
@@ -9,7 +8,6 @@ namespace TLab.SFU.Sample
     public class ClientSample : MonoBehaviour
     {
         private bool m_forceScrollToTail = true;
-        private TMP_InputField m_messageInput;
         private ScrollRect m_scrollRect;
         private Transform m_scrollViewContent;
 
@@ -75,8 +73,6 @@ namespace TLab.SFU.Sample
 
         protected virtual void Start()
         {
-            m_messageInput = GetComponentInChildren<TMP_InputField>();
-
             m_scrollRect = GetComponentInChildren<ScrollRect>();
             m_scrollViewContent = m_scrollRect.transform.Find("Viewport/Content");
 

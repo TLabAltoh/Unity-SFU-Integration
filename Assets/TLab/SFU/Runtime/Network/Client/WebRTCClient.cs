@@ -118,14 +118,10 @@ namespace TLab.SFU.Network
             client.CreatePeerConnection(ClientType.WHIP, dataChannelCnf);
 
             if (audioSource)
-            {
                 client.InitAudioSender(audioSource);
-            }
 
             if (videoSource)
-            {
                 client.InitVideoSender(videoSource);
-            }
 
             mono.StartCoroutine(client.CreateOffer());
 
@@ -149,14 +145,10 @@ namespace TLab.SFU.Network
             client.CreatePeerConnection(ClientType.WHEP, dataChannelCnf);
 
             if (receiveAudio)
-            {
-                client.InitAudioReceiver();
-            }
+                client.InitReceiver(TrackKind.Audio);
 
             if (receiveVideo)
-            {
-                client.InitVideReceiver();
-            }
+                client.InitReceiver(TrackKind.Video);
 
             mono.StartCoroutine(client.CreateOffer());
 
@@ -268,17 +260,21 @@ namespace TLab.SFU.Network
             }
         }
 
-        public void OnPauseAudio(bool active)
+        public void Pause(bool active)
         {
+#if false
+            foreach (var transceiver in m_pc.GetTransceivers())
+                transceiver.Sender.Track.Enabled = active;
+#endif
+
+            // https://stackoverflow.com/a/77364499/22575350
+
             foreach (var transceiver in m_pc.GetTransceivers())
             {
-                transceiver.Sender.Track.Enabled = active;
+                var param = transceiver.Sender.GetParameters();
+                param.encodings[0].active = active;
+                transceiver.Sender.SetParameters(param);
             }
-        }
-
-        public void OnPauseVideo(bool active)
-        {
-            // TODO
         }
 
         public RTCRtpCodecCapability[] GetAudioCodecs()
@@ -288,9 +284,7 @@ namespace TLab.SFU.Network
             foreach (var codec in RTCRtpSender.GetCapabilities(TrackKind.Audio).codecs)
             {
                 if (excludeCodecTypes.Count(type => codec.mimeType.Contains(type)) > 0)
-                {
                     continue;
-                }
 
                 audioCodecs.Add(codec);
             }
@@ -313,25 +307,19 @@ namespace TLab.SFU.Network
             }
         }
 
-        public void InitAudioReceiver()
-        {
-            var transceiver = m_pc.AddTransceiver(TrackKind.Audio);
-            transceiver.Direction = RTCRtpTransceiverDirection.RecvOnly;
-        }
-
         public void InitVideoSender(Texture2D videoSource)
         {
             // TODO:
 
 #if false
-                var track = new VideoStreamTrack(m_videoStreamSrc);
+                var track = new VideoStreamTrack(videoSource);
                 m_pc.AddTrack(track, m_sMediaStream);
 #endif
         }
 
-        public void InitVideReceiver()
+        public void InitReceiver(TrackKind trackKind)
         {
-            var transceiver = m_pc.AddTransceiver(TrackKind.Video);
+            var transceiver = m_pc.AddTransceiver(trackKind);
             transceiver.Direction = RTCRtpTransceiverDirection.RecvOnly;
         }
 
@@ -414,9 +402,7 @@ namespace TLab.SFU.Network
             m_clientType = clientType;
 
             if (m_pc != null)
-            {
                 HangUp();
-            }
 
             m_sMediaStream = new MediaStream();
             m_rMediaStream = new MediaStream();
@@ -565,14 +551,11 @@ namespace TLab.SFU.Network
 
         public override Task Send(int to, byte[] bytes)
         {
-            if (m_dc != null)
+            if ((m_dc != null) && (m_dc.ReadyState == RTCDataChannelState.Open))
             {
-                if (m_dc.ReadyState == RTCDataChannelState.Open)
-                {
-                    var hedder = BitConverter.GetBytes(to);
-                    var packet = hedder.Concat(bytes);
-                    m_dc.Send(packet.ToArray());
-                }
+                var hedder = BitConverter.GetBytes(to);
+                var packet = hedder.Concat(bytes);
+                m_dc.Send(packet.ToArray());
             }
 
             return base.Send(to, bytes);
