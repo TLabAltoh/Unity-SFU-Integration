@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 namespace TLab.SFU.Network
@@ -14,36 +14,16 @@ namespace TLab.SFU.Network
 
         protected static string REGISTRY = "[registry] ";
 
-        protected static void Register(string id, NetworkedObject networkedObject)
-        {
-            if (!m_registry.ContainsKey(id))
-            {
-                m_registry[id] = networkedObject;
-            }
-        }
+        protected static void Register(Address64 id, NetworkedObject networkedObject) => m_registry.Add(id, networkedObject);
 
-        protected static void UnRegister(string id)
-        {
-            if (m_registry.ContainsKey(id))
-            {
-                m_registry.Remove(id);
-            }
-        }
+        protected static void UnRegister(Address64 id) => m_registry.Remove(id);
 
         public static void ClearRegistry()
         {
-            var gameobjects = new List<GameObject>();
+            var gameObjects = m_registry.Values.Cast<NetworkedObject>().Select((t) => t.gameObject);
 
-            foreach (DictionaryEntry entry in m_registry)
-            {
-                var networkedObject = entry.Value as NetworkedObject;
-                gameobjects.Add(networkedObject.gameObject);
-            }
-
-            for (int i = 0; i < gameobjects.Count; i++)
-            {
-                Destroy(gameobjects[i]);
-            }
+            foreach (var gameObject in gameObjects)
+                Destroy(gameObject);
 
             m_registry.Clear();
         }
@@ -56,7 +36,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static void Destroy(string id)
+        public static void Destroy(Address64 id)
         {
             var go = GetById(id).gameObject;
             if (go != null)
@@ -65,7 +45,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static NetworkedObject GetById(string id) => m_registry[id] as NetworkedObject;
+        public static NetworkedObject GetById(Address64 id) => m_registry[id] as NetworkedObject;
 
         #endregion REGISTRY
 
@@ -98,41 +78,7 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
-        protected unsafe void LongCopy(byte* src, byte* dst, int count)
-        {
-            // https://github.com/neuecc/MessagePack-CSharp/issues/117
-
-            while (count >= 8)
-            {
-                *(ulong*)dst = *(ulong*)src;
-                dst += 8;
-                src += 8;
-                count -= 8;
-            }
-
-            if (count >= 4)
-            {
-                *(uint*)dst = *(uint*)src;
-                dst += 4;
-                src += 4;
-                count -= 4;
-            }
-
-            if (count >= 2)
-            {
-                *(ushort*)dst = *(ushort*)src;
-                dst += 2;
-                src += 2;
-                count -= 2;
-            }
-
-            if (count >= 1)
-            {
-                *dst = *src;
-            }
-        }
-
-        public virtual void OnReceive(string dst, string src, byte[] bytes) { }
+        public virtual void OnReceive(int to, int from, byte[] bytes) { }
 
         public virtual void SetSyncEnable(bool active)
         {
@@ -153,7 +99,7 @@ namespace TLab.SFU.Network
             m_state = State.SHUTDOWNED;
         }
 
-        public virtual void Init(string id)
+        public virtual void Init(Address32 publicId)
         {
             if (m_state == State.INITIALIZED)
             {
@@ -162,7 +108,7 @@ namespace TLab.SFU.Network
 
             m_networkedId = GetComponent<NetworkedId>();
 
-            m_networkedId.SetPublicId(id);
+            m_networkedId.SetPublicId(publicId);
 
             Register(m_networkedId.id, this);
 

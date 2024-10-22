@@ -23,9 +23,9 @@ namespace TLab.SFU.Network
             VoiceChat.RegistClient(m_networkedId.id, this);
         }
 
-        public override void Init(string id)
+        public override void Init(Address32 publicId)
         {
-            base.Init(id);
+            base.Init(publicId);
 
             VoiceChat.RegistClient(m_networkedId.id, this);
         }

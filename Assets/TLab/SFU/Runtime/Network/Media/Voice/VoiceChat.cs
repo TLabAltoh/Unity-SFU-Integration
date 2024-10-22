@@ -29,12 +29,12 @@ namespace TLab.SFU.Network
 
         public AudioSource microphoneSource => m_microphoneSource;
 
-        public static void RegistClient(string id, VoiceChatPlayer player)
+        public static void RegistClient(Address64 id, VoiceChatPlayer player)
         {
             m_voicePlayers[id] = player;
         }
 
-        public static void RemoveClient(string id)
+        public static void RemoveClient(Address64 id)
         {
             m_voicePlayers.Remove(id);
         }

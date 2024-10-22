@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using TLab.SFU.Network;
 
@@ -16,36 +16,16 @@ namespace TLab.SFU.Humanoid
 
         public static Hashtable registry => m_registry;
 
-        protected static void Register(string id, BodyTracker tracker)
-        {
-            if (!m_registry.ContainsKey(id))
-            {
-                m_registry[id] = tracker;
-            }
-        }
+        protected static void Register(Address64 id, BodyTracker tracker) => m_registry.Add(id, tracker);
 
-        protected static new void UnRegister(string id)
-        {
-            if (m_registry.ContainsKey(id))
-            {
-                m_registry.Remove(id);
-            }
-        }
+        protected static new void UnRegister(Address64 id) => m_registry.Remove(id);
 
         public static new void ClearRegistry()
         {
-            var gameobjects = new List<GameObject>();
+            var gameObjects = m_registry.Values.Cast<BodyTracker>().Select((t) => t.gameObject);
 
-            foreach (DictionaryEntry entry in m_registry)
-            {
-                var tracker = entry.Value as BodyTracker;
-                gameobjects.Add(tracker.gameObject);
-            }
-
-            for (int i = 0; i < gameobjects.Count; i++)
-            {
-                Destroy(gameobjects[i]);
-            }
+            foreach (var gameObject in gameObjects)
+                Destroy(gameObject);
 
             m_registry.Clear();
         }
@@ -58,7 +38,7 @@ namespace TLab.SFU.Humanoid
             }
         }
 
-        public static new void Destroy(string id)
+        public static new void Destroy(Address64 id)
         {
             var go = GetById(id).gameObject;
             if (go != null)
@@ -67,10 +47,7 @@ namespace TLab.SFU.Humanoid
             }
         }
 
-        public static new BodyTracker GetById(string id)
-        {
-            return m_registry[id] as BodyTracker;
-        }
+        public static new BodyTracker GetById(Address64 id) => m_registry[id] as BodyTracker;
 
         #endregion REGISTRY
 

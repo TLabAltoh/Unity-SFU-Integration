@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
+using TLab.SFU;
 using TLab.SFU.Network;
 
 namespace TLab.VRClassroom
@@ -15,9 +17,25 @@ namespace TLab.VRClassroom
         #region MESSAGE_TYPE
 
         [System.Serializable]
-        public class MCH_MiniTest
+        public class MCH_MiniTest : Packetable
         {
+            public static int pktId;
+
+            static MCH_MiniTest() => pktId = nameof(MCH_MiniTest).GetHashCode();
+
             public int score;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, SyncClient.HEADER_SIZE, bytes.Length - SyncClient.HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
         #endregion MESSAGE_TYPE
@@ -36,28 +54,26 @@ namespace TLab.VRClassroom
         {
             m_scores[SyncClient.userId] = score;
 
-            var json = new MCH_MiniTest
+            var @object = new MCH_MiniTest
             {
                 score = score,
             };
-            MasterChannelSend(JsonUtility.ToJson(json));
-        }
 
-        public void MasterChannelSend(string message)
-        {
-            SyncClient.instance.MasterChannelSend(
-                messageType: nameof(MCH_MiniTest), message: message);
+            SyncClient.instance.MasterChannelSend(@object.Marshall());
         }
 
         void Awake()
         {
             instance = this;
 
-            SyncClient.RegisterMasterChannelCallback(nameof(MCH_MiniTest), (from, obj) =>
-            {
-                var json = JsonUtility.FromJson<MCH_MiniTest>(obj.message);
-                m_scores[from] = json.score;
-            });
+            SyncClient.RegisterMasterChannelCallback(MCH_MiniTest.pktId, OnReceive);
+        }
+
+        public void OnReceive(int from, byte[] bytes)
+        {
+            var @object = new MCH_MiniTest();
+            @object.UnMarshall(bytes);
+            m_scores[from] = @object.score;
         }
 
         public void OnOthersJoined(int userId)

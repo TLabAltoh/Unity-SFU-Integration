@@ -1,6 +1,6 @@
+using System.Threading.Tasks;
 using System.Collections;
 using System;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 using static TLab.SFU.ComponentExtention;
@@ -26,12 +26,14 @@ namespace TLab.SFU.Network
 
         public static PhysicsUpdateType physicsUpdateType => m_physicsUpdateType;
 
-        public delegate void MasterChannelCallback(int from, MasterChannelJson obj);
+        public delegate void MasterChannelCallback(int from, byte[] bytes);
         private static Hashtable m_masterChannelCallbacks = new Hashtable();
 
         private IEnumerator m_connectMasterChannelTask = null;
 
         public static SyncClient instance;
+
+        public const int HEADER_SIZE = 4;   // pktId (4)
 
         public static Adapter adapter
         {
@@ -182,27 +184,77 @@ namespace TLab.SFU.Network
 
         #region MESSAGE_TYPE
 
-        public class MCH_Join
+        [Serializable]
+        public struct MCH_Join : Packetable
         {
+            public static int pktId;
+
+            static MCH_Join() => pktId = nameof(MCH_Join).GetHashCode();
+
             public int messageType; // 0: request, 1: response, 2: broadcast
             public PrefabStore.StoreAction avatorInstantiateInfo;
 
             // response
-            public string[] idAvails;
+            public Address32[] idAvails;
             public PhysicsUpdateType physicsUpdateType;
             public PrefabStore.StoreAction[] othersInstantiateInfos;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, HEADER_SIZE, bytes.Length - HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
-        public class MCH_PhysicsUpdateType
+        [Serializable]
+        public struct MCH_PhysicsUpdateType : Packetable
         {
+            public static int pktId;
+
+            static MCH_PhysicsUpdateType() => pktId = nameof(MCH_PhysicsUpdateType).GetHashCode();
+
             public PhysicsUpdateType physicsUpdateType;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, HEADER_SIZE, bytes.Length - HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
-        public class MCH_IdAvails
+        public struct MCH_IdAvails : Packetable
         {
+            public static int pktId;
+
+            static MCH_IdAvails() => pktId = nameof(MCH_IdAvails).GetHashCode();
+
             public int messageType; // 0: request, 1: response
             public int length;
-            public string[] idAvails;
+            public Address32[] idAvails;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, HEADER_SIZE, bytes.Length - HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
         #endregion MESSAGE_TYPE
@@ -254,11 +306,11 @@ namespace TLab.SFU.Network
 
         #region MASTER_CHANNEL
 
-        public static void RegisterMasterChannelCallback(string messageType, MasterChannelCallback callback)
+        public static void RegisterMasterChannelCallback(int msgId, MasterChannelCallback callback)
         {
-            if (!m_masterChannelCallbacks.ContainsKey(messageType))
+            if (!m_masterChannelCallbacks.ContainsKey(msgId))
             {
-                m_masterChannelCallbacks[messageType] = callback;
+                m_masterChannelCallbacks[msgId] = callback;
             }
         }
 
@@ -272,19 +324,18 @@ namespace TLab.SFU.Network
 
             #region ADD_CALLBACKS
 
-            RegisterMasterChannelCallback(nameof(MCH_Join), (from, obj) =>
+            RegisterMasterChannelCallback(MCH_Join.pktId, (from, bytes) =>
             {
-                var json = obj.message;
+                var @object = new MCH_Join();
+                @object.UnMarshall(bytes);
 
-                var received = JsonUtility.FromJson<MCH_Join>(json);
-
-                switch (received.messageType)
+                switch (@object.messageType)
                 {
                     case 0: // request
                         {
                             var response = new MCH_Join();
                             response.messageType = 1;
-                            response.avatorInstantiateInfo = received.avatorInstantiateInfo;
+                            response.avatorInstantiateInfo = @object.avatorInstantiateInfo;
 
                             // response
                             response.avatorInstantiateInfo.publicId = UniqueId.Generate();
@@ -292,9 +343,9 @@ namespace TLab.SFU.Network
                             response.physicsUpdateType = PhysicsUpdateType.RECEIVER;
                             response.othersInstantiateInfos = roomAdapter.avatorInstantiateHistorys;
 
-                            roomAdapter.UpdateState(received.avatorInstantiateInfo, out var avator);
+                            roomAdapter.UpdateState(@object.avatorInstantiateInfo, out var avator);
 
-                            MasterChannelSend(response.avatorInstantiateInfo.userId, nameof(MCH_Join), JsonUtility.ToJson(response));
+                            MasterChannelSend(response.avatorInstantiateInfo.userId, response.Marshall());
 
                             Foreach<NetworkedObject>((networkedObject) =>
                             {
@@ -304,9 +355,9 @@ namespace TLab.SFU.Network
                         break;
                     case 1: // response
                         {
-                            UpdatePhysicsUpdateType(received.physicsUpdateType);
+                            UpdatePhysicsUpdateType(@object.physicsUpdateType);
 
-                            foreach (var othersInstantiateInfo in received.othersInstantiateInfos)
+                            foreach (var othersInstantiateInfo in @object.othersInstantiateInfos)
                             {
                                 roomAdapter.UpdateState(othersInstantiateInfo, out var avator);
                             }
@@ -319,28 +370,26 @@ namespace TLab.SFU.Network
                         break;
                     case 2: // broadcast
                         {
-                            roomAdapter.UpdateState(received.avatorInstantiateInfo, out var avator);
+                            roomAdapter.UpdateState(@object.avatorInstantiateInfo, out var avator);
                         }
                         break;
                 }
             });
 
-            RegisterMasterChannelCallback(nameof(MCH_PhysicsUpdateType), (from, obj) =>
+            RegisterMasterChannelCallback(MCH_PhysicsUpdateType.pktId, (from, bytes) =>
             {
-                var json = obj.message;
+                var @object = new MCH_Join();
+                @object.UnMarshall(bytes);
 
-                var received = JsonUtility.FromJson<MCH_PhysicsUpdateType>(json);
-
-                UpdatePhysicsUpdateType(received.physicsUpdateType);
+                UpdatePhysicsUpdateType(@object.physicsUpdateType);
             });
 
-            RegisterMasterChannelCallback(nameof(MCH_IdAvails), (from, obj) =>
+            RegisterMasterChannelCallback(MCH_IdAvails.pktId, (from, bytes) =>
             {
-                var json = obj.message;
+                var @object = new MCH_Join();
+                @object.UnMarshall(bytes);
 
-                var received = JsonUtility.FromJson<MCH_IdAvails>(json);
-
-                switch (received.messageType)
+                switch (@object.messageType)
                 {
                     case 0: // request
                         break;
@@ -433,23 +482,32 @@ namespace TLab.SFU.Network
 #endif
             #endregion ADD_CALLBACKS
 
-            m_masterChannel = WebSocketClient.Open(this, m_adapter, "master", (bytes) =>
-            {
-                var message = Encoding.UTF8.GetString(bytes, 4, bytes.Length - 4);
-                var obj = JsonUtility.FromJson<MasterChannelJson>(message);
-
-                var from = BitConverter.ToInt32(bytes, 0);
-
-                if (m_masterChannelCallbacks.ContainsKey(obj.messageType))
-                {
-                    var callback = m_masterChannelCallbacks[obj.messageType] as MasterChannelCallback;
-                    callback.Invoke(from, obj);
-                }
-            });
+            m_masterChannel = WebSocketClient.Open(this, m_adapter, "master", OnReceive, OnConnect, OnDisconnect);
 
             m_connectMasterChannelTask = null;
 
             yield return 1;
+        }
+
+        private void OnReceive(int from, int to, byte[] bytes)
+        {
+            var msgTyp = bytes[0];
+
+            if (m_masterChannelCallbacks.ContainsKey(msgTyp))
+            {
+                var callback = m_masterChannelCallbacks[msgTyp] as MasterChannelCallback;
+                callback.Invoke(from, bytes);
+            }
+        }
+
+        private void OnConnect(int from)
+        {
+
+        }
+
+        private void OnDisconnect(int from)
+        {
+
         }
 
         public void ConnectMasterChannel()
@@ -457,36 +515,17 @@ namespace TLab.SFU.Network
             m_connectMasterChannelTask = ConnectMasterChannelTask();
         }
 
-        public void MasterChannelSend(int to, string messageType, string message)
-        {
-            var obj = new MasterChannelJson
-            {
-                messageType = messageType,
-                message = message,
-            };
-            MasterChannelSend(to, obj);
-        }
-
-        public void MasterChannelSend(string messageType, string message)
-        {
-            MasterChannelSend(userAdapter.id, messageType, message);
-        }
-
-        public void MasterChannelSend(int to, MasterChannelJson obj)
-        {
-            MasterChannelSend(to, JsonUtility.ToJson(obj));
-        }
-
-        public void MasterChannelSend(MasterChannelJson obj)
-        {
-            MasterChannelSend(userAdapter.id, JsonUtility.ToJson(obj));
-        }
-
-        public async void MasterChannelSend(int to, string json)
+        public Task MasterChannelSend(int to, byte[] bytes)
         {
             if (masterChannelEnabled)
-                await m_masterChannel.SendText(to, json);
+                return m_masterChannel.Send(to, bytes);
+
+            return new Task(() => { });
         }
+
+        public Task MasterChannelSend(int to, string message) => MasterChannelSend(to, Encoding.UTF8.GetBytes(message));
+
+        public Task MasterChannelSend(byte[] bytes) => MasterChannelSend(userAdapter.id, bytes);
 
         public async void CloseMasterChannel()
         {
@@ -498,89 +537,34 @@ namespace TLab.SFU.Network
 
         #region RTC_CHANNEL
 
-        public void OnReceiveRTC(string dst, string src, byte[] bytes)
+        public unsafe void OnReceiveRTC(int to, int from, byte[] bytes)
         {
-            unsafe void LongCopy(byte* src, byte* dst, int count)
-            {
-                // https://github.com/neuecc/MessagePack-CSharp/issues/117
+            int headerLen = 8, payloadLen = bytes.Length - headerLen;
+            var targetId = new Address64();
 
-                while (count >= 8)
-                {
-                    *(ulong*)dst = *(ulong*)src;
-                    dst += 8;
-                    src += 8;
-                    count -= 8;
-                }
-
-                if (count >= 4)
-                {
-                    *(uint*)dst = *(uint*)src;
-                    dst += 4;
-                    src += 4;
-                    count -= 4;
-                }
-
-                if (count >= 2)
-                {
-                    *(ushort*)dst = *(ushort*)src;
-                    dst += 2;
-                    src += 2;
-                    count -= 2;
-                }
-
-                if (count >= 1)
-                {
-                    *dst = *src;
-                }
-            }
-
-            var idBytes = new byte[bytes[0]];
-            var headerBytesLen = 1 + idBytes.Length;
-            var subBytesLen = bytes.Length - headerBytesLen;
-
-            unsafe
-            {
-                fixed (byte* idBytesPtr = idBytes, bytesPtr = bytes)    // hedder
-                {
-                    LongCopy(bytesPtr + 1, idBytesPtr, idBytes.Length);
-                }
-            }
-
-            var targetId = Encoding.UTF8.GetString(idBytes);
+            fixed (byte* bytesPtr = bytes)
+                targetId.Copy(bytesPtr);
 
             var networkedObject = NetworkedObject.GetById(targetId);
             if (networkedObject == null)
             {
                 Debug.LogError($"Networked object not found: {targetId}");
-
                 return;
             }
 
-            var subBytes = new byte[subBytesLen];
-            System.Array.Copy(bytes, headerBytesLen, subBytes, 0, subBytesLen);
+            var payload = new byte[payloadLen];
+            Array.Copy(bytes, headerLen, payload, 0, payloadLen);
 
-            networkedObject.OnReceive(dst, src, subBytes);
+            networkedObject.OnReceive(to, from, payload);
         }
 
-        public void SendRTC(int to, byte[] bytes)
-        {
-            m_rtcChannel?.Send(to, bytes);
-        }
+        public void SendRTC(int to, byte[] bytes) => m_rtcChannel?.Send(to, bytes);
 
-        public void SendRTC(byte[] bytes)
-        {
-            SendRTC(userAdapter.id, bytes);
-        }
+        public void SendRTC(byte[] bytes) => SendRTC(userAdapter.id, bytes);
 
-        public void SendTextRTC(int to, string text)
-        {
-            m_rtcChannel?.SendText(to, text);
-        }
+        public void SendTextRTC(int to, string text) => m_rtcChannel?.SendText(to, text);
 
-        public void SendTextRTC(string text)
-        {
-            SendTextRTC(userAdapter.id, text);
-        }
+        public void SendTextRTC(string text) => SendTextRTC(userAdapter.id, text);
 
         public void CloseRTCChannel()
         {

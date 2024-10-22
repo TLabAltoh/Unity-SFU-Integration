@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 namespace TLab.SFU.Network
@@ -19,7 +20,7 @@ namespace TLab.SFU.Network
         }
 
         [System.Serializable]
-        public class StoreAction
+        public struct StoreAction
         {
             [System.Serializable]
             public enum Action
@@ -32,7 +33,7 @@ namespace TLab.SFU.Network
             public Action action;
             public int elemId;
             public int userId;
-            public string publicId;
+            public Address32 publicId;
             public WebTransform transform;
         }
 
@@ -44,44 +45,29 @@ namespace TLab.SFU.Network
 
         public Hashtable registry => m_registry;
 
-        protected void Register(string publicId, GameObject instance)
+        protected void Register(Address32 publicId, GameObject instance)
         {
             if (!m_registry.ContainsKey(publicId))
-            {
-                m_registry[publicId] = instance;
-            }
+                m_registry.Add(publicId, instance);
         }
 
-        protected void UnRegister(string publicId)
+        protected void UnRegister(Address32 publicId)
         {
             if (m_registry.ContainsKey(publicId))
-            {
                 m_registry.Remove(publicId);
-            }
         }
 
         public void ClearRegistry()
         {
-            var gameobjects = new List<GameObject>();
+            var gameObjects = m_registry.Values.Cast<GameObject>();
 
-            foreach (DictionaryEntry entry in m_registry)
-            {
-                var controller = entry.Value as GameObject;
-                gameobjects.Add(controller.gameObject);
-            }
-
-            for (int i = 0; i < gameobjects.Count; i++)
-            {
-                Destroy(gameobjects[i]);
-            }
+            foreach (var gameObject in gameObjects)
+                Destroy(gameObject);
 
             m_registry.Clear();
         }
 
-        public GameObject GetByPublicId(int publicId)
-        {
-            return m_registry[publicId] as GameObject;
-        }
+        public GameObject GetByPublicId(Address32 publicId) => m_registry[publicId] as GameObject;
 
         #endregion REGISTORY
 
@@ -89,7 +75,11 @@ namespace TLab.SFU.Network
 
         [SerializeField] private List<StoreElement> m_store = new List<StoreElement>();
 
+        private int m_pktId;
+
         public string storeName => m_storeName;
+
+        public int pktId => m_pktId;
 
         public bool mchCallbackRegisted = false;
 
@@ -114,7 +104,7 @@ namespace TLab.SFU.Network
             return StoreAction.Action.NONE;
         }
 
-        public StoreAction GenerateAction(StoreAction.Action action, int elemId, int userId, string publicId, WebTransform @transform)
+        public StoreAction GenerateAction(StoreAction.Action action, int elemId, int userId, Address32 publicId, WebTransform @transform)
         {
             return new StoreAction
             {
@@ -125,7 +115,7 @@ namespace TLab.SFU.Network
             };
         }
 
-        public bool RPCInstantiateByElementId(int elemId, int userId, string publicId, WebTransform @transform, out GameObject instance)
+        public bool RPCInstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         {
             var result = InstantiateByElementId(elemId, userId, publicId, @transform, out instance);
 
@@ -137,7 +127,7 @@ namespace TLab.SFU.Network
             return result;
         }
 
-        public bool RPCInstantiateByElementName(string elemName, int userId, string publicId, WebTransform @transform, out GameObject instance)
+        public bool RPCInstantiateByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         {
             var result = InstantiateByElementName(elemName, userId, publicId, @transform, out instance);
 
@@ -149,7 +139,7 @@ namespace TLab.SFU.Network
             return result;
         }
 
-        public bool InstantiateByElementId(int elemId, int userId, string publicId, WebTransform @transform, out GameObject instance)
+        public bool InstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         {
             GetByElementId(elemId, userId, out var prefab);
 
@@ -165,7 +155,7 @@ namespace TLab.SFU.Network
             return true;
         }
 
-        public bool InstantiateByElementName(string elemName, int userId, string publicId, WebTransform @transform, out GameObject instance)
+        public bool InstantiateByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         {
             GetByElementName(elemName, userId, out var prefab);
 
@@ -228,7 +218,9 @@ namespace TLab.SFU.Network
         {
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(m_storeName, (from, obj) =>
+                m_pktId = m_storeName.GetHashCode();
+
+                SyncClient.RegisterMasterChannelCallback(m_pktId, (from, bytes) =>
                 {
                     // TODO:
 

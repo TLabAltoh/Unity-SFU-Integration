@@ -1,7 +1,8 @@
-using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
+using System.Text;
 
 namespace TLab.SFU.Network
 {
@@ -12,36 +13,24 @@ namespace TLab.SFU.Network
 
         private static Hashtable m_registry = new Hashtable();
 
-        protected static void Register(string id, SyncTransformer syncTransformer)
+        protected static void Register(Address64 id, SyncTransformer syncTransformer)
         {
             if (!m_registry.ContainsKey(id))
-            {
-                m_registry[id] = syncTransformer;
-            }
+                m_registry.Add(id, syncTransformer);
         }
 
-        protected static new void UnRegister(string id)
+        protected static new void UnRegister(Address64 id)
         {
             if (m_registry.ContainsKey(id))
-            {
                 m_registry.Remove(id);
-            }
         }
 
         public static new void ClearRegistry()
         {
-            var gameobjects = new List<GameObject>();
+            var gameObjects = m_registry.Values.Cast<SyncTransformer>().Select((t) => t.gameObject);
 
-            foreach (DictionaryEntry entry in m_registry)
-            {
-                var syncTransformer = entry.Value as SyncTransformer;
-                gameobjects.Add(syncTransformer.gameObject);
-            }
-
-            for (int i = 0; i < gameobjects.Count; i++)
-            {
-                Destroy(gameobjects[i]);
-            }
+            foreach (var gameObject in gameObjects)
+                Destroy(gameObject);
 
             m_registry.Clear();
         }
@@ -49,31 +38,28 @@ namespace TLab.SFU.Network
         public static new void Destroy(GameObject go)
         {
             if (go.GetComponent<SyncTransformer>() != null)
-            {
                 Destroy(go);
-            }
         }
 
-        public static new void Destroy(string id)
+        public static new void Destroy(Address64 id)
         {
             var go = GetById(id).gameObject;
             if (go != null)
-            {
                 Destroy(go);
-            }
         }
 
-        public static new SyncTransformer GetById(string id) => m_registry[id] as SyncTransformer;
+        public static new SyncTransformer GetById(Address64 id) => m_registry[id] as SyncTransformer;
 
         #endregion REGISTRY
 
         #region STRUCT
 
+        [System.Serializable]
         public struct RigidbodyState
         {
-            private bool m_used;
+            [SerializeField] private bool m_used;
 
-            private bool m_gravity;
+            [SerializeField] private bool m_gravity;
 
             public bool used => m_used;
 
@@ -87,14 +73,13 @@ namespace TLab.SFU.Network
         }
 
         [System.Serializable]
-        public class WebTransformerState
+        public struct WebTransformerState
         {
-            public string id;
-            public bool rigidbody;
-            public bool gravity;
+            public Address64 id;
             public WebVector3 position;
             public WebVector4 rotation;
             public WebVector3 scale;
+            public RigidbodyState rb;
         }
 
         #endregion STRUCT
@@ -102,10 +87,26 @@ namespace TLab.SFU.Network
         #region MESSAGE_TYPE
 
         [System.Serializable]
-        public class MCH_SyncTransform
+        public struct MCH_SyncTransform : Packetable
         {
-            public string networkedId;
+            public static int pktId;
+
+            static MCH_SyncTransform() => pktId = nameof(MCH_SyncTransform).GetHashCode();
+
+            public Address64 networkedId;
             public WebTransformerState transformState;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, SyncClient.HEADER_SIZE, bytes.Length - SyncClient.HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
         #endregion MESSAGE_TYPE
@@ -242,22 +243,21 @@ namespace TLab.SFU.Network
             m_syncFromOutside = true;
         }
 
-        public override void OnReceive(string dst, string src, byte[] bytes)
+        public override void OnReceive(int to, int from, byte[] payload)
         {
             float[] rtcTransform = new float[10];
 
             unsafe
             {
-                fixed (byte* subBytesPtr = bytes)  // transform
-                fixed (float* transformPtr = &(rtcTransform[0]))
+                fixed (byte* payloadPtr = payload)
+                fixed (float* rtcTransformPtr = &(rtcTransform[0]))
                 {
-                    LongCopy(subBytesPtr + 2, (byte*)transformPtr, rtcTransform.Length * sizeof(float));
+                    UnsafeUtility.LongCopy(payloadPtr + 2, (byte*)rtcTransformPtr, rtcTransform.Length * sizeof(float));
 
                     var transformerState = new WebTransformerState
                     {
                         id = m_networkedId.id,
-                        gravity = *((bool*)&(subBytesPtr[0])),
-                        rigidbody = *((bool*)&(subBytesPtr[1])),
+                        rb = new RigidbodyState(*((bool*)&(payloadPtr[0])), *((bool*)&(payloadPtr[1]))),
                         position = new WebVector3 { x = rtcTransform[0], y = rtcTransform[1], z = rtcTransform[2] },
                         rotation = new WebVector4 { x = rtcTransform[3], y = rtcTransform[4], z = rtcTransform[5], w = rtcTransform[6] },
                         scale = new WebVector3 { x = rtcTransform[7], y = rtcTransform[8], z = rtcTransform[9] },
@@ -277,7 +277,7 @@ namespace TLab.SFU.Network
 
             CashRbTransform();
 
-            float[] rtcTransform = new float[10];
+            var rtcTransform = new float[10];
 
             rtcTransform[0] = transform.position.x;
             rtcTransform[1] = transform.position.y;
@@ -292,29 +292,24 @@ namespace TLab.SFU.Network
             rtcTransform[8] = transform.localScale.y;
             rtcTransform[9] = transform.localScale.z;
 
-            byte[] idBytes = System.Text.Encoding.UTF8.GetBytes(m_networkedId.id);
+            int headerLen = 8;  // Address64
+            int payloadLen = 2 + rtcTransform.Length * sizeof(float);  // rbState.used (1) + rbState.gravity (1) + transform ((3 + 4 + 3) * 4)
 
-            int headerBytesLen = 1 + idBytes.Length; // idLength (1) + id (...)
-            int subBytesLen = 2 + rtcTransform.Length * sizeof(float);  // rbUsed (1) + rbGravity (1) + transform ((3 + 4 + 3) * 4)
-
-            byte[] packet = new byte[headerBytesLen + subBytesLen];
+            var packet = new byte[headerLen + payloadLen];
 
             unsafe
             {
-                fixed (byte* packetPtr = packet, idBytesPtr = idBytes)
+                fixed (byte* packetPtr = packet)
                 {
-                    packetPtr[0] = (byte)idBytes.Length;
-                    LongCopy(idBytesPtr, packetPtr + 1, idBytes.Length);
+                    m_networkedId.id.CopyTo(packetPtr);
 
                     bool rbUsed = m_rbState.used, rbGravity = m_rbState.gravity;
 
-                    packetPtr[headerBytesLen + 0] = (byte)(&rbUsed);
-                    packetPtr[headerBytesLen + 1] = (byte)(&rbGravity);
+                    packetPtr[headerLen + 0] = (byte)(&rbUsed);
+                    packetPtr[headerLen + 1] = (byte)(&rbGravity);
 
                     fixed (float* transformPtr = &(rtcTransform[0]))
-                    {
-                        LongCopy((byte*)transformPtr, packetPtr + headerBytesLen + 2, subBytesLen - 2);
-                    }
+                        UnsafeUtility.LongCopy((byte*)transformPtr, packetPtr + headerLen + 2, payloadLen - 2);
                 }
             }
 
@@ -336,8 +331,7 @@ namespace TLab.SFU.Network
             {
                 id = m_networkedId.id,
 
-                rigidbody = m_rbState.used,
-                gravity = m_rbState.gravity,
+                rb = m_rbState,
 
                 position = new WebVector3
                 {
@@ -360,15 +354,13 @@ namespace TLab.SFU.Network
                 }
             };
 
-            var message = JsonUtility.ToJson(transformerState);
-
-            var obj = new MasterChannelJson
+            var @object = new MCH_SyncTransform
             {
-                messageType = nameof(WebTransformerState),
-                message = message,
+                networkedId = m_networkedId.id,
+                transformState = transformerState,
             };
 
-            SyncClient.instance.MasterChannelSend(obj);
+            SyncClient.instance.MasterChannelSend(@object.Marshall());
 
             m_syncFromOutside = false;
         }
@@ -414,9 +406,9 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override void Init(string id)
+        public override void Init(Address32 publicId)
         {
-            base.Init(id);
+            base.Init(publicId);
 
             InitRigidbody();
 
@@ -438,11 +430,11 @@ namespace TLab.SFU.Network
 
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_SyncTransform), (from, obj) =>
+                SyncClient.RegisterMasterChannelCallback(MCH_SyncTransform.pktId, (from, bytes) =>
                 {
-                    var json = JsonUtility.FromJson<MCH_SyncTransform>(obj.message);
-
-                    GetById(json.networkedId)?.SyncTransformFromOutside(json.transformState);
+                    var @object = new MCH_SyncTransform();
+                    @object.UnMarshall(bytes);
+                    GetById(@object.networkedId)?.SyncTransformFromOutside(@object.transformState);
                 });
                 mchCallbackRegisted = true;
             }

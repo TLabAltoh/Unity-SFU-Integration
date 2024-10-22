@@ -24,16 +24,16 @@ namespace TLab.SFU.Sample
                 if (m_useAudio && m_adapter.user.id == 0)
                 {
                     StartAudio();
-                    m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnReceive, new RTCDataChannelInit(), null, m_audioSource, null);
+                    m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnReceive, OnConnect, OnDisconnect, new RTCDataChannelInit(), null, m_audioSource, null);
                 }
                 else
                 {
-                    m_client = WebRTCClient.Whep(this, m_adapter, STREAM, OnReceive, new RTCDataChannelInit(), false, m_useAudio, OnAddTrack);
+                    m_client = WebRTCClient.Whep(this, m_adapter, STREAM, OnReceive, OnConnect, OnDisconnect, new RTCDataChannelInit(), false, m_useAudio, OnAddTrack);
                 }
             }
             else
             {
-                m_client = WebSocketClient.Open(this, m_adapter, STREAM, OnReceive);
+                m_client = WebSocketClient.Open(this, m_adapter, STREAM, OnReceive, OnConnect, OnDisconnect);
             }
         }
 
@@ -52,25 +52,17 @@ namespace TLab.SFU.Sample
             m_audioSource.Play();
         }
 
-        public override void Close()
-        {
-            m_client?.HangUp();
-        }
+        public override void Close() => m_client?.HangUp();
 
-        public override void SendText(string message)
-        {
-            m_client.Send(m_adapter.user.id, Encoding.UTF8.GetBytes(message));
-        }
+        public override void SendText(string message) => m_client.Send(m_adapter.user.id, Encoding.UTF8.GetBytes(message));
 
-        public override void Send(byte[] bytes)
-        {
-            m_client.Send(m_adapter.user.id, bytes);
-        }
+        public override void Send(byte[] bytes) => m_client.Send(m_adapter.user.id, bytes);
 
-        public void OnReceive(byte[] bytes)
-        {
-            OnMessage(Encoding.UTF8.GetString(bytes, 8, bytes.Length - 8));
-        }
+        public void OnReceive(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes));
+
+        public void OnConnect(int from) => Debug.Log(THIS_NAME + "Connect: " + from);
+
+        public void OnDisconnect(int from) => Debug.Log(THIS_NAME + "Disconnect: " + from);
 
         protected override void Start()
         {

@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace TLab.SFU.Network
@@ -13,40 +13,16 @@ namespace TLab.SFU.Network
 
         public static Hashtable registry => m_registry;
 
-        protected static void Register(string id, SimpleTracker tracker)
-        {
-            if (!m_registry.ContainsKey(id))
-            {
-                m_registry[id] = tracker;
+        protected static void Register(Address64 id, SimpleTracker tracker) => m_registry.Add(id, tracker);
 
-                Debug.Log(REGISTRY + "simple tracker registered in the registry: " + id);
-            }
-        }
-
-        protected static new void UnRegister(string id)
-        {
-            if (m_registry.ContainsKey(id))
-            {
-                m_registry.Remove(id);
-
-                Debug.Log(REGISTRY + "deregistered simple tracker from the registry.: " + id);
-            }
-        }
+        protected static new void UnRegister(Address64 id) => m_registry.Remove(id);
 
         public static new void ClearRegistry()
         {
-            var gameobjects = new List<GameObject>();
+            var gameObjects = m_registry.Values.Cast<SimpleTracker>().Select((t) => t.gameObject);
 
-            foreach (DictionaryEntry entry in m_registry)
-            {
-                var tracker = entry.Value as SimpleTracker;
-                gameobjects.Add(tracker.gameObject);
-            }
-
-            for (int i = 0; i < gameobjects.Count; i++)
-            {
-                Destroy(gameobjects[i]);
-            }
+            foreach (var gameObject in gameObjects)
+                Destroy(gameObject);
 
             m_registry.Clear();
         }
@@ -59,17 +35,16 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static void ClearObject(string id)
+        public static void ClearObject(Address64 id)
         {
             var go = GetById(id).gameObject;
-
             if (go != null)
             {
                 ClearObject(go);
             }
         }
 
-        public static new SimpleTracker GetById(string id) => m_registry[id] as SimpleTracker;
+        public static new SimpleTracker GetById(Address64 id) => m_registry[id] as SimpleTracker;
 
         #endregion REGISTRY
 

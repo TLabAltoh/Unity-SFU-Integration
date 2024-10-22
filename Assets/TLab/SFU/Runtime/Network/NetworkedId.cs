@@ -4,26 +4,33 @@ namespace TLab.SFU.Network
 {
     public class NetworkedId : MonoBehaviour
     {
-        protected string m_id = "";
+        protected Address32 m_privateId;
 
-        protected string m_publicId = "";
+        protected Address32 m_publicId;
 
-        public string id => m_publicId + m_id;
+        protected Address64 m_id;
 
-        public string publicId => m_publicId;
+        public Address32 privateId => m_privateId;
 
-        public virtual void SetPublicId(string id)
+        public Address32 publicId => m_publicId;
+
+        public Address64 id => m_id;
+
+        public virtual void SetPublicId(Address32 publicId)
         {
-            m_id = id;
+            m_publicId.Copy(publicId);
+            m_id.CopyUpper32(publicId);
         }
 
 #if UNITY_EDITOR
         public virtual void CreateHashID()
         {
             var r = new System.Random();
-            var v = r.Next();
+            var v = new byte[4];
 
-            m_id = v.GetHashCode().ToString();
+            r.NextBytes(v);
+            m_privateId.Update(v[0], v[1], v[2], v[3]);
+            m_id.UpdateLower32(v[0], v[1], v[2], v[3]);
         }
 #endif
     }

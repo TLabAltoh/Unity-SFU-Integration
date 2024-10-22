@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace TLab.SFU.Network
@@ -11,29 +12,29 @@ namespace TLab.SFU.Network
 
         private static Hashtable m_registry = new Hashtable();
 
-        public static void Register(string id, SyncAnimator syncAnimator) => m_registry[id] = syncAnimator;
+        public static void Register(Address64 id, SyncAnimator syncAnimator)
+        {
+            if (!m_registry.ContainsKey(id))
+                m_registry.Add(id, syncAnimator);
+        }
 
-        public static new void UnRegister(string id) => m_registry.Remove(id);
+        public static new void UnRegister(Address64 id)
+        {
+            if (m_registry.ContainsKey(id))
+                m_registry.Remove(id);
+        }
 
         public static new void ClearRegistry()
         {
-            var gameobjects = new List<GameObject>();
+            var gameObjects = m_registry.Values.Cast<SyncAnimator>().Select((t) => t.gameObject);
 
-            foreach (DictionaryEntry entry in m_registry)
-            {
-                var grabbable = entry.Value as SyncAnimator;
-                gameobjects.Add(grabbable.gameObject);
-            }
-
-            for (int i = 0; i < gameobjects.Count; i++)
-            {
-                Destroy(gameobjects[i]);
-            }
+            foreach (var gameObject in gameObjects)
+                Destroy(gameObject);
 
             m_registry.Clear();
         }
 
-        public static new SyncAnimator GetById(string id) => m_registry[id] as SyncAnimator;
+        public static new SyncAnimator GetById(Address64 id) => m_registry[id] as SyncAnimator;
 
         #endregion REGISTRY
 
@@ -48,9 +49,9 @@ namespace TLab.SFU.Network
         }
 
         [System.Serializable]
-        public class WebAnimState
+        public struct WebAnimState
         {
-            public string id;
+            public Address64 id;
             public string parameter;
             public int type;
 
@@ -73,10 +74,26 @@ namespace TLab.SFU.Network
         #region MESSAGE_TYPE
 
         [System.Serializable]
-        public class MCH_SyncAnim
+        public struct MCH_SyncAnim : Packetable
         {
-            public string networkedId;
+            public static int pktId;
+
+            static MCH_SyncAnim() => pktId = nameof(MCH_SyncAnim).GetHashCode();
+
+            public Address64 networkedId;
             public WebAnimState animState;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, SyncClient.HEADER_SIZE, bytes.Length - SyncClient.HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
         #endregion MESSAGE_TYPE
@@ -95,14 +112,6 @@ namespace TLab.SFU.Network
             {
                 id = m_networkedId.id,
                 parameter = parameter.name
-            };
-
-            var message = JsonUtility.ToJson(animState);
-
-            var obj = new MasterChannelJson
-            {
-                messageType = nameof(WebAnimState),
-                message = message,
             };
 
             switch (parameter.type)
@@ -125,7 +134,13 @@ namespace TLab.SFU.Network
                     break;
             }
 
-            SyncClient.instance.MasterChannelSend(obj);
+            var @object = new MCH_SyncAnim
+            {
+                networkedId = m_networkedId.id,
+                animState = animState,
+            };
+
+            SyncClient.instance.MasterChannelSend(@object.Marshall());
 
             m_syncFromOutside = false;
         }
@@ -220,7 +235,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override void Init(string id)
+        public override void Init(Address32 id)
         {
             base.Init(id);
 
@@ -242,11 +257,11 @@ namespace TLab.SFU.Network
         {
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_SyncAnim), (from, obj) =>
+                SyncClient.RegisterMasterChannelCallback(MCH_SyncAnim.pktId, (from, bytes) =>
                 {
-                    var json = JsonUtility.FromJson<MCH_SyncAnim>(obj.message);
-
-                    GetById(json.networkedId)?.SyncAnimFromOutside(json.animState);
+                    var @object = new MCH_SyncAnim();
+                    @object.UnMarshall(bytes);
+                    GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
                 });
                 mchCallbackRegisted = true;
             }

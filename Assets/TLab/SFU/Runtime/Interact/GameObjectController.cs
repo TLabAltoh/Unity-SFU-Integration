@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEditor;
 using TLab.SFU.Network;
@@ -67,44 +69,29 @@ namespace TLab.SFU.Interact
 
         public static Hashtable registry => m_registry;
 
-        protected static void Register(string id, GameObjectController controller)
+        protected static void Register(Address64 id, GameObjectController controller)
         {
             if (!m_registry.ContainsKey(id))
-            {
-                m_registry[id] = controller;
-            }
+                m_registry.Add(id, controller);
         }
 
-        protected static new void UnRegister(string id)
+        protected static new void UnRegister(Address64 id)
         {
             if (m_registry.ContainsKey(id))
-            {
                 m_registry.Remove(id);
-            }
         }
 
         public static new void ClearRegistry()
         {
-            var gameobjects = new List<GameObject>();
+            var gameObjects = m_registry.Values.Cast<GameObjectController>().Select((t) => t.gameObject);
 
-            foreach (DictionaryEntry entry in m_registry)
-            {
-                var controller = entry.Value as GameObjectController;
-                gameobjects.Add(controller.gameObject);
-            }
-
-            for (int i = 0; i < gameobjects.Count; i++)
-            {
-                Destroy(gameobjects[i]);
-            }
+            foreach (var gameObject in gameObjects)
+                Destroy(gameObject);
 
             m_registry.Clear();
         }
 
-        public static new GameObjectController GetById(string id)
-        {
-            return m_registry[id] as GameObjectController;
-        }
+        public static new GameObjectController GetById(Address64 id) => m_registry[id] as GameObjectController;
 
         #endregion REGISTRY
 
@@ -196,9 +183,9 @@ namespace TLab.SFU.Interact
             // TODO:
         }
 
-        public override void Init(string id)
+        public override void Init(Address32 publicId)
         {
-            base.Init(id);
+            base.Init(publicId);
 
             Register(m_networkedId.id, this);
         }
@@ -213,15 +200,31 @@ namespace TLab.SFU.Interact
         #region MESSAGE_TYPE
 
         [System.Serializable]
-        public class MCH_DivideGrabber
+        public struct MCH_DivideGrabber : Packetable
         {
-            public bool active = false;
-            public string networkedId;
+            public static int pktId;
+
+            static MCH_DivideGrabber() => pktId = nameof(MCH_DivideGrabber).GetHashCode();
+
+            public Address64 networkedId;
             public int grabberId;
+            public bool active;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, SyncClient.HEADER_SIZE, bytes.Length - SyncClient.HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
         [System.Serializable]
-        public class MCH_GrabbLock
+        public struct MCH_GrabbLock : Packetable
         {
             [System.Serializable]
             public enum Action
@@ -231,9 +234,25 @@ namespace TLab.SFU.Interact
                 NONE
             };
 
-            public Action action = Action.NONE;
-            public string networkedId;
+            public static int pktId;
+
+            static MCH_GrabbLock() => pktId = nameof(MCH_GrabbLock).GetHashCode();
+
+            public Address64 networkedId;
             public int grabberId;
+            public Action action;
+
+            public byte[] Marshall()
+            {
+                var json = JsonUtility.ToJson(this);
+                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            }
+
+            public void UnMarshall(byte[] bytes)
+            {
+                var json = Encoding.UTF8.GetString(bytes, SyncClient.HEADER_SIZE, bytes.Length - SyncClient.HEADER_SIZE);
+                JsonUtility.FromJsonOverwrite(json, this);
+            }
         }
 
         #endregion MESSAGE_TYPE
@@ -257,14 +276,14 @@ namespace TLab.SFU.Interact
 
             SyncTransformViaWebSocket();
 
-            var obj = new MCH_GrabbLock
+            var @object = new MCH_GrabbLock
             {
-                action = MCH_GrabbLock.Action.GRAB_LOCK,
-                grabberId = m_grabState.grabberId,
                 networkedId = m_networkedId.id,
+                grabberId = m_grabState.grabberId,
+                action = MCH_GrabbLock.Action.GRAB_LOCK,
             };
 
-            SyncClient.instance.MasterChannelSend(nameof(MCH_GrabbLock), JsonUtility.ToJson(obj));
+            SyncClient.instance.MasterChannelSend(@object.Marshall());
         }
 
         public void GrabbLock(int index)
@@ -308,13 +327,14 @@ namespace TLab.SFU.Interact
 
             if (self)
             {
-                var obj = new MCH_GrabbLock
+                var @object = new MCH_GrabbLock
                 {
-                    action = MCH_GrabbLock.Action.FORCE_RELEASE,
                     networkedId = m_networkedId.id,
+                    grabberId = m_grabState.grabberId,
+                    action = MCH_GrabbLock.Action.FORCE_RELEASE,
                 };
 
-                SyncClient.instance.MasterChannelSend(nameof(MCH_GrabbLock), JsonUtility.ToJson(obj));
+                SyncClient.instance.MasterChannelSend(@object.Marshall());
             }
         }
 
@@ -545,28 +565,30 @@ namespace TLab.SFU.Interact
 
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_GrabbLock), (from, obj) =>
+                SyncClient.RegisterMasterChannelCallback(MCH_GrabbLock.pktId, (from, bytes) =>
                 {
-                    var json = JsonUtility.FromJson<MCH_GrabbLock>(obj.message);
+                    var @object = new MCH_GrabbLock();
+                    @object.UnMarshall(bytes);
 
-                    switch (json.action)
+                    switch (@object.action)
                     {
                         case MCH_GrabbLock.Action.GRAB_LOCK:
-                            GetById(json.networkedId)?.GrabbLock(json.grabberId);
+                            GetById(@object.networkedId)?.GrabbLock(@object.grabberId);
                             break;
                         case MCH_GrabbLock.Action.FORCE_RELEASE:
-                            GetById(json.networkedId)?.ForceRelease(false);
+                            GetById(@object.networkedId)?.ForceRelease(false);
                             break;
                         default:
                             break;
                     }
                 });
 
-                SyncClient.RegisterMasterChannelCallback(nameof(MCH_DivideGrabber), (from, obj) =>
+                SyncClient.RegisterMasterChannelCallback(MCH_DivideGrabber.pktId, (from, bytes) =>
                 {
-                    var json = JsonUtility.FromJson<MCH_DivideGrabber>(obj.message);
+                    var @object = new MCH_DivideGrabber();
+                    @object.UnMarshall(bytes);
 
-                    GetById(json.networkedId)?.Divide(json.active);
+                    GetById(@object.networkedId)?.Divide(@object.active);
                 });
 
                 mchCallbackRegisted = true;

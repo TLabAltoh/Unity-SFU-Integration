@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace TLab.SFU
 {
     public static class UnsafeUtility
@@ -44,5 +40,18 @@ namespace TLab.SFU
                 *dst = *src;
             }
         }
+
+        public unsafe static byte[] Combine(byte[] a, byte[] b)
+        {
+            var c = new byte[a.Length + b.Length];
+            fixed (byte* aPtr = a, bPtr = b, cPtr = c)
+            {
+                LongCopy(aPtr, cPtr, a.Length);
+                LongCopy(bPtr, cPtr + a.Length, b.Length);
+            }
+            return c;
+        }
+
+        public unsafe static byte[] Combine(int a, byte[] b) => Combine(System.BitConverter.GetBytes(a), b);
     }
 }

@@ -75,7 +75,7 @@ namespace TLab.SFU.Network
             }
             else
             {
-                info = null;
+                info = new PrefabStore.StoreAction();
                 return false;
             }
         }

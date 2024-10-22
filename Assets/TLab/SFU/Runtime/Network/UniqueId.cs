@@ -4,9 +4,9 @@ namespace TLab.SFU.Network
 {
     public static class UniqueId
     {
-        public static Queue<string> m_avails = new Queue<string>();
+        public static Queue<Address32> m_avails = new Queue<Address32>();
 
-        public static void UpdateAvails(IEnumerable<string> avails)
+        public static void UpdateAvails(IEnumerable<Address32> avails)
         {
             foreach (var available in avails)
             {
@@ -14,7 +14,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static void UpdateAvails(string[] avails)
+        public static void UpdateAvails(Address32[] avails)
         {
             foreach (var available in avails)
             {
@@ -22,7 +22,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static bool DequeueAvail(out string available)
+        public static bool DequeueAvail(out Address32 available)
         {
             if (m_avails.Count > 0)
             {
@@ -31,27 +31,26 @@ namespace TLab.SFU.Network
                 return true;
             }
 
-            available = "";
+            available = new Address32();
 
             return false;
         }
 
-        public static string Generate()
+        public static Address32 Generate()
         {
             var r = new System.Random();
-            var v = r.Next();
+            var v = new byte[4];
 
-            return v.GetHashCode().ToString();
+            r.NextBytes(v);
+            return new Address32(v[0], v[1], v[2], v[3]);
         }
 
-        public static string[] Generate(int length)
+        public static Address32[] Generate(int length)
         {
-            var ids = new string[length];
+            var ids = new Address32[length];
             for (int i = 0; i < ids.Length; i++)
-            {
                 ids[i] = Generate();
-            }
-            return new string[0];
+            return new Address32[0];
         }
     }
 }

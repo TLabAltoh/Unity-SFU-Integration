@@ -1,6 +1,6 @@
+using System.Threading.Tasks;
 using System.Collections;
 using System;
-using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
 using UnityEngine;
@@ -31,7 +31,7 @@ namespace TLab.SFU.Network
 
         #endregion STRUCT
 
-        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive) : base(mono, adapter, stream, onReceive)
+        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect) : base(mono, adapter, stream, onReceive, onConnect, onDisconnect)
         {
             var base64 = "";
 
@@ -48,26 +48,26 @@ namespace TLab.SFU.Network
             };
             m_socket.OnError += (e) => Debug.Log(THIS_NAME + "Error! " + e);
             m_socket.OnClose += (e) => Debug.Log(THIS_NAME + "Connection closed!");
-            m_socket.OnMessage += (bytes) => m_onReceive.Invoke(bytes);
+            m_socket.OnMessage += (bytes) => OnPacket(bytes);
             _ = m_socket.Connect();
         }
 
-        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<byte[]> onReceive)
-            : this(mono, adapter, stream, CreateOnReceive(onReceive))
+        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onReceive, UnityAction<int> onConnect, UnityAction<int> onDisconnect)
+            : this(mono, adapter, stream, CreateEvent(onReceive), CreateEvent(onConnect), CreateEvent(onDisconnect))
         {
 
         }
 
-        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<byte[]> onReceive)
+        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect)
         {
-            var client = new WebSocketClient(mono, adapter, stream, onReceive);
+            var client = new WebSocketClient(mono, adapter, stream, onReceive, onConnect, onDisconnect);
 
             return client;
         }
 
-        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<byte[]> onReceive)
+        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onReceive, UnityAction<int> onConnect, UnityAction<int> onDisconnect)
         {
-            return Open(mono, adapter, stream, CreateOnReceive(onReceive));
+            return Open(mono, adapter, stream, CreateEvent(onReceive), CreateEvent(onConnect), CreateEvent(onDisconnect));
         }
 
         private void CancelReceiveTask()
