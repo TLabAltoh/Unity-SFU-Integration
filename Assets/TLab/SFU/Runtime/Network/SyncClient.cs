@@ -35,6 +35,8 @@ namespace TLab.SFU.Network
 
         public const int HEADER_SIZE = 4;   // pktId (4)
 
+        public const int PAYLOAD_OFFSET = SfuClient.PACKET_HEADER_SIZE + HEADER_SIZE;
+
         public static Adapter adapter
         {
             get
@@ -207,7 +209,7 @@ namespace TLab.SFU.Network
 
             public void UnMarshall(byte[] bytes)
             {
-                var json = Encoding.UTF8.GetString(bytes, HEADER_SIZE, bytes.Length - HEADER_SIZE);
+                var json = Encoding.UTF8.GetString(bytes, PAYLOAD_OFFSET, bytes.Length - PAYLOAD_OFFSET);
                 JsonUtility.FromJsonOverwrite(json, this);
             }
         }
@@ -229,7 +231,7 @@ namespace TLab.SFU.Network
 
             public void UnMarshall(byte[] bytes)
             {
-                var json = Encoding.UTF8.GetString(bytes, HEADER_SIZE, bytes.Length - HEADER_SIZE);
+                var json = Encoding.UTF8.GetString(bytes, PAYLOAD_OFFSET, bytes.Length - PAYLOAD_OFFSET);
                 JsonUtility.FromJsonOverwrite(json, this);
             }
         }
@@ -252,7 +254,7 @@ namespace TLab.SFU.Network
 
             public void UnMarshall(byte[] bytes)
             {
-                var json = Encoding.UTF8.GetString(bytes, HEADER_SIZE, bytes.Length - HEADER_SIZE);
+                var json = Encoding.UTF8.GetString(bytes, PAYLOAD_OFFSET, bytes.Length - PAYLOAD_OFFSET);
                 JsonUtility.FromJsonOverwrite(json, this);
             }
         }

@@ -11,7 +11,7 @@ namespace TLab.SFU.Sample
         private SfuClient m_client;
 
         private bool m_useWebRTC = true;
-        private bool m_useAudio = true;
+        private bool m_useAudio = false;
 
         private AudioSource m_audioSource;
 
@@ -58,7 +58,7 @@ namespace TLab.SFU.Sample
 
         public override void Send(byte[] bytes) => m_client.Send(m_adapter.user.id, bytes);
 
-        public void OnReceive(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes));
+        public void OnReceive(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes, SfuClient.PACKET_HEADER_SIZE, bytes.Length - SfuClient.PACKET_HEADER_SIZE));
 
         public void OnConnect(int from) => Debug.Log(THIS_NAME + "Connect: " + from);
 

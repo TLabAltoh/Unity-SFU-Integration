@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Collections;
-using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
@@ -8,6 +7,7 @@ using Unity.WebRTC;
 using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
+using static System.BitConverter;
 
 namespace TLab.SFU.Network
 {
@@ -243,8 +243,6 @@ namespace TLab.SFU.Network
                     Debug.Log(THIS_NAME + "IceConnectionState: Completed");
                     break;
                 case RTCIceConnectionState.Connected:
-                    CancelSignalingTask();
-                    Debug.Log(THIS_NAME + "IceConnectionState: Connected");
                     break;
                 case RTCIceConnectionState.Disconnected:
                     Debug.Log(THIS_NAME + "IceConnectionState: Disconnected");
@@ -373,14 +371,14 @@ namespace TLab.SFU.Network
             {
                 foreach (var transceiver in m_pc.GetTransceivers())
                 {
-                    if (transceiver.Sender != null)
+                    if (transceiver.Sender != null && transceiver.Sender.Track != null)
                     {
                         transceiver.Sender.Track.Stop();
                         m_sMediaStream?.RemoveTrack(transceiver.Sender.Track);
                         transceiver.Sender.Track.Dispose();
                     }
 
-                    if (transceiver.Receiver != null)
+                    if (transceiver.Receiver != null && transceiver.Receiver.Track != null)
                     {
                         transceiver.Receiver.Track.Stop();
                         m_rMediaStream?.RemoveTrack(transceiver.Receiver.Track);
@@ -448,7 +446,11 @@ namespace TLab.SFU.Network
             m_signalingSocket = new WebSocket(url);
             m_signalingSocket.OnOpen += () => Debug.Log("[Signaling] Connection open!");
             m_signalingSocket.OnError += (e) => Debug.Log("[Signaling] Error! " + e);
-            m_signalingSocket.OnClose += (e) => Debug.Log("[Signaling] Connection closed!");
+            m_signalingSocket.OnClose += (e) =>
+            {
+                CancelSignalingTask();
+                Debug.Log("[Signaling] Connection closed!");
+            };
             m_signalingSocket.OnMessage += (bytes) =>
             {
                 var json = Encoding.UTF8.GetString(bytes);
@@ -506,7 +508,7 @@ namespace TLab.SFU.Network
                     var candidate = m_candidates.Dequeue();
                     var signaling = new Signaling(true, "", "", candidate.Candidate);
                     var json = JsonUtility.ToJson(signaling);
-                    _ = m_signalingSocket.SendText(json);
+                    _ = m_signalingSocket?.SendText(json);
 
                     Debug.Log("[Signaling] Send candidate: " + candidate.Candidate);
                     yield return new WaitForSeconds(0.5f);
@@ -553,7 +555,7 @@ namespace TLab.SFU.Network
         {
             if ((m_dc != null) && (m_dc.ReadyState == RTCDataChannelState.Open))
             {
-                var hedder = BitConverter.GetBytes(to);
+                var hedder = GetBytes(to);
                 var packet = hedder.Concat(bytes);
                 m_dc.Send(packet.ToArray());
             }

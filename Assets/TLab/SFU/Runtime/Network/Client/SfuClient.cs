@@ -33,13 +33,15 @@ namespace TLab.SFU.Network
             m_events = new UnityAction<int, int, byte[]>[] { OnReceive, OnConenct, OnDisconnect };
         }
 
+        public const int PACKET_HEADER_SIZE = 9;
+
         protected void OnPacket(byte[] bytes)
         {
             // typ (1) + from (4) + to (4) = 9
 
             var typ = bytes[0];
-            var from = BitConverter.ToInt32(bytes, 1 + sizeof(int));
-            var to = BitConverter.ToInt32(bytes, 1 + 2 * sizeof(int));
+            var from = BitConverter.ToInt32(bytes, 1);
+            var to = BitConverter.ToInt32(bytes, 1 + sizeof(int));
 
             m_events[typ].Invoke(from, to, bytes);
         }

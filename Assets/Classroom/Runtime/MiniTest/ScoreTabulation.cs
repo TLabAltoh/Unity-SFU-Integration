@@ -33,7 +33,7 @@ namespace TLab.VRClassroom
 
             public void UnMarshall(byte[] bytes)
             {
-                var json = Encoding.UTF8.GetString(bytes, SyncClient.HEADER_SIZE, bytes.Length - SyncClient.HEADER_SIZE);
+                var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
                 JsonUtility.FromJsonOverwrite(json, this);
             }
         }
