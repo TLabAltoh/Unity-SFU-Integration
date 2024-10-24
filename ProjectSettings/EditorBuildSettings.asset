@@ -6,13 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Samples/Classroom/Scenes/ENTRY.unity
+    path: Assets/Samples/VRProject/Scenes/ENTRY.unity
     guid: e23fa5e9f0c43c44ba00f234d4d0cbf2
   - enabled: 1
-    path: Assets/Samples/Classroom/Scenes/HOST.unity
+    path: Assets/Samples/VRProject/Scenes/HOST.unity
     guid: 0c1a1ccc3c8840d459d1b850f98ad9c5
   - enabled: 1
-    path: Assets/Samples/Classroom/Scenes/GUEST.unity
+    path: Assets/Samples/VRProject/Scenes/GUEST.unity
     guid: c888de0f93a8a2943a291d900b1bc58c
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 1cd0267adf9753441adff9280932e850, type: 2}
