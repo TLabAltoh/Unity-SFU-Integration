@@ -1,35 +1,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Events;
 
 namespace TLab.SFU.Interact
 {
+    [System.Serializable]
+    public struct HoverCallback
+    {
+        public UnityEvent onHovered;
+        public UnityEvent onUnHovered;
+        public UnityEvent whileHovered;
+    }
+
+    [System.Serializable]
+    public struct SelectCallback
+    {
+        public UnityEvent onSelected;
+        public UnityEvent onUnSelected;
+        public UnityEvent whileSelected;
+    }
+
     [AddComponentMenu("TLab/SFU/Interactable (TLab)")]
     public class Interactable : MonoBehaviour
     {
-        #region REGISTRY
-
-        private static List<Interactable> m_registry = new List<Interactable>();
-
-        public static List<Interactable> registry => m_registry;
-
-        protected static string REGISTRY = "[registry] ";
-
-        protected static void Register(Interactable interactable)
-        {
-            if (!m_registry.Contains(interactable)) m_registry.Add(interactable);
-        }
-
-        protected static void UnRegister(Interactable interactable)
-        {
-            if (m_registry.Contains(interactable)) m_registry.Remove(interactable);
-        }
-
-        #endregion
-
         [Header("Raycat target")]
         [SerializeField] protected bool m_colliderEnable = false;
         [SerializeField] protected Collider m_collider;
+
+        [Header("Callback")]
+        [SerializeField] protected HoverCallback m_hoverCallback;
+        [SerializeField] protected SelectCallback m_selectCallback;
 
         [Header("Chain interactables")]
         [SerializeField] protected List<Interactable> m_interactableChain;
@@ -59,12 +60,16 @@ namespace TLab.SFU.Interact
         {
             m_hovereds.Add(interactor);
 
+            m_hoverCallback.onHovered.Invoke();
+
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.Hovered(interactor));
         }
 
         public virtual void WhileHovered(Interactor interactor)
         {
+            m_hoverCallback.whileHovered.Invoke();
+
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.WhileHovered(interactor));
         }
@@ -72,6 +77,8 @@ namespace TLab.SFU.Interact
         public virtual void UnHovered(Interactor interactor)
         {
             m_hovereds.Remove(interactor);
+
+            m_hoverCallback.onUnHovered.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.UnHovered(interactor));
@@ -81,12 +88,16 @@ namespace TLab.SFU.Interact
         {
             m_selecteds.Add(interactor);
 
+            m_selectCallback.onSelected.Invoke();
+
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.Selected(interactor));
         }
 
         public virtual void WhileSelected(Interactor interactor)
         {
+            m_selectCallback.whileSelected.Invoke();
+
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.WhileSelected(interactor));
         }
@@ -94,6 +105,8 @@ namespace TLab.SFU.Interact
         public virtual void UnSelected(Interactor interactor)
         {
             m_selecteds.Remove(interactor);
+
+            m_selectCallback.onUnSelected.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.UnSelected(interactor));
@@ -131,9 +144,9 @@ namespace TLab.SFU.Interact
 
         #endregion RAYCAST
 
-        protected virtual void OnEnable() => Interactable.Register(this);
+        protected virtual void OnEnable() => Registry<Interactable>.Register(this);
 
-        protected virtual void OnDisable() => Interactable.UnRegister(this);
+        protected virtual void OnDisable() => Registry<Interactable>.UnRegister(this);
 
         protected virtual void Start() { }
 

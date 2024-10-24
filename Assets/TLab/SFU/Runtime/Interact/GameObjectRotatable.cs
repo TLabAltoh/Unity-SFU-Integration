@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace TLab.SFU.Interact
@@ -7,30 +6,6 @@ namespace TLab.SFU.Interact
     [RequireComponent(typeof(GameObjectController))]
     public class GameObjectRotatable : Interactable
     {
-        #region REGISTRY
-
-        private static List<GameObjectRotatable> m_registry = new List<GameObjectRotatable>();
-
-        public static new List<GameObjectRotatable> registry => m_registry;
-
-        public static void Register(GameObjectRotatable rotatable)
-        {
-            if (!m_registry.Contains(rotatable))
-            {
-                m_registry.Add(rotatable);
-            }
-        }
-
-        public static void UnRegister(GameObjectRotatable rotatable)
-        {
-            if (m_registry.Contains(rotatable))
-            {
-                m_registry.Remove(rotatable);
-            }
-        }
-
-        #endregion
-
         private GameObjectController m_controller;
 
         private Vector3 m_axis;
@@ -116,14 +91,14 @@ namespace TLab.SFU.Interact
         {
             base.OnEnable();
 
-            GameObjectRotatable.Register(this);
+            Registry<GameObjectRotatable>.Register(this);
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
 
-            GameObjectRotatable.UnRegister(this);
+            Registry<GameObjectRotatable>.UnRegister(this);
         }
     }
 }

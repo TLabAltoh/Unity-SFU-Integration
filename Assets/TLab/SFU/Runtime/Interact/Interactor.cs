@@ -6,8 +6,7 @@ namespace TLab.SFU.Interact
     [AddComponentMenu("TLab/SFU/Interactor (TLab)")]
     public class Interactor : MonoBehaviour
     {
-        [Header("TLab XR Hand")]
-        [SerializeField] protected TLabXRHand m_hand;
+        [SerializeField] protected InteractDataSource m_interactDataSource;
 
         [SerializeField] protected Transform m_pointer;
 

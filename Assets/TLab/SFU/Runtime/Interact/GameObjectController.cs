@@ -6,6 +6,8 @@ using static TLab.SFU.ComponentExtention;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Network.Registry<GameObjectController>;
+
     [AddComponentMenu("TLab/SFU/Game Object Controller (TLab)")]
     public class GameObjectController : SyncTransformer
     {
@@ -152,17 +154,17 @@ namespace TLab.SFU.Interact
         {
             base.Init(publicId);
 
-            Registry<GameObjectController>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
         }
 
         public override void Init()
         {
             base.Init();
 
-            Registry<GameObjectController>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
         }
 
-        #region MESSAGE_TYPE
+        #region MESSAGE
 
         [System.Serializable]
         public struct MSG_DivideGrabber : Packetable
@@ -204,7 +206,7 @@ namespace TLab.SFU.Interact
             public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
-        #endregion MESSAGE_TYPE
+        #endregion MESSAGE
 
         public void GrabbLock(GrabState.Action action)
         {
@@ -522,10 +524,10 @@ namespace TLab.SFU.Interact
                     switch (@object.action)
                     {
                         case MSG_GrabbLock.Action.GRAB_LOCK:
-                            Registry<GameObjectController>.GetById(@object.networkedId)?.GrabbLock(@object.grabberId);
+                            Registry.GetById(@object.networkedId)?.GrabbLock(@object.grabberId);
                             break;
                         case MSG_GrabbLock.Action.FORCE_RELEASE:
-                            Registry<GameObjectController>.GetById(@object.networkedId)?.ForceRelease(false);
+                            Registry.GetById(@object.networkedId)?.ForceRelease(false);
                             break;
                         default:
                             break;
@@ -537,7 +539,7 @@ namespace TLab.SFU.Interact
                     var @object = new MSG_DivideGrabber();
                     @object.UnMarshall(bytes);
 
-                    Registry<GameObjectController>.GetById(@object.networkedId)?.Divide(@object.active);
+                    Registry.GetById(@object.networkedId)?.Divide(@object.active);
                 });
 
                 mchCallbackRegisted = true;
@@ -554,7 +556,7 @@ namespace TLab.SFU.Interact
             m_rotation.Start(this.transform, m_rb);
             m_scale.Start(this.transform, m_rb);
 
-            Registry<GameObjectController>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
         }
 
         protected override void Update()
@@ -592,7 +594,7 @@ namespace TLab.SFU.Interact
                 GrabbLock(GrabState.Action.FREE);
             }
 
-            Registry<GameObjectController>.UnRegister(m_networkedId.id);
+            Registry.UnRegister(m_networkedId.id);
         }
 
         protected override void OnDestroy()

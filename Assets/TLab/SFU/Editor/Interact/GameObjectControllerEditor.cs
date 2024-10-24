@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 
-using Oculus.Interaction.Surfaces;
-
 namespace TLab.SFU.Interact.Editor
 {
     [CustomEditor(typeof(GameObjectController))]
@@ -41,7 +39,6 @@ namespace TLab.SFU.Interact.Editor
             goRotatable.enableCollision = true;
 
             var rayInteractable = target.RequireComponent<RayInteractable>();
-            var colliderSurface = target.RequireComponent<ColliderSurface>();
 
             EditorUtility.SetDirty(meshFilter);
             EditorUtility.SetDirty(meshCollider);
@@ -50,7 +47,6 @@ namespace TLab.SFU.Interact.Editor
             EditorUtility.SetDirty(goGrabbable);
 
             EditorUtility.SetDirty(rayInteractable);
-            EditorUtility.SetDirty(colliderSurface);
         }
 
         public override void OnInspectorGUI()
@@ -80,7 +76,7 @@ namespace TLab.SFU.Interact.Editor
             if (Application.isPlaying)
             {
                 EditorGUILayout.Space();
-                GUILayout.Label($"current grabber id: {m_controller.grabState.grabberId}", GUILayout.ExpandWidth(false));
+                GUILayout.Label($"Current Grabber Id: {m_controller.grabState.grabberId}", GUILayout.ExpandWidth(false));
                 EditorGUILayout.Space();
             }
 

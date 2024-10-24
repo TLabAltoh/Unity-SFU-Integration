@@ -2,6 +2,8 @@
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<PokeInteractable>;
+
     [AddComponentMenu("TLab/SFU/Poke Interactor (TLab)")]
     class PokeInteractor : Interactor
     {
@@ -27,7 +29,7 @@ namespace TLab.SFU.Interact
 
             var minDist = float.MaxValue;
 
-            PokeInteractable.registry.ForEach((h) =>
+            Registry.registry.ForEach((h) =>
             {
                 if (h.Spherecast(m_pointer.position, out m_raycastHit, m_hoverThreshold))
                 {
@@ -54,7 +56,7 @@ namespace TLab.SFU.Interact
             m_onRelease = m_onPress && !m_pressed;
 
             m_prevRayDir = m_rayDir;
-            m_rayDir = (m_pointer.position - m_hand.rootPose.position).normalized;
+            m_rayDir = (m_pointer.position - m_interactDataSource.rootPose.position).normalized;
 
             var angle = Vector3.Angle(m_rayDir, m_prevRayDir);
             var cross = Vector3.Cross(m_rayDir, m_prevRayDir);
@@ -66,7 +68,7 @@ namespace TLab.SFU.Interact
 
         protected override void Process()
         {
-            if (m_hand.currentGesture == m_gesture)
+            if (m_interactDataSource.currentGesture == m_gesture)
             {
                 base.Process();
             }

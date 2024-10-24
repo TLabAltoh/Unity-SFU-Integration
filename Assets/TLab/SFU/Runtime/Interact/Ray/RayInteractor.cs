@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<RayInteractable>;
+
     [AddComponentMenu("TLab/SFU/Ray Interactor (TLab)")]
     public class RayInteractor : Interactor
     {
@@ -16,7 +18,7 @@ namespace TLab.SFU.Interact
 
         public float rotateBias { get => m_rotateBias; set => m_rotateBias = value; }
 
-        public Ray ray => new Ray(m_hand.pointerPose.position, m_hand.pointerPose.forward);
+        public Ray ray => new Ray(m_interactDataSource.pointerPose.position, m_interactDataSource.pointerPose.forward);
 
         protected override void UpdateRaycast()
         {
@@ -28,7 +30,7 @@ namespace TLab.SFU.Interact
 
             var ray = this.ray;
 
-            RayInteractable.registry.ForEach((h) =>
+            Registry.registry.ForEach((h) =>
             {
                 if (h.Raycast(ray, out m_raycastHit, m_maxDistance))
                 {
@@ -47,17 +49,17 @@ namespace TLab.SFU.Interact
         {
             base.UpdateInput();
 
-            m_pressed = m_hand.pressed;
+            m_pressed = m_interactDataSource.pressed;
 
-            m_onPress = m_hand.onPress;
+            m_onPress = m_interactDataSource.onPress;
 
-            m_onRelease = m_hand.onRelease;
+            m_onRelease = m_interactDataSource.onRelease;
 
             m_pointer.position = (m_interactable != null) ?
                 this.ray.GetPoint(m_raycastHit.distance) : m_pointer.position;
 
             m_prevRayDir = m_rayDir;
-            m_rayDir = m_hand.pointerPose.forward;
+            m_rayDir = m_interactDataSource.pointerPose.forward;
 
             var angle = Vector3.Angle(m_rayDir, m_prevRayDir);
             var cross = Vector3.Cross(m_rayDir, m_prevRayDir);

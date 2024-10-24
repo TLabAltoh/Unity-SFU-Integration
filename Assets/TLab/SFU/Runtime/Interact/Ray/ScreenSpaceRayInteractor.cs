@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<RayInteractable>;
+
     [AddComponentMenu("TLab/SFU/Screen Space Ray Interactor (TLab)")]
     public class ScreenSpaceRayInteractor : Interactor
     {
@@ -61,7 +63,7 @@ namespace TLab.SFU.Interact
 
             var ray = this.ray;
 
-            RayInteractable.registry.ForEach((h) =>
+            Registry.registry.ForEach((h) =>
             {
                 if (h.Raycast(ray, out m_raycastHit, m_maxDistance))
                 {

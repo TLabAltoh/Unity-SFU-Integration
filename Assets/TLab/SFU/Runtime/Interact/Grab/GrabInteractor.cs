@@ -2,6 +2,8 @@
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<GrabInteractable>;
+
     [AddComponentMenu("TLab/SFU/Grab Interactor (TLab)")]
     public class GrabInteractor : Interactor
     {
@@ -18,7 +20,7 @@ namespace TLab.SFU.Interact
 
             var minDist = float.MaxValue;
 
-            GrabInteractable.registry.ForEach((h) =>
+            Registry.registry.ForEach((h) =>
             {
                 if (h.Spherecast(m_pointer.position, out m_raycastHit, m_hoverThreshold))
                 {
@@ -37,13 +39,13 @@ namespace TLab.SFU.Interact
         {
             base.UpdateInput();
 
-            m_pressed = m_hand.grabbed;
+            m_pressed = m_interactDataSource.grabbed;
 
-            m_onPress = m_hand.onGrab;
+            m_onPress = m_interactDataSource.onGrab;
 
-            m_onRelease = m_hand.onFree;
+            m_onRelease = m_interactDataSource.onFree;
 
-            m_angulerVelocity = m_hand.angulerVelocity;
+            m_angulerVelocity = m_interactDataSource.angulerVelocity;
 
             m_rotateVelocity = m_angulerVelocity;
         }

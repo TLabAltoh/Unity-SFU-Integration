@@ -1,9 +1,10 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<Pointable>;
+
     public enum PointerEventType
     {
         HOVER,
@@ -31,30 +32,6 @@ namespace TLab.SFU.Interact
     [AddComponentMenu("TLab/SFU/" + nameof(Pointable) + " (TLab)")]
     public class Pointable : Interactable
     {
-        #region REGISTRY
-
-        private static List<Pointable> m_registry = new List<Pointable>();
-
-        public static new List<Pointable> registry => m_registry;
-
-        public static void Register(Pointable pointable)
-        {
-            if (!m_registry.Contains(pointable))
-            {
-                m_registry.Add(pointable);
-            }
-        }
-
-        public static void UnRegister(Pointable pointable)
-        {
-            if (m_registry.Contains(pointable))
-            {
-                m_registry.Remove(pointable);
-            }
-        }
-
-        #endregion
-
         public event Action<PointerEvent> whenPointerEventRaised;
 
         public override void Hovered(Interactor interactor)
@@ -106,14 +83,14 @@ namespace TLab.SFU.Interact
         {
             base.OnEnable();
 
-            Pointable.Register(this);
+            Registry.Register(this);
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
 
-            Pointable.UnRegister(this);
+            Registry.UnRegister(this);
         }
     }
 }
