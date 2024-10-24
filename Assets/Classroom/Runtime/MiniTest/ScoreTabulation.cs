@@ -1,12 +1,10 @@
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using TLab.SFU;
 using TLab.SFU.Network;
 
 namespace TLab.VRClassroom
 {
-    public class ScoreTabulation : MonoBehaviour, NetworkedEventable
+    public class ScoreTabulation : MonoBehaviour, INetworkEventHandler, ISyncEventHandler
     {
         private Dictionary<int, int> m_scores = new Dictionary<int, int>();
 
@@ -17,25 +15,17 @@ namespace TLab.VRClassroom
         #region MESSAGE_TYPE
 
         [System.Serializable]
-        public class MCH_MiniTest : Packetable
+        public struct MSG_MiniTest : Packetable
         {
             public static int pktId;
 
-            static MCH_MiniTest() => pktId = nameof(MCH_MiniTest).GetHashCode();
+            static MSG_MiniTest() => pktId = nameof(MSG_MiniTest).GetHashCode();
 
             public int score;
 
-            public byte[] Marshall()
-            {
-                var json = JsonUtility.ToJson(this);
-                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
-            }
+            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes)
-            {
-                var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
-                JsonUtility.FromJsonOverwrite(json, this);
-            }
+            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
         #endregion MESSAGE_TYPE
@@ -54,36 +44,66 @@ namespace TLab.VRClassroom
         {
             m_scores[SyncClient.userId] = score;
 
-            var @object = new MCH_MiniTest
+            var @object = new MSG_MiniTest
             {
                 score = score,
             };
 
-            SyncClient.instance.MasterChannelSend(@object.Marshall());
+            SyncClient.instance.SendWS(@object.Marshall());
         }
 
         void Awake()
         {
             instance = this;
 
-            SyncClient.RegisterMasterChannelCallback(MCH_MiniTest.pktId, OnReceive);
+            SyncClient.RegisterOnMessage(MSG_MiniTest.pktId, OnMessage);
         }
 
-        public void OnReceive(int from, byte[] bytes)
+        public void OnMessage(int from, int to, byte[] bytes)
         {
-            var @object = new MCH_MiniTest();
+            var @object = new MSG_MiniTest();
             @object.UnMarshall(bytes);
             m_scores[from] = @object.score;
         }
 
-        public void OnOthersJoined(int userId)
+        public void OnOpen()
         {
-            // TODO:
+            throw new System.NotImplementedException();
         }
 
-        public void OnOthersExited(int userId)
+        public void OnClose()
         {
-            // TODO:
+            throw new System.NotImplementedException();
+        }
+
+        public void OnOpen(int from)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnClose(int from)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnJoin()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnExit()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnJoin(int userId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnExit(int userId)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

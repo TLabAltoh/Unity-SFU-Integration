@@ -31,7 +31,7 @@ namespace TLab.SFU.Network
 
         #endregion STRUCT
 
-        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect) : base(mono, adapter, stream, onReceive, onConnect, onDisconnect)
+        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose) : base(mono, adapter, stream, onMessage, onOpen, onClose)
         {
             var base64 = "";
 
@@ -52,22 +52,22 @@ namespace TLab.SFU.Network
             _ = m_socket.Connect();
         }
 
-        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onReceive, UnityAction<int> onConnect, UnityAction<int> onDisconnect)
-            : this(mono, adapter, stream, CreateEvent(onReceive), CreateEvent(onConnect), CreateEvent(onDisconnect))
+        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, UnityAction<int> onOpen, UnityAction<int> onClose)
+            : this(mono, adapter, stream, CreateEvent(onMessage), CreateEvent(onOpen), CreateEvent(onClose))
         {
 
         }
 
-        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect)
+        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose)
         {
-            var client = new WebSocketClient(mono, adapter, stream, onReceive, onConnect, onDisconnect);
+            var client = new WebSocketClient(mono, adapter, stream, onMessage, onOpen, onClose);
 
             return client;
         }
 
-        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onReceive, UnityAction<int> onConnect, UnityAction<int> onDisconnect)
+        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, UnityAction<int> onOpen, UnityAction<int> onClose)
         {
-            return Open(mono, adapter, stream, CreateEvent(onReceive), CreateEvent(onConnect), CreateEvent(onDisconnect));
+            return Open(mono, adapter, stream, CreateEvent(onMessage), CreateEvent(onOpen), CreateEvent(onClose));
         }
 
         private void CancelReceiveTask()
@@ -108,7 +108,7 @@ namespace TLab.SFU.Network
             return m_socket.Send(packet.ToArray());
         }
 
-        public override Task SendText(int to, string text)
+        public override Task Send(int to, string text)
         {
             return Send(to, Encoding.UTF8.GetBytes(text));
         }

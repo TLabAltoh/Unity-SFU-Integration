@@ -11,9 +11,9 @@ namespace TLab.SFU.Network
         protected Adapter m_adapter;
         protected string m_stream;
 
-        protected UnityEvent<int, int, byte[]> m_onReceive;
-        protected UnityEvent<int> m_onConnect;
-        protected UnityEvent<int> m_onDisconnect;
+        protected UnityEvent<int, int, byte[]> m_onMessage;
+        protected UnityEvent<int> m_onOpen;
+        protected UnityEvent<int> m_onClose;
 
         protected UnityAction<int, int, byte[]>[] m_events;
 
@@ -24,13 +24,13 @@ namespace TLab.SFU.Network
             m_stream = stream;
         }
 
-        public SfuClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect) : this(mono, adapter, stream)
+        public SfuClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose) : this(mono, adapter, stream)
         {
-            m_onReceive = onReceive;
-            m_onConnect = onConnect;
-            m_onDisconnect = onDisconnect;
+            m_onMessage = onMessage;
+            m_onOpen = onOpen;
+            m_onClose = onClose;
 
-            m_events = new UnityAction<int, int, byte[]>[] { OnReceive, OnConenct, OnDisconnect };
+            m_events = new UnityAction<int, int, byte[]>[] { OnMessage, OnOpen, OnClose };
         }
 
         public const int PACKET_HEADER_SIZE = 9;
@@ -46,13 +46,13 @@ namespace TLab.SFU.Network
             m_events[typ].Invoke(from, to, bytes);
         }
 
-        private void OnReceive(int from, int to, byte[] bytes) => m_onReceive.Invoke(from, to, bytes);
+        private void OnMessage(int from, int to, byte[] bytes) => m_onMessage.Invoke(from, to, bytes);
 
-        private void OnConenct(int from, int to, byte[] bytes) => m_onConnect.Invoke(from);
+        private void OnOpen(int from, int to, byte[] bytes) => m_onOpen.Invoke(from);
 
-        private void OnDisconnect(int from, int to, byte[] bytes) => m_onDisconnect.Invoke(from);
+        private void OnClose(int from, int to, byte[] bytes) => m_onClose.Invoke(from);
 
-        public virtual Task SendText(int to, string text) { return Task.Run(() => { }); }
+        public virtual Task Send(int to, string text) { return Task.Run(() => { }); }
 
         public virtual Task Send(int to, byte[] bytes) { return Task.Run(() => { }); }
 

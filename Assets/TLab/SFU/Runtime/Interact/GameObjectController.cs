@@ -1,7 +1,4 @@
 using System.Collections.Generic;
-using System.Collections;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEditor;
 using TLab.SFU.Network;
@@ -62,38 +59,6 @@ namespace TLab.SFU.Interact
         }
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
-
-        #region REGISTRY
-
-        private static Hashtable m_registry = new Hashtable();
-
-        public static Hashtable registry => m_registry;
-
-        protected static void Register(Address64 id, GameObjectController controller)
-        {
-            if (!m_registry.ContainsKey(id))
-                m_registry.Add(id, controller);
-        }
-
-        protected static new void UnRegister(Address64 id)
-        {
-            if (m_registry.ContainsKey(id))
-                m_registry.Remove(id);
-        }
-
-        public static new void ClearRegistry()
-        {
-            var gameObjects = m_registry.Values.Cast<GameObjectController>().Select((t) => t.gameObject);
-
-            foreach (var gameObject in gameObjects)
-                Destroy(gameObject);
-
-            m_registry.Clear();
-        }
-
-        public static new GameObjectController GetById(Address64 id) => m_registry[id] as GameObjectController;
-
-        #endregion REGISTRY
 
         [Header("Exclusive Sync Settings")]
         [SerializeField] protected bool m_locked = false;
@@ -187,44 +152,36 @@ namespace TLab.SFU.Interact
         {
             base.Init(publicId);
 
-            Register(m_networkedId.id, this);
+            Registry<GameObjectController>.Register(m_networkedId.id, this);
         }
 
         public override void Init()
         {
             base.Init();
 
-            Register(m_networkedId.id, this);
+            Registry<GameObjectController>.Register(m_networkedId.id, this);
         }
 
         #region MESSAGE_TYPE
 
         [System.Serializable]
-        public struct MCH_DivideGrabber : Packetable
+        public struct MSG_DivideGrabber : Packetable
         {
             public static int pktId;
 
-            static MCH_DivideGrabber() => pktId = nameof(MCH_DivideGrabber).GetHashCode();
+            static MSG_DivideGrabber() => pktId = nameof(MSG_DivideGrabber).GetHashCode();
 
             public Address64 networkedId;
             public int grabberId;
             public bool active;
 
-            public byte[] Marshall()
-            {
-                var json = JsonUtility.ToJson(this);
-                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
-            }
+            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes)
-            {
-                var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
-                JsonUtility.FromJsonOverwrite(json, this);
-            }
+            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
         [System.Serializable]
-        public struct MCH_GrabbLock : Packetable
+        public struct MSG_GrabbLock : Packetable
         {
             [System.Serializable]
             public enum Action
@@ -236,23 +193,15 @@ namespace TLab.SFU.Interact
 
             public static int pktId;
 
-            static MCH_GrabbLock() => pktId = nameof(MCH_GrabbLock).GetHashCode();
+            static MSG_GrabbLock() => pktId = nameof(MSG_GrabbLock).GetHashCode();
 
             public Address64 networkedId;
             public int grabberId;
             public Action action;
 
-            public byte[] Marshall()
-            {
-                var json = JsonUtility.ToJson(this);
-                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
-            }
+            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes)
-            {
-                var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
-                JsonUtility.FromJsonOverwrite(json, this);
-            }
+            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
         #endregion MESSAGE_TYPE
@@ -276,14 +225,14 @@ namespace TLab.SFU.Interact
 
             SyncTransformViaWebSocket();
 
-            var @object = new MCH_GrabbLock
+            var @object = new MSG_GrabbLock
             {
                 networkedId = m_networkedId.id,
                 grabberId = m_grabState.grabberId,
-                action = MCH_GrabbLock.Action.GRAB_LOCK,
+                action = MSG_GrabbLock.Action.GRAB_LOCK,
             };
 
-            SyncClient.instance.MasterChannelSend(@object.Marshall());
+            SyncClient.instance.SendWS(@object.Marshall());
         }
 
         public void GrabbLock(int index)
@@ -327,14 +276,14 @@ namespace TLab.SFU.Interact
 
             if (self)
             {
-                var @object = new MCH_GrabbLock
+                var @object = new MSG_GrabbLock
                 {
                     networkedId = m_networkedId.id,
                     grabberId = m_grabState.grabberId,
-                    action = MCH_GrabbLock.Action.FORCE_RELEASE,
+                    action = MSG_GrabbLock.Action.FORCE_RELEASE,
                 };
 
-                SyncClient.instance.MasterChannelSend(@object.Marshall());
+                SyncClient.instance.SendWS(@object.Marshall());
             }
         }
 
@@ -565,30 +514,30 @@ namespace TLab.SFU.Interact
 
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(MCH_GrabbLock.pktId, (from, bytes) =>
+                SyncClient.RegisterOnMessage(MSG_GrabbLock.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MCH_GrabbLock();
+                    var @object = new MSG_GrabbLock();
                     @object.UnMarshall(bytes);
 
                     switch (@object.action)
                     {
-                        case MCH_GrabbLock.Action.GRAB_LOCK:
-                            GetById(@object.networkedId)?.GrabbLock(@object.grabberId);
+                        case MSG_GrabbLock.Action.GRAB_LOCK:
+                            Registry<GameObjectController>.GetById(@object.networkedId)?.GrabbLock(@object.grabberId);
                             break;
-                        case MCH_GrabbLock.Action.FORCE_RELEASE:
-                            GetById(@object.networkedId)?.ForceRelease(false);
+                        case MSG_GrabbLock.Action.FORCE_RELEASE:
+                            Registry<GameObjectController>.GetById(@object.networkedId)?.ForceRelease(false);
                             break;
                         default:
                             break;
                     }
                 });
 
-                SyncClient.RegisterMasterChannelCallback(MCH_DivideGrabber.pktId, (from, bytes) =>
+                SyncClient.RegisterOnMessage(MSG_DivideGrabber.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MCH_DivideGrabber();
+                    var @object = new MSG_DivideGrabber();
                     @object.UnMarshall(bytes);
 
-                    GetById(@object.networkedId)?.Divide(@object.active);
+                    Registry<GameObjectController>.GetById(@object.networkedId)?.Divide(@object.active);
                 });
 
                 mchCallbackRegisted = true;
@@ -605,7 +554,7 @@ namespace TLab.SFU.Interact
             m_rotation.Start(this.transform, m_rb);
             m_scale.Start(this.transform, m_rb);
 
-            Register(m_networkedId.id, this);
+            Registry<GameObjectController>.Register(m_networkedId.id, this);
         }
 
         protected override void Update()
@@ -643,7 +592,7 @@ namespace TLab.SFU.Interact
                 GrabbLock(GrabState.Action.FREE);
             }
 
-            UnRegister(m_networkedId.id);
+            Registry<GameObjectController>.UnRegister(m_networkedId.id);
         }
 
         protected override void OnDestroy()

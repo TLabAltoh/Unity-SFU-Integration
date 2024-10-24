@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace TLab.SFU.Network
@@ -8,36 +6,6 @@ namespace TLab.SFU.Network
     [AddComponentMenu("TLab/SFU/Sync Animator (TLab)")]
     public class SyncAnimator : NetworkedObject
     {
-        #region REGISTRY
-
-        private static Hashtable m_registry = new Hashtable();
-
-        public static void Register(Address64 id, SyncAnimator syncAnimator)
-        {
-            if (!m_registry.ContainsKey(id))
-                m_registry.Add(id, syncAnimator);
-        }
-
-        public static new void UnRegister(Address64 id)
-        {
-            if (m_registry.ContainsKey(id))
-                m_registry.Remove(id);
-        }
-
-        public static new void ClearRegistry()
-        {
-            var gameObjects = m_registry.Values.Cast<SyncAnimator>().Select((t) => t.gameObject);
-
-            foreach (var gameObject in gameObjects)
-                Destroy(gameObject);
-
-            m_registry.Clear();
-        }
-
-        public static new SyncAnimator GetById(Address64 id) => m_registry[id] as SyncAnimator;
-
-        #endregion REGISTRY
-
         #region STRUCT
 
         [System.Serializable]
@@ -71,32 +39,24 @@ namespace TLab.SFU.Network
 
         #endregion STRUCT
 
-        #region MESSAGE_TYPE
+        #region MESSAGE
 
         [System.Serializable]
-        public struct MCH_SyncAnim : Packetable
+        public struct MSG_SyncAnim : Packetable
         {
             public static int pktId;
 
-            static MCH_SyncAnim() => pktId = nameof(MCH_SyncAnim).GetHashCode();
+            static MSG_SyncAnim() => pktId = nameof(MSG_SyncAnim).GetHashCode();
 
             public Address64 networkedId;
             public WebAnimState animState;
 
-            public byte[] Marshall()
-            {
-                var json = JsonUtility.ToJson(this);
-                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
-            }
+            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes)
-            {
-                var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
-                JsonUtility.FromJsonOverwrite(json, this);
-            }
+            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
-        #endregion MESSAGE_TYPE
+        #endregion MESSAGE
 
         [SerializeField] private Animator m_animator;
 
@@ -134,13 +94,13 @@ namespace TLab.SFU.Network
                     break;
             }
 
-            var @object = new MCH_SyncAnim
+            var @object = new MSG_SyncAnim
             {
                 networkedId = m_networkedId.id,
                 animState = animState,
             };
 
-            SyncClient.instance.MasterChannelSend(@object.Marshall());
+            SyncClient.instance.SendWS(@object.Marshall());
 
             m_syncFromOutside = false;
         }
@@ -198,7 +158,7 @@ namespace TLab.SFU.Network
                 return;
             }
 
-            UnRegister(m_networkedId.id);
+            Registry<SyncAnimator>.UnRegister(m_networkedId.id);
 
             base.Shutdown();
         }
@@ -241,7 +201,7 @@ namespace TLab.SFU.Network
 
             InitParameter();
 
-            Register(m_networkedId.id, this);
+            Registry<SyncAnimator>.Register(m_networkedId.id, this);
         }
 
         public override void Init()
@@ -250,18 +210,18 @@ namespace TLab.SFU.Network
 
             InitParameter();
 
-            Register(m_networkedId.id, this);
+            Registry<SyncAnimator>.Register(m_networkedId.id, this);
         }
 
         protected override void Awake()
         {
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterMasterChannelCallback(MCH_SyncAnim.pktId, (from, bytes) =>
+                SyncClient.RegisterOnMessage(MSG_SyncAnim.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MCH_SyncAnim();
+                    var @object = new MSG_SyncAnim();
                     @object.UnMarshall(bytes);
-                    GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
+                    Registry<SyncAnimator>.GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
                 });
                 mchCallbackRegisted = true;
             }

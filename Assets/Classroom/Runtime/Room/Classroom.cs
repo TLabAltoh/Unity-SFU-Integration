@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Oculus.Interaction;
 using TLab.VKeyborad;
+using TLab.SFU;
 using TLab.SFU.Network;
 
 namespace TLab.VRClassroom
@@ -31,16 +32,16 @@ namespace TLab.VRClassroom
 
         private IEnumerator ExitClassroomTask()
         {
-            SyncTransformer.ClearRegistry();
-            SyncAnimator.ClearRegistry();
+            Registry<SyncTransformer>.ClearRegistry();
+            Registry<SyncAnimator>.ClearRegistry();
 
             yield return new WaitForSeconds(0.5f);
 
-            m_syncClient.CloseRTCChannel();
+            m_syncClient.CloseRTC();
 
             yield return new WaitForSeconds(0.5f);
 
-            m_syncClient.CloseMasterChannel();
+            m_syncClient.CloseWS();
 
             yield return new WaitForSeconds(2.5f);
         }

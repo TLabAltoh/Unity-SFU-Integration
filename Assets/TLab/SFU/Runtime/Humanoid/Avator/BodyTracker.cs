@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Linq;
 using UnityEngine;
 using TLab.SFU.Network;
 
@@ -9,47 +7,6 @@ namespace TLab.SFU.Humanoid
     public class BodyTracker : SyncTransformer
     {
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
-
-        #region REGISTRY
-
-        private static Hashtable m_registry = new Hashtable();
-
-        public static Hashtable registry => m_registry;
-
-        protected static void Register(Address64 id, BodyTracker tracker) => m_registry.Add(id, tracker);
-
-        protected static new void UnRegister(Address64 id) => m_registry.Remove(id);
-
-        public static new void ClearRegistry()
-        {
-            var gameObjects = m_registry.Values.Cast<BodyTracker>().Select((t) => t.gameObject);
-
-            foreach (var gameObject in gameObjects)
-                Destroy(gameObject);
-
-            m_registry.Clear();
-        }
-
-        public static new void Destroy(GameObject go)
-        {
-            if (go.GetComponent<BodyTracker>() != null)
-            {
-                Destroy(go);
-            }
-        }
-
-        public static new void Destroy(Address64 id)
-        {
-            var go = GetById(id).gameObject;
-            if (go != null)
-            {
-                Destroy(go);
-            }
-        }
-
-        public static new BodyTracker GetById(Address64 id) => m_registry[id] as BodyTracker;
-
-        #endregion REGISTRY
 
         [System.Serializable]
         public class TrackTarget
@@ -67,10 +24,7 @@ namespace TLab.SFU.Humanoid
 
         private bool m_initialized = false;
 
-        public void Destroy()
-        {
-            UnRegister(m_networkedId.id);
-        }
+        public void Destroy() => Registry<BodyTracker>.UnRegister(m_networkedId.id);
 
         public void Init(AvatorConfig.PartsType partsType, bool self)
         {
@@ -102,7 +56,7 @@ namespace TLab.SFU.Humanoid
 
             base.Start();
 
-            Register(m_networkedId.id, this);
+            Registry<BodyTracker>.Register(m_networkedId.id, this);
         }
 
         protected override void Update()

@@ -8,7 +8,7 @@ using static TLab.SFU.ComponentExtention;
 namespace TLab.SFU.Network
 {
     [AddComponentMenu("TLab/SFU/Sync Client (TLab)")]
-    public class SyncClient : MonoBehaviour
+    public class SyncClient : MonoBehaviour, INetworkEventHandler
     {
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -19,17 +19,17 @@ namespace TLab.SFU.Network
         [SerializeField] private Transform[] m_instantiateAnchors;
         [SerializeField] private Transform[] m_respownAnchors;
 
-        private static WebSocketClient m_masterChannel;
-        private static WebRTCClient m_rtcChannel;
+        private static WebSocketClient m_wsClient;
+        private static WebRTCClient m_rtcClient;
 
         private static PhysicsUpdateType m_physicsUpdateType = PhysicsUpdateType.NONE;
 
         public static PhysicsUpdateType physicsUpdateType => m_physicsUpdateType;
 
-        public delegate void MasterChannelCallback(int from, byte[] bytes);
-        private static Hashtable m_masterChannelCallbacks = new Hashtable();
+        public delegate void OnMessageCallback(int from, int to, byte[] bytes);
+        private static Hashtable m_messageCallbacks = new Hashtable();
 
-        private IEnumerator m_connectMasterChannelTask = null;
+        private IEnumerator m_connectTask = null;
 
         public static SyncClient instance;
 
@@ -97,20 +97,20 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static bool masterChannelConnected
+        public static bool wsConnected
         {
             get
             {
-                if (m_masterChannel == null)
+                if (m_wsClient == null)
                 {
                     return false;
                 }
 
-                return m_masterChannel.connected;
+                return m_wsClient.connected;
             }
         }
 
-        public static bool masterChannelEnabled
+        public static bool wsEnabled
         {
             get
             {
@@ -119,15 +119,15 @@ namespace TLab.SFU.Network
                     return false;
                 }
 
-                return userAdapter.regested && masterChannelConnected;
+                return userAdapter.regested && wsConnected;
             }
         }
 
-        public static bool rtcChannelConnected
+        public static bool rtcConnected
         {
             get
             {
-                if (m_rtcChannel == null)
+                if (m_rtcClient == null)
                 {
                     return false;
                 }
@@ -136,7 +136,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static bool rtcChannelEnabled
+        public static bool rtcEnabled
         {
             get
             {
@@ -145,7 +145,7 @@ namespace TLab.SFU.Network
                     return false;
                 }
 
-                return userAdapter.regested && rtcChannelConnected;
+                return userAdapter.regested && rtcConnected;
             }
         }
 
@@ -184,93 +184,70 @@ namespace TLab.SFU.Network
 
         #endregion STRUCT
 
-        #region MESSAGE_TYPE
+        #region MESSAGE
 
         [Serializable]
-        public struct MCH_Join : Packetable
+        public struct MSG_Join : Packetable
         {
             public static int pktId;
 
-            static MCH_Join() => pktId = nameof(MCH_Join).GetHashCode();
+            static MSG_Join() => pktId = nameof(MSG_Join).GetHashCode();
 
             public int messageType; // 0: request, 1: response, 2: broadcast
             public PrefabStore.StoreAction avatorInstantiateInfo;
 
-            // response
+            // response only
             public Address32[] idAvails;
             public PhysicsUpdateType physicsUpdateType;
             public PrefabStore.StoreAction[] othersInstantiateInfos;
 
-            public byte[] Marshall()
-            {
-                var json = JsonUtility.ToJson(this);
-                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
-            }
+            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes)
-            {
-                var json = Encoding.UTF8.GetString(bytes, PAYLOAD_OFFSET, bytes.Length - PAYLOAD_OFFSET);
-                JsonUtility.FromJsonOverwrite(json, this);
-            }
+            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
         [Serializable]
-        public struct MCH_PhysicsUpdateType : Packetable
+        public struct MSG_PhysicsUpdateType : Packetable
         {
             public static int pktId;
 
-            static MCH_PhysicsUpdateType() => pktId = nameof(MCH_PhysicsUpdateType).GetHashCode();
+            static MSG_PhysicsUpdateType() => pktId = nameof(MSG_PhysicsUpdateType).GetHashCode();
 
             public PhysicsUpdateType physicsUpdateType;
 
-            public byte[] Marshall()
-            {
-                var json = JsonUtility.ToJson(this);
-                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
-            }
+            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes)
-            {
-                var json = Encoding.UTF8.GetString(bytes, PAYLOAD_OFFSET, bytes.Length - PAYLOAD_OFFSET);
-                JsonUtility.FromJsonOverwrite(json, this);
-            }
+            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
-        public struct MCH_IdAvails : Packetable
+        [Serializable]
+        public struct MSG_IdAvails : Packetable
         {
             public static int pktId;
 
-            static MCH_IdAvails() => pktId = nameof(MCH_IdAvails).GetHashCode();
+            static MSG_IdAvails() => pktId = nameof(MSG_IdAvails).GetHashCode();
 
             public int messageType; // 0: request, 1: response
             public int length;
             public Address32[] idAvails;
 
-            public byte[] Marshall()
-            {
-                var json = JsonUtility.ToJson(this);
-                return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
-            }
+            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes)
-            {
-                var json = Encoding.UTF8.GetString(bytes, PAYLOAD_OFFSET, bytes.Length - PAYLOAD_OFFSET);
-                JsonUtility.FromJsonOverwrite(json, this);
-            }
+            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
         }
 
-        #endregion MESSAGE_TYPE
+        #endregion MESSAGE
 
         #region REFLESH
 
         //public void ForceReflesh(bool reloadWorldData)
         //{
-        //    MasterChannelSend(action: WebAction.REFLESH, active: reloadWorldData);
+        //    SendWS(action: WebAction.REFLESH, active: reloadWorldData);
         //}
 
         //public void UniReflesh(string id)
         //{
-        //    MasterChannelSend(action: WebAction.UNI_REFLESH_TRANSFORM, transform: new WebObjectInfo { id = id });
+        //    SendWS(action: WebAction.UNI_REFLESH_TRANSFORM, transform: new WebObjectInfo { id = id });
         //}
 
         #endregion REFLESH
@@ -306,36 +283,34 @@ namespace TLab.SFU.Network
             // TODO
         }
 
-        #region MASTER_CHANNEL
-
-        public static void RegisterMasterChannelCallback(int msgId, MasterChannelCallback callback)
+        public static void RegisterOnMessage(int msgId, OnMessageCallback callback)
         {
-            if (!m_masterChannelCallbacks.ContainsKey(msgId))
+            if (!m_messageCallbacks.ContainsKey(msgId))
             {
-                m_masterChannelCallbacks[msgId] = callback;
+                m_messageCallbacks[msgId] = callback;
             }
         }
 
-        private IEnumerator ConnectMasterChannelTask()
+        private IEnumerator ConnectTask()
         {
             yield return null;
 
-            CloseMasterChannel();
+            CloseWS();
 
             yield return null;
 
             #region ADD_CALLBACKS
 
-            RegisterMasterChannelCallback(MCH_Join.pktId, (from, bytes) =>
+            RegisterOnMessage(MSG_Join.pktId, (from, to, bytes) =>
             {
-                var @object = new MCH_Join();
+                var @object = new MSG_Join();
                 @object.UnMarshall(bytes);
 
                 switch (@object.messageType)
                 {
                     case 0: // request
                         {
-                            var response = new MCH_Join();
+                            var response = new MSG_Join();
                             response.messageType = 1;
                             response.avatorInstantiateInfo = @object.avatorInstantiateInfo;
 
@@ -347,7 +322,7 @@ namespace TLab.SFU.Network
 
                             roomAdapter.UpdateState(@object.avatorInstantiateInfo, out var avator);
 
-                            MasterChannelSend(response.avatorInstantiateInfo.userId, response.Marshall());
+                            SendWS(response.avatorInstantiateInfo.userId, response.Marshall());
 
                             Foreach<NetworkedObject>((networkedObject) =>
                             {
@@ -378,17 +353,17 @@ namespace TLab.SFU.Network
                 }
             });
 
-            RegisterMasterChannelCallback(MCH_PhysicsUpdateType.pktId, (from, bytes) =>
+            RegisterOnMessage(MSG_PhysicsUpdateType.pktId, (from, to, bytes) =>
             {
-                var @object = new MCH_Join();
+                var @object = new MSG_Join();
                 @object.UnMarshall(bytes);
 
                 UpdatePhysicsUpdateType(@object.physicsUpdateType);
             });
 
-            RegisterMasterChannelCallback(MCH_IdAvails.pktId, (from, bytes) =>
+            RegisterOnMessage(MSG_IdAvails.pktId, (from, to, bytes) =>
             {
-                var @object = new MCH_Join();
+                var @object = new MSG_Join();
                 @object.UnMarshall(bytes);
 
                 switch (@object.messageType)
@@ -401,7 +376,7 @@ namespace TLab.SFU.Network
             });
 
 #if false
-            m_masterChannelCallbacks[(int)WebAction.ACEPT] = (from, obj) => {
+            m_messageCallbacks[(int)WebAction.ACEPT] = (from, obj) => {
 
                 m_id = obj.dstIndex;
 
@@ -434,10 +409,10 @@ namespace TLab.SFU.Network
                 var anchor = m_respownAnchors[m_id];
                 m_playerRoot.SetPositionAndRotation(anchor.position, anchor.rotation);
 
-                m_rtcChannel.Join(GetClientID(m_id), m_roomConfig.id);
+                m_rtcClient.Join(GetClientID(m_id), m_roomConfig.id);
 
             };
-            m_masterChannelCallbacks[(int)WebAction.GUEST_DISCONNECT] = (from, obj) => {
+            m_messageCallbacks[(int)WebAction.GUEST_DISCONNECT] = (from, obj) => {
 
                 int index = obj.srcIndex;
 
@@ -458,7 +433,7 @@ namespace TLab.SFU.Network
                 Debug.Log(THIS_NAME + "Guest disconncted: " + index.ToString());
 
             };
-            m_masterChannelCallbacks[(int)WebAction.GUEST_PARTICIPATION] = (from, obj) => {
+            m_messageCallbacks[(int)WebAction.GUEST_PARTICIPATION] = (from, obj) => {
 
                 var index = obj.srcIndex;
 
@@ -484,97 +459,57 @@ namespace TLab.SFU.Network
 #endif
             #endregion ADD_CALLBACKS
 
-            m_masterChannel = WebSocketClient.Open(this, m_adapter, "master", OnReceive, OnConnect, OnDisconnect);
+            m_wsClient = WebSocketClient.Open(this, m_adapter, "master", OnMessage, OnOpen, OnClose);
 
-            m_connectMasterChannelTask = null;
+            m_connectTask = null;
 
             yield return 1;
         }
 
-        private void OnReceive(int from, int to, byte[] bytes)
+        public void Connect()
         {
-            var msgTyp = bytes[0];
-
-            if (m_masterChannelCallbacks.ContainsKey(msgTyp))
-            {
-                var callback = m_masterChannelCallbacks[msgTyp] as MasterChannelCallback;
-                callback.Invoke(from, bytes);
-            }
+            m_connectTask = ConnectTask();
         }
 
-        private void OnConnect(int from)
+        #region WS
+
+        public Task SendWS(int to, byte[] bytes)
         {
-
-        }
-
-        private void OnDisconnect(int from)
-        {
-
-        }
-
-        public void ConnectMasterChannel()
-        {
-            m_connectMasterChannelTask = ConnectMasterChannelTask();
-        }
-
-        public Task MasterChannelSend(int to, byte[] bytes)
-        {
-            if (masterChannelEnabled)
-                return m_masterChannel.Send(to, bytes);
+            if (wsEnabled)
+                return m_wsClient.Send(to, bytes);
 
             return new Task(() => { });
         }
 
-        public Task MasterChannelSend(int to, string message) => MasterChannelSend(to, Encoding.UTF8.GetBytes(message));
+        public Task SendWS(int to, string message) => SendWS(to, Encoding.UTF8.GetBytes(message));
 
-        public Task MasterChannelSend(byte[] bytes) => MasterChannelSend(userAdapter.id, bytes);
+        public Task SendWS(byte[] bytes) => SendWS(userAdapter.id, bytes);
 
-        public async void CloseMasterChannel()
+        public async void CloseWS()
         {
-            await m_masterChannel?.HangUp();
-            m_masterChannel = null;
+            await m_wsClient?.HangUp();
+            m_wsClient = null;
         }
 
-        #endregion MASTER_CHANNEL
+        #endregion WS
 
-        #region RTC_CHANNEL
+        #region RTC
 
-        public unsafe void OnReceiveRTC(int to, int from, byte[] bytes)
-        {
-            int headerLen = 8, payloadLen = bytes.Length - headerLen;
-            var targetId = new Address64();
-
-            fixed (byte* bytesPtr = bytes)
-                targetId.Copy(bytesPtr);
-
-            var networkedObject = NetworkedObject.GetById(targetId);
-            if (networkedObject == null)
-            {
-                Debug.LogError($"Networked object not found: {targetId}");
-                return;
-            }
-
-            var payload = new byte[payloadLen];
-            Array.Copy(bytes, headerLen, payload, 0, payloadLen);
-
-            networkedObject.OnReceive(to, from, payload);
-        }
-
-        public void SendRTC(int to, byte[] bytes) => m_rtcChannel?.Send(to, bytes);
+        public void SendRTC(int to, byte[] bytes) => m_rtcClient?.Send(to, bytes);
 
         public void SendRTC(byte[] bytes) => SendRTC(userAdapter.id, bytes);
 
-        public void SendTextRTC(int to, string text) => m_rtcChannel?.SendText(to, text);
+        public void SendRTC(int to, string text) => m_rtcClient?.Send(to, text);
 
-        public void SendTextRTC(string text) => SendTextRTC(userAdapter.id, text);
+        public void SendRTC(string text) => SendRTC(userAdapter.id, text);
 
-        public void CloseRTCChannel()
+        public void CloseRTC()
         {
-            m_rtcChannel?.HangUp();
-            m_rtcChannel = null;
+            m_rtcClient?.HangUp();
+            m_rtcClient = null;
         }
 
-        #endregion RTC_CHANNEL
+        #endregion RTC
 
         void Awake()
         {
@@ -583,24 +518,55 @@ namespace TLab.SFU.Network
 
         private void Start()
         {
-            ConnectMasterChannel();
+            Connect();
         }
 
         private void Update()
         {
-            m_connectMasterChannelTask?.MoveNext();
+            m_connectTask?.MoveNext();
         }
 
         private void OnDestroy()
         {
-            CloseRTCChannel();
-            CloseMasterChannel();
+            CloseRTC();
+            CloseWS();
         }
 
         private void OnApplicationQuit()
         {
-            CloseRTCChannel();
-            CloseMasterChannel();
+            CloseRTC();
+            CloseWS();
+        }
+
+        public void OnMessage(int from, int to, byte[] bytes)
+        {
+            var msgTyp = bytes[0];
+
+            if (m_messageCallbacks.ContainsKey(msgTyp))
+            {
+                var callback = m_messageCallbacks[msgTyp] as OnMessageCallback;
+                callback.Invoke(from, to, bytes);
+            }
+        }
+
+        public void OnOpen()
+        {
+
+        }
+
+        public void OnClose()
+        {
+
+        }
+
+        public void OnOpen(int from)
+        {
+
+        }
+
+        public void OnClose(int from)
+        {
+
         }
     }
 }

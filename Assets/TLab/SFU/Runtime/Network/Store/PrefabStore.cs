@@ -220,7 +220,7 @@ namespace TLab.SFU.Network
             {
                 m_pktId = m_storeName.GetHashCode();
 
-                SyncClient.RegisterMasterChannelCallback(m_pktId, (from, bytes) =>
+                SyncClient.RegisterOnMessage(m_pktId, (from, to, bytes) =>
                 {
                     // TODO:
 

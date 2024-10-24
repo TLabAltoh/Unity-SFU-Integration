@@ -111,9 +111,9 @@ namespace TLab.SFU.Network
             return @event;
         }
 
-        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            var client = new WebRTCClient(mono, adapter, stream, onReceive, onConnect, onDisconnect, onAddTrack, iceExchangeOption);
+            var client = new WebRTCClient(mono, adapter, stream, onMessage, onOpen, onClose, onAddTrack, iceExchangeOption);
 
             client.CreatePeerConnection(ClientType.WHIP, dataChannelCnf);
 
@@ -128,9 +128,9 @@ namespace TLab.SFU.Network
             return client;
         }
 
-        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onReceive, UnityAction<int> onConnect, UnityAction<int> onDisconnect, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, UnityAction<int> onOpen, UnityAction<int> onClose, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            return Whip(mono, adapter, stream, CreateEvent(onReceive), CreateEvent(onConnect), CreateEvent(onDisconnect), dataChannelCnf, videoSource, audioSource, CreateOnAddTrack(onAddTrack), iceExchangeOption);
+            return Whip(mono, adapter, stream, CreateEvent(onMessage), CreateEvent(onOpen), CreateEvent(onClose), dataChannelCnf, videoSource, audioSource, CreateOnAddTrack(onAddTrack), iceExchangeOption);
         }
 
         public static WebRTCClient Whip(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, Texture2D videoSource, AudioSource audioSource, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
@@ -138,9 +138,9 @@ namespace TLab.SFU.Network
             return Whip(mono, adapter, stream, CreateEvent<int, int, byte[]>(null), CreateEvent<int>(null), CreateEvent<int>(null), dataChannelCnf, videoSource, audioSource, CreateOnAddTrack(null), iceExchangeOption);
         }
 
-        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            var client = new WebRTCClient(mono, adapter, stream, onReceive, onConnect, onDisconnect, onAddTrack, iceExchangeOption);
+            var client = new WebRTCClient(mono, adapter, stream, onMessage, onOpen, onClose, onAddTrack, iceExchangeOption);
 
             client.CreatePeerConnection(ClientType.WHEP, dataChannelCnf);
 
@@ -155,9 +155,9 @@ namespace TLab.SFU.Network
             return client;
         }
 
-        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onReceive, UnityAction<int> onConnect, UnityAction<int> onDisconnect, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
+        public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, UnityAction<int> onOpen, UnityAction<int> onClose, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
         {
-            return Whep(mono, adapter, stream, CreateEvent(onReceive), CreateEvent(onConnect), CreateEvent(onDisconnect), dataChannelCnf, receiveVideo, receiveAudio, CreateOnAddTrack(onAddTrack), iceExchangeOption);
+            return Whep(mono, adapter, stream, CreateEvent(onMessage), CreateEvent(onOpen), CreateEvent(onClose), dataChannelCnf, receiveVideo, receiveAudio, CreateOnAddTrack(onAddTrack), iceExchangeOption);
         }
 
         public static WebRTCClient Whep(MonoBehaviour mono, Adapter adapter, string stream, RTCDataChannelInit dataChannelCnf, bool receiveVideo, bool receiveAudio, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE)
@@ -165,14 +165,14 @@ namespace TLab.SFU.Network
             return Whep(mono, adapter, stream, CreateEvent<int, int, byte[]>(null), CreateEvent<int>(null), CreateEvent<int>(null), dataChannelCnf, receiveVideo, receiveAudio, CreateOnAddTrack(null), iceExchangeOption);
         }
 
-        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onReceive, UnityEvent<int> onConnect, UnityEvent<int> onDisconnect, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) : base(mono, adapter, stream, onReceive, onConnect, onDisconnect)
+        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose, UnityEvent<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) : base(mono, adapter, stream, onMessage, onOpen, onClose)
         {
             m_iceExchangeOption = iceExchangeOption;
             m_onAddTrack = onAddTrack;
         }
 
-        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onReceive, UnityAction<int> onConnect, UnityAction<int> onDisconnect, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) :
-            this(mono, adapter, stream, CreateEvent(onReceive), CreateEvent(onConnect), CreateEvent(onDisconnect), CreateOnAddTrack(onAddTrack), iceExchangeOption)
+        public WebRTCClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, UnityAction<int> onOpen, UnityAction<int> onClose, UnityAction<MediaStreamTrackEvent> onAddTrack, IceExchangeOption iceExchangeOption = IceExchangeOption.TRICCLE) :
+            this(mono, adapter, stream, CreateEvent(onMessage), CreateEvent(onOpen), CreateEvent(onClose), CreateOnAddTrack(onAddTrack), iceExchangeOption)
         {
 
         }
@@ -185,7 +185,7 @@ namespace TLab.SFU.Network
 
         public void SetCallback(UnityAction<int, int, byte[]> callback)
         {
-            m_onReceive.AddListener(callback);
+            m_onMessage.AddListener(callback);
         }
 
         private void OnIceCandidate(RTCIceCandidate candidate)
@@ -563,7 +563,7 @@ namespace TLab.SFU.Network
             return base.Send(to, bytes);
         }
 
-        public override Task SendText(int to, string text)
+        public override Task Send(int to, string text)
         {
             return Send(to, Encoding.UTF8.GetBytes(text));
         }
