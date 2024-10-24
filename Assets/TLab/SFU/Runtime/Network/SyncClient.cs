@@ -459,7 +459,7 @@ namespace TLab.SFU.Network
 #endif
             #endregion ADD_CALLBACKS
 
-            m_wsClient = WebSocketClient.Open(this, m_adapter, "master", OnMessage, OnOpen, OnClose);
+            m_wsClient = WebSocketClient.Open(this, m_adapter, "master", OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError);
 
             m_connectTask = null;
 
@@ -551,22 +551,27 @@ namespace TLab.SFU.Network
 
         public void OnOpen()
         {
-
+            throw new NotImplementedException();
         }
 
         public void OnClose()
         {
-
+            throw new NotImplementedException();
         }
 
         public void OnOpen(int from)
         {
-
+            throw new NotImplementedException();
         }
 
         public void OnClose(int from)
         {
+            throw new NotImplementedException();
+        }
 
+        public void OnError()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -86,6 +86,11 @@ namespace TLab.VRClassroom
             throw new System.NotImplementedException();
         }
 
+        public void OnError()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public void OnJoin()
         {
             throw new System.NotImplementedException();

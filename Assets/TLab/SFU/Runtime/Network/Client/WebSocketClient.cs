@@ -31,7 +31,7 @@ namespace TLab.SFU.Network
 
         #endregion STRUCT
 
-        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose) : base(mono, adapter, stream, onMessage, onOpen, onClose)
+        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, (UnityEvent, UnityEvent<int>) onOpen, (UnityEvent, UnityEvent<int>) onClose, UnityEvent onError) : base(mono, adapter, stream, onMessage, onOpen, onClose, onError)
         {
             var base64 = "";
 
@@ -42,32 +42,41 @@ namespace TLab.SFU.Network
             m_socket = new WebSocket(url);
             m_socket.OnOpen += () =>
             {
-                Debug.Log(THIS_NAME + "Connection open!");
+                Debug.Log(THIS_NAME + "Open!");
                 CancelReceiveTask();
                 m_receiveTask = m_mono.StartCoroutine(ReceiveTask());
+                OnOpen1();
             };
-            m_socket.OnError += (e) => Debug.Log(THIS_NAME + "Error! " + e);
-            m_socket.OnClose += (e) => Debug.Log(THIS_NAME + "Connection closed!");
+            m_socket.OnError += (e) =>
+            {
+                Debug.Log(THIS_NAME + "Error! " + e);
+                OnError();
+            };
+            m_socket.OnClose += (e) =>
+            {
+                Debug.Log(THIS_NAME + "Close!");
+                OnClose1();
+            };
             m_socket.OnMessage += (bytes) => OnPacket(bytes);
             _ = m_socket.Connect();
         }
 
-        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, UnityAction<int> onOpen, UnityAction<int> onClose)
-            : this(mono, adapter, stream, CreateEvent(onMessage), CreateEvent(onOpen), CreateEvent(onClose))
+        public WebSocketClient(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, (UnityAction, UnityAction<int>) onOpen, (UnityAction, UnityAction<int>) onClose, UnityAction onError)
+            : this(mono, adapter, stream, CreateEvent(onMessage), (CreateEvent(onOpen.Item1), CreateEvent(onOpen.Item2)), (CreateEvent(onClose.Item1), CreateEvent(onClose.Item2)), CreateEvent(onError))
         {
 
         }
 
-        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, UnityEvent<int> onOpen, UnityEvent<int> onClose)
+        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityEvent<int, int, byte[]> onMessage, (UnityEvent, UnityEvent<int>) onOpen, (UnityEvent, UnityEvent<int>) onClose, UnityEvent onError)
         {
-            var client = new WebSocketClient(mono, adapter, stream, onMessage, onOpen, onClose);
+            var client = new WebSocketClient(mono, adapter, stream, onMessage, onOpen, onClose, onError);
 
             return client;
         }
 
-        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, UnityAction<int> onOpen, UnityAction<int> onClose)
+        public static WebSocketClient Open(MonoBehaviour mono, Adapter adapter, string stream, UnityAction<int, int, byte[]> onMessage, (UnityAction, UnityAction<int>) onOpen, (UnityAction, UnityAction<int>) onClose, UnityAction onError)
         {
-            return Open(mono, adapter, stream, CreateEvent(onMessage), CreateEvent(onOpen), CreateEvent(onClose));
+            return Open(mono, adapter, stream, CreateEvent(onMessage), (CreateEvent(onOpen.Item1), CreateEvent(onOpen.Item2)), (CreateEvent(onClose.Item1), CreateEvent(onClose.Item2)), CreateEvent(onError));
         }
 
         private void CancelReceiveTask()

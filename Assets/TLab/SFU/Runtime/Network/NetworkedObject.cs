@@ -90,14 +90,8 @@ namespace TLab.SFU.Network
 
         protected virtual void Update() { }
 
-        protected virtual void OnDestroy()
-        {
-            Shutdown();
-        }
+        protected virtual void OnDestroy() => Shutdown();
 
-        protected virtual void OnApplicationQuit()
-        {
-            Shutdown();
-        }
+        protected virtual void OnApplicationQuit() => Shutdown();
     }
 }

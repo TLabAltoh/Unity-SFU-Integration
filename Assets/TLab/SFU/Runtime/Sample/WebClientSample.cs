@@ -6,12 +6,12 @@ using TLab.SFU.Network;
 namespace TLab.SFU.Sample
 {
     [RequireComponent(typeof(AudioSource))]
-    public class WebClientSample : ClientSample
+    public class WebClientSample : ClientSample, INetworkEventHandler
     {
         private SfuClient m_client;
 
         private bool m_useWebRTC = true;
-        private bool m_useAudio = false;
+        private bool m_useAudio = true;
 
         private AudioSource m_audioSource;
 
@@ -24,16 +24,16 @@ namespace TLab.SFU.Sample
                 if (m_useAudio && m_adapter.user.id == 0)
                 {
                     StartAudio();
-                    m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnReceive, OnConnect, OnDisconnect, new RTCDataChannelInit(), null, m_audioSource, null);
+                    m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), null, m_audioSource, null);
                 }
                 else
                 {
-                    m_client = WebRTCClient.Whep(this, m_adapter, STREAM, OnReceive, OnConnect, OnDisconnect, new RTCDataChannelInit(), false, m_useAudio, OnAddTrack);
+                    m_client = WebRTCClient.Whep(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), false, m_useAudio, OnAddTrack);
                 }
             }
             else
             {
-                m_client = WebSocketClient.Open(this, m_adapter, STREAM, OnReceive, OnConnect, OnDisconnect);
+                m_client = WebSocketClient.Open(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError);
             }
         }
 
@@ -58,11 +58,21 @@ namespace TLab.SFU.Sample
 
         public override void Send(byte[] bytes) => m_client.Send(m_adapter.user.id, bytes);
 
-        public void OnReceive(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes, SfuClient.PACKET_HEADER_SIZE, bytes.Length - SfuClient.PACKET_HEADER_SIZE));
+        public void OnMessage(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes, SfuClient.PACKET_HEADER_SIZE, bytes.Length - SfuClient.PACKET_HEADER_SIZE));
 
-        public void OnConnect(int from) => Debug.Log(THIS_NAME + "Connect: " + from);
+        public void OnOpen() => Debug.Log(THIS_NAME + "Open");
 
-        public void OnDisconnect(int from) => Debug.Log(THIS_NAME + "Disconnect: " + from);
+        public void OnClose() => Debug.Log(THIS_NAME + "Close");
+
+        public void OnOpen(int from) => Debug.Log(THIS_NAME + "Open: " + from);
+
+        public void OnClose(int from) => Debug.Log(THIS_NAME + "Close: " + from);
+
+        public void OnError()
+        {
+            Debug.Log(THIS_NAME + "Error");
+            m_client?.HangUp();
+        }
 
         protected override void Start()
         {

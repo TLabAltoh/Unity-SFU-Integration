@@ -11,5 +11,7 @@ namespace TLab.SFU.Network
         void OnOpen(int from);
 
         void OnClose(int from);
+
+        void OnError();
     }
 }
