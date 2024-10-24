@@ -5,9 +5,9 @@ using Oculus.Interaction;
 using TLab.VKeyborad;
 using TLab.SFU.Network;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
-    public class Classroom : MonoBehaviour
+    public class PlayManager : MonoBehaviour
     {
         [Header("Menu Panel")]
         [SerializeField] private Transform m_centerEyeAnchor;
@@ -25,11 +25,10 @@ namespace TLab.VRClassroom
         public static string ENTRY_SCENE = "ENTRY";
         public static string HOST_SCENE = "HOST";
         public static string GUEST_SCENE = "GUEST";
-        public static string DEMO_SCENE = "DEMO_SCENE";
 
         private Vector3 cameraPos => Camera.main.transform.position;
 
-        private IEnumerator ExitClassroomTask()
+        private IEnumerator ExitTask()
         {
             Registry<SyncTransformer>.ClearRegistry();
             Registry<SyncAnimator>.ClearRegistry();
@@ -45,13 +44,13 @@ namespace TLab.VRClassroom
             yield return new WaitForSeconds(2.5f);
         }
 
-        private IEnumerator ReEnterClassroomTask()
+        private IEnumerator ReEnterTask()
         {
             // TODO:
 
             //string scene = SyncClient.instance.isHost ? HOST_SCENE : GUEST_SCENE;
 
-            //yield return ExitClassroomTask();
+            //yield return ExitTask();
 
             //SceneManager.LoadSceneAsync(scene, LoadSceneMode.Single);
 
@@ -60,7 +59,7 @@ namespace TLab.VRClassroom
 
         private IEnumerator BackToTheEntryTask()
         {
-            yield return ExitClassroomTask();
+            yield return ExitTask();
 
             SceneManager.LoadSceneAsync(ENTRY_SCENE, LoadSceneMode.Single);
 
@@ -69,10 +68,10 @@ namespace TLab.VRClassroom
 
         public void ReEnter()
         {
-            StartCoroutine(ReEnterClassroomTask());
+            StartCoroutine(ReEnterTask());
         }
 
-        public void ExitClassroom()
+        public void Exit()
         {
             StartCoroutine(BackToTheEntryTask());
         }

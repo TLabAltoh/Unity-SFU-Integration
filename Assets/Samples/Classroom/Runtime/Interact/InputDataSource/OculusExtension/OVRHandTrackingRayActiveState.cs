@@ -1,7 +1,7 @@
 using UnityEngine;
 using Oculus.Interaction;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
     public class OVRHandTrackingRayActiveState : MonoBehaviour, IActiveState
     {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
     public static class CommandLine
     {

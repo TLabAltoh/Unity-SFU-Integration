@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
 #if UNITY_EDITOR
     public class CodeTester : MonoBehaviour

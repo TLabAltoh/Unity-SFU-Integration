@@ -4,7 +4,7 @@ using TMPro;
 namespace TLab.SFU.Interact
 {
     [AddComponentMenu("TLab/SFU/Debugable (TLab)")]
-    public class Debugable : Interactable
+    public class Debuggable : Interactable
     {
         [SerializeField] private TextMeshProUGUI m_hoverStateDebug;
 

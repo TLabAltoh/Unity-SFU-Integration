@@ -3,9 +3,9 @@ using UnityEngine;
 using TLab.SFU.Input;
 using Oculus.Interaction.Input;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
-    [AddComponentMenu("TLab/SFU/OVR Hand Tracking Input (TLab)")]
+    [AddComponentMenu("TLab/VRProjct/OVR Hand Tracking Input (TLab)")]
     public class OVRHandTrackingInput : InputDataSource
     {
         [System.Serializable]
@@ -32,6 +32,8 @@ namespace TLab.VRClassroom
         [SerializeField] private List<string> m_rayHideGestures;
 
         [SerializeField] private float THRESHOLD = 0.1f;
+
+        [SerializeField] private bool m_usePinchAsGrab = true;
 
 #if UNITY_EDITOR
         [SerializeField] private bool m_editMode = false;
@@ -173,7 +175,7 @@ namespace TLab.VRClassroom
             {
                 m_currentGesture = DetectGesture();
 
-                bool grabFired = false;
+                bool grabFired = m_usePinchAsGrab ? m_triggerFired : false;
 
                 m_grabGestures.ForEach((g) =>
                 {

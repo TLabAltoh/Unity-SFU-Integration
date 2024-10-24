@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TLab.SFU.Network;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
     [RequireComponent(typeof(SyncAnimator))]
     public class MiniTest : MonoBehaviour

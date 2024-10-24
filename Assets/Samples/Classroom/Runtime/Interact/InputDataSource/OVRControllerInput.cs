@@ -1,9 +1,9 @@
 using UnityEngine;
 using TLab.SFU.Input;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
-    [AddComponentMenu("TLab/SFU/OVR Controller Input (TLab)")]
+    [AddComponentMenu("TLab/VRProject/OVR Controller Input (TLab)")]
     public class OVRControllerInput : InputDataSource
     {
         void Start()

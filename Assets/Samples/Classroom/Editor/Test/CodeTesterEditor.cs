@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
     [CustomEditor(typeof(CodeTester))]
     public class CodeTesterEditor : UnityEditor.Editor

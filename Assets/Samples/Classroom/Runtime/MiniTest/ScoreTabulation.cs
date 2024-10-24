@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TLab.SFU.Network;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
     public class ScoreTabulation : MonoBehaviour, INetworkEventHandler, ISyncEventHandler
     {

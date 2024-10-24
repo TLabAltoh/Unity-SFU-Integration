@@ -5,7 +5,7 @@ using TLab.VKeyborad;
 using TLab.SFU.Network;
 using TLab.SFU.Network.Security;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
     public class Entrance : MonoBehaviour
     {
@@ -38,13 +38,13 @@ namespace TLab.VRClassroom
         {
             var (addr, argments) = CommandLine.Parse(m_addrInput.text);
 
-            var scene = Classroom.GUEST_SCENE;
+            var scene = PlayManager.GUEST_SCENE;
 
             if (argments.ContainsKey("p"))
             {
                 var password = argments["p"];
 
-                scene = Authentication.ConfirmPassword(password, passwordHash) ? Classroom.HOST_SCENE : scene;
+                scene = Authentication.ConfirmPassword(password, passwordHash) ? PlayManager.HOST_SCENE : scene;
             }
 
             UpdateConfig(addr);

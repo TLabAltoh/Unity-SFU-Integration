@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using TLab.SFU.Network.Security;
 
-namespace TLab.VRClassroom.Editor
+namespace TLab.VRProjct.Editor
 {
     [CustomEditor(typeof(Entrance))]
     [CanEditMultipleObjects]

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TLab.VRClassroom
+namespace TLab.VRProjct
 {
     public class TabGroup : MonoBehaviour
     {
