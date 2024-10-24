@@ -155,17 +155,6 @@ Transform:
   m_Father: {fileID: 183181525426512491}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &60651069 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4837045556181577763, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
-  m_PrefabInstance: {fileID: 1992072395091168998}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30781e215bec0be449adcdfe5d2a9a5a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!43 &263219096
 Mesh:
   m_ObjectHideFlags: 0
@@ -4783,7 +4772,7 @@ PrefabInstance:
     - target: {fileID: 183181524138373726, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_client
       value: 
-      objectReference: {fileID: 1992072395091169001}
+      objectReference: {fileID: 0}
     - target: {fileID: 183181524138373726, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: loopBackSelf
       value: 1
@@ -4798,7 +4787,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 183181524888327456, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_Name
-      value: OVRCameraRig_Custom
+      value: TVRCameraRig
       objectReference: {fileID: 0}
     - target: {fileID: 183181524888327470, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_RootOrder
@@ -4846,17 +4835,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
---- !u!114 &183181525426512488 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 183181524421681145, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
-  m_PrefabInstance: {fileID: 183181525426512487}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f62730a15a504c459f0a5f4ed14bda7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &183181525426512489 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 183181524888327469, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
@@ -5458,7 +5436,7 @@ PrefabInstance:
     - target: {fileID: 1992072394669093082, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_webrtcClient
       value: 
-      objectReference: {fileID: 1992072395091169001}
+      objectReference: {fileID: 0}
     - target: {fileID: 1992072394669093082, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_rootTransform
       value: 
@@ -6234,7 +6212,7 @@ PrefabInstance:
     - target: {fileID: 3774527720618958298, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_keyborad
       value: 
-      objectReference: {fileID: 60651069}
+      objectReference: {fileID: 0}
     - target: {fileID: 3800121086230681482, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_voiceChat
       value: 
@@ -7202,7 +7180,7 @@ PrefabInstance:
     - target: {fileID: 6335365621003125849, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_interactor
       value: 
-      objectReference: {fileID: 183181525426512488}
+      objectReference: {fileID: 0}
     - target: {fileID: 6348701101575208255, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -8939,14 +8917,3 @@ MonoBehaviour:
   m_outline: {fileID: 0}
   m_savePathMesh: 
   m_savePathMaterial: 
---- !u!114 &1992072395091169001 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5814146283492665764, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
-  m_PrefabInstance: {fileID: 1992072395091168998}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b07d1e184178bdd48ae423d746ced571, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
