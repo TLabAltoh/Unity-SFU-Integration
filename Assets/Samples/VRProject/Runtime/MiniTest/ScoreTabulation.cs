@@ -15,7 +15,7 @@ namespace TLab.VRProjct
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_MiniTest : Packetable
+        public struct MSG_MiniTest : IPacketable
         {
             public static int pktId;
 
@@ -23,9 +23,9 @@ namespace TLab.VRProjct
 
             public int score;
 
-            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
+            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
+            public void UnMarshall(byte[] bytes) => IPacketable.UnMarshallJson(bytes, this);
         }
 
         #endregion MESSAGE

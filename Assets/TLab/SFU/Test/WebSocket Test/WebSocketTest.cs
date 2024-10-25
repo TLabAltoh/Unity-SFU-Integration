@@ -3,7 +3,7 @@ using System.Text;
 using UnityEngine;
 using NativeWebSocket;
 
-namespace TLab.SFU.Network.Test
+namespace TLab.SFU.Test
 {
     public class WebSocketTest : MonoBehaviour
     {

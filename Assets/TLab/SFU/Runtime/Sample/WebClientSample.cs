@@ -58,7 +58,7 @@ namespace TLab.SFU.Sample
 
         public override void Send(byte[] bytes) => m_client.Send(m_adapter.user.id, bytes);
 
-        public void OnMessage(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes, SfuClient.PACKET_HEADER_SIZE, bytes.Length - SfuClient.PACKET_HEADER_SIZE));
+        public void OnMessage(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes, SfuClient.RECV_PACKET_HEADER_SIZE, bytes.Length - SfuClient.RECV_PACKET_HEADER_SIZE));
 
         public void OnOpen() => Debug.Log(THIS_NAME + "Open");
 

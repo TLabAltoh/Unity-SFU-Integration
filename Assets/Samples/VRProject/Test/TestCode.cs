@@ -4,10 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace TLab.VRProjct
+namespace TLab.VRProjct.Test
 {
 #if UNITY_EDITOR
-    public class CodeTester : MonoBehaviour
+    [AddComponentMenu("TLab/VRProject/Test (TLab VRProject)")]
+    public class TestCode : MonoBehaviour
     {
         [Header("Canvas UI Test")]
 

@@ -35,7 +35,7 @@ namespace TLab.SFU.Network
 
         public const int HEADER_SIZE = 4;   // pktId (4)
 
-        public const int PAYLOAD_OFFSET = SfuClient.PACKET_HEADER_SIZE + HEADER_SIZE;
+        public const int PAYLOAD_OFFSET = SfuClient.RECV_PACKET_HEADER_SIZE + HEADER_SIZE;
 
         public static Adapter adapter
         {
@@ -187,7 +187,7 @@ namespace TLab.SFU.Network
         #region MESSAGE
 
         [Serializable]
-        public struct MSG_Join : Packetable
+        public struct MSG_Join : IPacketable
         {
             public static int pktId;
 
@@ -201,13 +201,13 @@ namespace TLab.SFU.Network
             public PhysicsUpdateType physicsUpdateType;
             public PrefabStore.StoreAction[] othersInstantiateInfos;
 
-            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
+            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
+            public void UnMarshall(byte[] bytes, out MSG_Join @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         [Serializable]
-        public struct MSG_PhysicsUpdateType : Packetable
+        public struct MSG_PhysicsUpdateType : IPacketable
         {
             public static int pktId;
 
@@ -215,13 +215,13 @@ namespace TLab.SFU.Network
 
             public PhysicsUpdateType physicsUpdateType;
 
-            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
+            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
+            public void UnMarshall(byte[] bytes, out MSG_PhysicsUpdateType @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         [Serializable]
-        public struct MSG_IdAvails : Packetable
+        public struct MSG_IdAvails : IPacketable
         {
             public static int pktId;
 
@@ -231,9 +231,9 @@ namespace TLab.SFU.Network
             public int length;
             public Address32[] idAvails;
 
-            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
+            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
+            public void UnMarshall(byte[] bytes) => IPacketable.UnMarshallJson(bytes, this);
         }
 
         #endregion MESSAGE

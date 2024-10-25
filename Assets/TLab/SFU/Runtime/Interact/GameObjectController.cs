@@ -167,7 +167,7 @@ namespace TLab.SFU.Interact
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_DivideGrabber : Packetable
+        public struct MSG_DivideGrabber : IPacketable
         {
             public static int pktId;
 
@@ -177,13 +177,13 @@ namespace TLab.SFU.Interact
             public int grabberId;
             public bool active;
 
-            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
+            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
+            public static void UnMarshall(byte[] bytes, out MSG_DivideGrabber @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         [System.Serializable]
-        public struct MSG_GrabbLock : Packetable
+        public struct MSG_GrabbLock : IPacketable
         {
             [System.Serializable]
             public enum Action
@@ -201,9 +201,9 @@ namespace TLab.SFU.Interact
             public int grabberId;
             public Action action;
 
-            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
+            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
+            public static void UnMarshall(byte[] bytes, out MSG_GrabbLock @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         #endregion MESSAGE
@@ -518,8 +518,7 @@ namespace TLab.SFU.Interact
             {
                 SyncClient.RegisterOnMessage(MSG_GrabbLock.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MSG_GrabbLock();
-                    @object.UnMarshall(bytes);
+                    MSG_GrabbLock.UnMarshall(bytes, out var @object);
 
                     switch (@object.action)
                     {
@@ -536,8 +535,7 @@ namespace TLab.SFU.Interact
 
                 SyncClient.RegisterOnMessage(MSG_DivideGrabber.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MSG_DivideGrabber();
-                    @object.UnMarshall(bytes);
+                    MSG_DivideGrabber.UnMarshall(bytes, out var @object);
 
                     Registry.GetById(@object.networkedId)?.Divide(@object.active);
                 });

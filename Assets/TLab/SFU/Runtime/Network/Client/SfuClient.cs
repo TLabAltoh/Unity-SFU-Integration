@@ -35,12 +35,11 @@ namespace TLab.SFU.Network
             m_onPacket = new UnityAction<int, int, byte[]>[] { OnMessage, OnOpen2, OnClose2 };
         }
 
-        public const int PACKET_HEADER_SIZE = 9;
+        public const int SEND_PACKET_HEADER_SIZE = 4;   // to (4) = 4
+        public const int RECV_PACKET_HEADER_SIZE = 9;   // typ (1) + from (4) + to (4) = 9
 
         protected void OnPacket(byte[] bytes)
         {
-            // typ (1) + from (4) + to (4) = 9
-
             var typ = bytes[0];
             var from = ToInt32(bytes, 1);
             var to = ToInt32(bytes, 1 + sizeof(int));

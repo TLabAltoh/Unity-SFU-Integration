@@ -1,3 +1,5 @@
+using static System.BitConverter;
+
 namespace TLab.SFU
 {
     public static class UnsafeUtility
@@ -41,17 +43,35 @@ namespace TLab.SFU
             }
         }
 
-        public unsafe static byte[] Combine(byte[] a, byte[] b)
+        public unsafe static byte[] Padding(int length, byte[] b)
         {
-            var c = new byte[a.Length + b.Length];
-            fixed (byte* aPtr = a, bPtr = b, cPtr = c)
-            {
-                LongCopy(aPtr, cPtr, a.Length);
-                LongCopy(bPtr, cPtr + a.Length, b.Length);
-            }
+            var c = new byte[length + b.Length];
+            fixed (byte* bPtr = b, cPtr = c)
+                LongCopy(bPtr, cPtr + length, b.Length);
             return c;
         }
 
-        public unsafe static byte[] Combine(int a, byte[] b) => Combine(System.BitConverter.GetBytes(a), b);
+        public unsafe static byte[] Combine(byte[] a, byte[] b)
+        {
+            var c = Padding(a.Length, b);
+            fixed (byte* aPtr = a, cPtr = c)
+                LongCopy(aPtr, cPtr, a.Length);
+            return c;
+        }
+
+        public unsafe static byte[] Combine(int a, byte[] b) => Combine(GetBytes(a), b);
+
+        public unsafe static byte[] Combine(int padding, int a, byte[] b)
+        {
+            var total = padding + sizeof(int);
+            var _a = GetBytes(a);
+            var c = Padding(total, b);
+            fixed (byte* aPtr = _a, bPtr = b, cPtr = c)
+            {
+                LongCopy(bPtr, cPtr + total, b.Length);
+                LongCopy(aPtr, cPtr + padding, _a.Length);
+            }
+            return c;
+        }
     }
 }

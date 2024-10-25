@@ -1,5 +1,6 @@
 using System.Text;
 using UnityEngine;
+using static TLab.SFU.UnsafeUtility;
 
 namespace TLab.SFU.Network
 {
@@ -115,24 +116,22 @@ namespace TLab.SFU.Network
         }
     }
 
-    public interface Packetable
+    public interface IPacketable
     {
         public const int HEADER_SIZE = 9;   // typ (1) + from (4) + to (4)
 
         public byte[] Marshall();
 
-        public void UnMarshall(byte[] bytes);
-
         public static byte[] MarshallJson(int pktId, in object @object)
         {
             var json = JsonUtility.ToJson(@object);
-            return UnsafeUtility.Combine(pktId, Encoding.UTF8.GetBytes(json));
+            return Combine(SfuClient.SEND_PACKET_HEADER_SIZE, pktId, Encoding.UTF8.GetBytes(json));
         }
 
-        public static void UnMarshallJson(byte[] bytes, in object @object)
+        public static void UnMarshallJson<T>(byte[] bytes, out T @object)
         {
             var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
-            JsonUtility.FromJsonOverwrite(json, @object);
+            @object = JsonUtility.FromJson<T>(json);
         }
     }
 }

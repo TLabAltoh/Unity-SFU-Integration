@@ -42,7 +42,7 @@ namespace TLab.SFU.Network
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_SyncAnim : Packetable
+        public struct MSG_SyncAnim : IPacketable
         {
             public static int pktId;
 
@@ -51,9 +51,9 @@ namespace TLab.SFU.Network
             public Address64 networkedId;
             public WebAnimState animState;
 
-            public byte[] Marshall() => Packetable.MarshallJson(pktId, this);
+            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
 
-            public void UnMarshall(byte[] bytes) => Packetable.UnMarshallJson(bytes, this);
+            public static void UnMarshall(byte[] bytes, out MSG_SyncAnim @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         #endregion MESSAGE
@@ -219,8 +219,7 @@ namespace TLab.SFU.Network
             {
                 SyncClient.RegisterOnMessage(MSG_SyncAnim.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MSG_SyncAnim();
-                    @object.UnMarshall(bytes);
+                    MSG_SyncAnim.UnMarshall(bytes, out var @object);
                     Registry<SyncAnimator>.GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
                 });
                 mchCallbackRegisted = true;

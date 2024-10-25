@@ -47,7 +47,7 @@ namespace TLab.SFU.Network
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_SyncTransform : Packetable
+        public struct MSG_SyncTransform : IPacketable
         {
             public static int pktId;
 

@@ -1,16 +1,16 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace TLab.VRProjct
+namespace TLab.VRProjct.Test.Editor
 {
-    [CustomEditor(typeof(CodeTester))]
-    public class CodeTesterEditor : UnityEditor.Editor
+    [CustomEditor(typeof(TestCode))]
+    public class TestCodeEditor : UnityEditor.Editor
     {
-        private CodeTester instance;
+        private TestCode instance;
 
         private void OnEnable()
         {
-            instance = target as CodeTester;
+            instance = target as TestCode;
         }
 
         public override void OnInspectorGUI()
