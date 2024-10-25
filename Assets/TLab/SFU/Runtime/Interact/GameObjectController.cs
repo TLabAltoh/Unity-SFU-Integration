@@ -167,23 +167,21 @@ namespace TLab.SFU.Interact
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_DivideGrabber : IPacketable
+        public class MSG_DivideGrabber : Packetable
         {
-            public static int pktId;
+            public static new int pktId;
 
-            static MSG_DivideGrabber() => pktId = nameof(MSG_DivideGrabber).GetHashCode();
+            protected override int packetId => pktId;
+
+            static MSG_DivideGrabber() => pktId = MD5From(nameof(MSG_DivideGrabber));
 
             public Address64 networkedId;
             public int grabberId;
             public bool active;
-
-            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
-
-            public static void UnMarshall(byte[] bytes, out MSG_DivideGrabber @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         [System.Serializable]
-        public struct MSG_GrabbLock : IPacketable
+        public class MSG_GrabbLock : Packetable
         {
             [System.Serializable]
             public enum Action
@@ -193,17 +191,15 @@ namespace TLab.SFU.Interact
                 NONE
             };
 
-            public static int pktId;
+            public static new int pktId;
 
-            static MSG_GrabbLock() => pktId = nameof(MSG_GrabbLock).GetHashCode();
+            protected override int packetId => pktId;
+
+            static MSG_GrabbLock() => pktId = MD5From(nameof(MSG_GrabbLock));
 
             public Address64 networkedId;
             public int grabberId;
             public Action action;
-
-            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
-
-            public static void UnMarshall(byte[] bytes, out MSG_GrabbLock @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         #endregion MESSAGE
@@ -518,7 +514,8 @@ namespace TLab.SFU.Interact
             {
                 SyncClient.RegisterOnMessage(MSG_GrabbLock.pktId, (from, to, bytes) =>
                 {
-                    MSG_GrabbLock.UnMarshall(bytes, out var @object);
+                    var @object = new MSG_GrabbLock();
+                    @object.UnMarshall(bytes);
 
                     switch (@object.action)
                     {
@@ -535,8 +532,8 @@ namespace TLab.SFU.Interact
 
                 SyncClient.RegisterOnMessage(MSG_DivideGrabber.pktId, (from, to, bytes) =>
                 {
-                    MSG_DivideGrabber.UnMarshall(bytes, out var @object);
-
+                    var @object = new MSG_DivideGrabber();
+                    @object.UnMarshall(bytes);
                     Registry.GetById(@object.networkedId)?.Divide(@object.active);
                 });
 

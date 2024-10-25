@@ -47,11 +47,13 @@ namespace TLab.SFU.Network
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_SyncTransform : IPacketable
+        public class MSG_SyncTransform : Packetable
         {
-            public static int pktId;
+            public static new int pktId;
 
-            static MSG_SyncTransform() => pktId = nameof(MSG_SyncTransform).GetHashCode();
+            protected override int packetId => pktId;
+
+            static MSG_SyncTransform() => pktId = MD5From(nameof(MSG_SyncTransform));
 
             public WebTransformerState transformerState;
 
@@ -59,7 +61,7 @@ namespace TLab.SFU.Network
 
             public const int PAYLOAD_LEN = 2 + 10 * sizeof(float);  // rbState.used (1) + rbState.gravity (1) + transform ((3 + 4 + 3) * 4)
 
-            public byte[] Marshall()
+            public override byte[] Marshall()
             {
                 var rtcTransform = new float[10];
 
@@ -97,7 +99,7 @@ namespace TLab.SFU.Network
                 return packet;
             }
 
-            public void UnMarshall(byte[] bytes)
+            public override void UnMarshall(byte[] bytes)
             {
                 float[] rtcTransform = new float[10];
 
@@ -429,14 +431,8 @@ namespace TLab.SFU.Network
             }
         }
 
-        protected override void OnDestroy()
-        {
-            Shutdown();
-        }
+        protected override void OnDestroy() => Shutdown();
 
-        protected override void OnApplicationQuit()
-        {
-            Shutdown();
-        }
+        protected override void OnApplicationQuit() => Shutdown();
     }
 }

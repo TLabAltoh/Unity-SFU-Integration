@@ -15,17 +15,15 @@ namespace TLab.VRProjct
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_MiniTest : IPacketable
+        public class MSG_MiniTest : Packetable
         {
-            public static int pktId;
+            public static new int pktId;
 
-            static MSG_MiniTest() => pktId = nameof(MSG_MiniTest).GetHashCode();
+            protected override int packetId => pktId;
+
+            static MSG_MiniTest() => pktId = MD5From(nameof(MSG_MiniTest));
 
             public int score;
-
-            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
-
-            public void UnMarshall(byte[] bytes) => IPacketable.UnMarshallJson(bytes, this);
         }
 
         #endregion MESSAGE

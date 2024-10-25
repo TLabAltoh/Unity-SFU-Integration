@@ -8,20 +8,15 @@ namespace TLab.SFU.Test.Editor
     public class TestCodeEditor : UnityEditor.Editor
     {
         [System.Serializable]
-        public class TestData : IPacketable
+        public class TestPacket : Packetable
         {
-            static TestData()
-            {
-                pktId = nameof(TestData).GetHashCode();
-            }
+            public static new int pktId;
 
-            public static int pktId;
+            protected override int packetId => pktId;
+
+            static TestPacket() => pktId = MD5From(nameof(TestPacket));
 
             public Address32[] address;
-
-            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
-
-            public void UnMarshall(byte[] bytes) => IPacketable.UnMarshallJson(bytes, this);
         }
 
         private TestCode instance;
@@ -35,9 +30,15 @@ namespace TLab.SFU.Test.Editor
         {
             base.OnInspectorGUI();
 
+            if (GUILayout.Button("PacketId Test"))
+            {
+                Debug.Log($"Packetable: {Packetable.pktId}");
+                Debug.Log($"TestPacket: {TestPacket.pktId}");
+            }
+
             if (GUILayout.Button("Address Test"))
             {
-                var send = new TestData();
+                var send = new TestPacket();
                 send.address = new Address32[]
                 {
                     new Address32(0, 0, 0, 0),
@@ -50,7 +51,7 @@ namespace TLab.SFU.Test.Editor
                 bytes = UnsafeUtility.Padding(1 + sizeof(int), bytes);
                 Debug.Log($"After: {bytes}, Length: {bytes.Length}");
 
-                var receive = new TestData();
+                var receive = new TestPacket();
                 receive.UnMarshall(bytes);
 
                 Debug.Log(receive);

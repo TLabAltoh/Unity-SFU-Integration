@@ -42,18 +42,16 @@ namespace TLab.SFU.Network
         #region MESSAGE
 
         [System.Serializable]
-        public struct MSG_SyncAnim : IPacketable
+        public class MSG_SyncAnim : Packetable
         {
-            public static int pktId;
+            public static new int pktId;
 
-            static MSG_SyncAnim() => pktId = nameof(MSG_SyncAnim).GetHashCode();
+            static MSG_SyncAnim() => pktId = MD5From(nameof(MSG_SyncAnim));
+
+            protected override int packetId => pktId;
 
             public Address64 networkedId;
             public WebAnimState animState;
-
-            public byte[] Marshall() => IPacketable.MarshallJson(pktId, this);
-
-            public static void UnMarshall(byte[] bytes, out MSG_SyncAnim @object) => IPacketable.UnMarshallJson(bytes, out @object);
         }
 
         #endregion MESSAGE
@@ -219,7 +217,8 @@ namespace TLab.SFU.Network
             {
                 SyncClient.RegisterOnMessage(MSG_SyncAnim.pktId, (from, to, bytes) =>
                 {
-                    MSG_SyncAnim.UnMarshall(bytes, out var @object);
+                    var @object = new MSG_SyncAnim();
+                    @object.UnMarshall(bytes);
                     Registry<SyncAnimator>.GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
                 });
                 mchCallbackRegisted = true;
@@ -269,14 +268,8 @@ namespace TLab.SFU.Network
             }
         }
 
-        protected override void OnDestroy()
-        {
-            Shutdown();
-        }
+        protected override void OnDestroy() => Shutdown();
 
-        protected override void OnApplicationQuit()
-        {
-            Shutdown();
-        }
+        protected override void OnApplicationQuit() => Shutdown();
     }
 }

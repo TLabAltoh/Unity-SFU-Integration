@@ -115,23 +115,4 @@ namespace TLab.SFU.Network
             this.user_token = auth.user_token;
         }
     }
-
-    public interface IPacketable
-    {
-        public const int HEADER_SIZE = 9;   // typ (1) + from (4) + to (4)
-
-        public byte[] Marshall();
-
-        public static byte[] MarshallJson(int pktId, in object @object)
-        {
-            var json = JsonUtility.ToJson(@object);
-            return Combine(SfuClient.SEND_PACKET_HEADER_SIZE, pktId, Encoding.UTF8.GetBytes(json));
-        }
-
-        public static void UnMarshallJson<T>(byte[] bytes, out T @object)
-        {
-            var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
-            @object = JsonUtility.FromJson<T>(json);
-        }
-    }
 }
