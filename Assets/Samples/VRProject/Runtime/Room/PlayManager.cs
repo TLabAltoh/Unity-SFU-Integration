@@ -84,7 +84,7 @@ namespace TLab.VRProjct
                     m_centerEyeAnchor.forward * zOffset;
         }
 
-        public void OnHideKeyborad(TLabVKeyborad keyborad, bool hide)
+        public void OnKeyboradSetVisibility(bool hide)
         {
             var active = !hide;
 
@@ -117,9 +117,11 @@ namespace TLab.VRProjct
             return !active;
         }
 
-        public void SwitchKeyborad()
+        public void SwitchKeyboradVisibility()
         {
-            m_keyborad.SetVisibility(!m_keyborad.isActive);
+            m_keyborad.SetVisibility(!m_keyborad.isVisible);
+
+            OnKeyboradSetVisibility(m_keyborad.isVisible);
         }
 
         private void Start()
