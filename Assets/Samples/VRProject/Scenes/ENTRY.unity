@@ -2088,7 +2088,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7080640460636786048, guid: 38285747716ff59419a495b709b12c5c, type: 3}
       propertyPath: m_Name
-      value: Keyborad
+      value: InputField
       objectReference: {fileID: 0}
     - target: {fileID: 7080640460636786048, guid: 38285747716ff59419a495b709b12c5c, type: 3}
       propertyPath: m_IsActive
