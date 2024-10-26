@@ -119,12 +119,12 @@ namespace TLab.VRProjct
 
         public void SwitchKeyborad()
         {
-            m_keyborad.HideKeyborad(m_keyborad.isActive);
+            m_keyborad.SetVisibility(!m_keyborad.isActive);
         }
 
         private void Start()
         {
-            m_keyborad.HideKeyborad(true);
+            m_keyborad.Hide(true);
 
             SwitchPanel(m_targetPanel, false, Vector3.zero);
         }
@@ -139,7 +139,7 @@ namespace TLab.VRProjct
                     // TODO:
                     //if (!SyncClient.instance.isHost)
                     //{
-                    //    m_keyborad.HideKeyborad(true);
+                    //    m_keyborad.Hide(true);
                     //}
                 }
             }
