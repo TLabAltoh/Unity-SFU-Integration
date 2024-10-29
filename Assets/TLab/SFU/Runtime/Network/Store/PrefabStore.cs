@@ -67,7 +67,7 @@ namespace TLab.SFU.Network
             m_registry.Clear();
         }
 
-        public GameObject GetByPublicId(Address32 publicId) => m_registry[publicId] as GameObject;
+        public GameObject GetById(Address32 publicId) => m_registry[publicId] as GameObject;
 
         #endregion REGISTORY
 
@@ -81,7 +81,7 @@ namespace TLab.SFU.Network
 
         public int pktId => m_pktId;
 
-        public bool mchCallbackRegisted = false;
+        [SerializeField, HideInInspector] private bool m_awaked = false;
 
         public StoreAction.Action UpdateByInstantiateInfo(StoreAction prefabInstantiateInfo, out GameObject prefab)
         {
@@ -216,9 +216,9 @@ namespace TLab.SFU.Network
 
         public void Awake()
         {
-            if (!mchCallbackRegisted)
+            if (!m_awaked)
             {
-                m_pktId = m_storeName.GetHashCode();
+                m_pktId = Packetable.MD5From(m_storeName);
 
                 SyncClient.RegisterOnMessage(m_pktId, (from, to, bytes) =>
                 {
@@ -233,7 +233,7 @@ namespace TLab.SFU.Network
                     // boradcast
                 });
 
-                mchCallbackRegisted = true;
+                m_awaked = true;
             }
         }
     }

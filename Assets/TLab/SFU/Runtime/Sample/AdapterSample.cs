@@ -6,6 +6,8 @@ namespace TLab.SFU.Sample
 {
     public class AdapterSample : MonoBehaviour
     {
+        public static bool local => false;
+
         [SerializeField] private Adapter m_adapter;
 
         private ScrollRect m_scrollRect;
@@ -16,8 +18,8 @@ namespace TLab.SFU.Sample
         public enum State
         {
             NONE,
-            CONNECTING,
-            CONNECTED
+            CREATED,
+            DELETED,
         };
 
         private static State m_state;
@@ -31,9 +33,7 @@ namespace TLab.SFU.Sample
             get
             {
                 if (adapter == null)
-                {
                     return null;
-                }
 
                 return adapter.room;
             }
@@ -44,9 +44,7 @@ namespace TLab.SFU.Sample
             get
             {
                 if (adapter == null)
-                {
                     return null;
-                }
 
                 return adapter.user;
             }
@@ -56,15 +54,9 @@ namespace TLab.SFU.Sample
 
         public string THIS_NAME => "[" + this.GetType() + "] ";
 
-        private void Awake()
-        {
-            instance = this;
-        }
+        private void Awake() => instance = this;
 
-        public Adapter GetClone()
-        {
-            return m_adapter.GetClone();
-        }
+        public Adapter GetClone() => m_adapter.GetClone();
 
         public void OnMessage(string message)
         {
@@ -74,24 +66,22 @@ namespace TLab.SFU.Sample
             messageChunk.GetComponent<MessageChunk>()?.InitMessage(message);
         }
 
-        public void OnConnect(string message)
-        {
-            OnMessage(message);
+        public void GetFirstRoom() => m_adapter.GetRoomInfo(this, (response) => {
+            var @object = JsonUtility.FromJson<Network.Answer.RoomInfos>(response);
+            var id = @object.room_infos[0].room_id;
+            m_adapter.room.Init(id, m_adapter.room.key, m_adapter.room.masterKey);
+            OnMessage(response);
+        });
 
-            m_state = State.CONNECTED;
-        }
+        public void CreateRoom() => adapter.CreateRoom(this, (response) => {
+            m_state = State.CREATED;
+            OnMessage(response);
+        });
 
-        public void CreateRoom()
-        {
-            m_state = State.CONNECTING;
-
-            adapter.CreateRoom(this, OnConnect);
-        }
-
-        public void DeleteRoom()
-        {
-            adapter.DeleteRoom(this, OnMessage);
-        }
+        public void DeleteRoom() => adapter.DeleteRoom(this, (response) => {
+            m_state = State.DELETED;
+            OnMessage(response);
+        });
 
         private void Start()
         {
@@ -101,18 +91,14 @@ namespace TLab.SFU.Sample
             m_scrollRect.onValueChanged.AddListener((value) =>
             {
                 if (UnityEngine.Input.GetMouseButton(0))
-                {
                     m_forceScrollToTail = (value.y < 0.1f);
-                }
             });
         }
 
         private void Update()
         {
             if (m_forceScrollToTail && !UnityEngine.Input.GetMouseButton(0))
-            {
                 m_scrollRect.verticalNormalizedPosition = 0.0f;
-            }
         }
     }
 }

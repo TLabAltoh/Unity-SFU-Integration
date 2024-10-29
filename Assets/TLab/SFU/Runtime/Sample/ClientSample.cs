@@ -34,11 +34,13 @@ namespace TLab.SFU.Sample
 
         public void Join()
         {
-            if (m_adapter == null)
+            if (AdapterSample.local && (m_adapter == null))
             {
                 Debug.LogError(THIS_NAME + "Adapter is NULL");
                 return;
             }
+
+            m_adapter = AdapterSample.instance.GetClone();
 
             m_adapter.JoinRoom(this, (response) =>
             {
@@ -65,7 +67,7 @@ namespace TLab.SFU.Sample
 
         private IEnumerator CloneAdapter()
         {
-            while (AdapterSample.state != AdapterSample.State.CONNECTED)
+            while (AdapterSample.state != AdapterSample.State.CREATED)
                 yield return null;
 
             m_adapter = AdapterSample.instance.GetClone();
@@ -82,7 +84,8 @@ namespace TLab.SFU.Sample
                     m_forceScrollToTail = (value.y < 0.1f);
             });
 
-            StartCoroutine(CloneAdapter());
+            if (AdapterSample.local)
+                StartCoroutine(CloneAdapter());
         }
 
         protected virtual void Update()

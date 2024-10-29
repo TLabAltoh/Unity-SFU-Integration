@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/TLab/SFU/Samples/SFU-Sample/ClientSample.unity
+    guid: 75fe0351b67bb8e40a3fa87b3a3cba75
+  - enabled: 1
     path: Assets/Samples/VRProject/Scenes/ENTRY.unity
     guid: e23fa5e9f0c43c44ba00f234d4d0cbf2
   - enabled: 1

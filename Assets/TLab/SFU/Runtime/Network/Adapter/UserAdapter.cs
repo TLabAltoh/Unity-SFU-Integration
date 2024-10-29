@@ -39,35 +39,31 @@ namespace TLab.SFU.Network
 
         public bool regested => m_id != (int)UserId.NOT_REGISTED;
 
-        public UserConfig.JoinOffer GetJoinOffer(RoomAdapter roomAdapter)
+        public Offer.JoinRoom GetJoinRoom(RoomAdapter adapter, string roomKey, string masterKey = "")
         {
-            var createOffer = roomAdapter.GetCreateOffer();
-
-            return new UserConfig.JoinOffer
+            return new Offer.JoinRoom
             {
                 user_name = name,
-                room_id = roomAdapter.id,
-                room_pass = createOffer.room_pass,
-                master_key = createOffer.master_key,
+                room_id = adapter.id,
+                room_key = roomKey,
+                master_key = masterKey,
             };
         }
 
-        public UserConfig.ExitOffer GetExitOffer(RoomAdapter roomAdapter)
+        public Offer.ExitRoom GetExitRoom(RoomAdapter adapter, string roomKey)
         {
-            var createOffer = roomAdapter.GetCreateOffer();
-
-            return new UserConfig.ExitOffer
+            return new Offer.ExitRoom
             {
-                room_id = roomAdapter.id,
-                room_pass = createOffer.room_pass,
+                room_id = adapter.id,
+                room_key = roomKey,
                 user_id = m_id,
                 user_token = m_token
             };
         }
 
-        public IEnumerator JoinRoomAsync(RoomAdapter roomAdapter, UnityAction<string> callback)
+        public IEnumerator JoinRoomAsync(RoomAdapter adapter, string roomKey, string masterKey, UnityAction<string> callback)
         {
-            var url = roomAdapter.config.GetUrl() + $"/room/join/{Http.GetBase64(GetJoinOffer(roomAdapter))}/";
+            var url = adapter.config.GetUrl() + $"/room/join/{Http.GetBase64(GetJoinRoom(adapter, roomKey, masterKey))}/";
 
             var task = Http.GetResponse(url);
 
@@ -78,7 +74,7 @@ namespace TLab.SFU.Network
                 yield break;
             }
 
-            var answer = JsonUtility.FromJson<UserConfig.JoinAnswer>(task.Result);
+            var answer = JsonUtility.FromJson<Answer.JoinRoom>(task.Result);
 
             m_id = answer.user_id;
             m_token = answer.user_token;
@@ -86,9 +82,9 @@ namespace TLab.SFU.Network
             callback.Invoke(task.Result);
         }
 
-        public IEnumerator ExitRoomAsync(RoomAdapter roomAdapter, UnityAction<string> callback)
+        public IEnumerator ExitRoomAsync(RoomAdapter adapter, string roomKey, UnityAction<string> callback)
         {
-            var url = roomAdapter.config.GetUrl() + $"/room/exit/{Http.GetBase64(GetExitOffer(roomAdapter))}/";
+            var url = adapter.config.GetUrl() + $"/room/exit/{Http.GetBase64(GetExitRoom(adapter, roomKey))}/";
 
             var task = Http.GetResponse(url);
 
@@ -102,14 +98,14 @@ namespace TLab.SFU.Network
             callback.Invoke(task.Result);
         }
 
-        public void JoinRoom(RoomAdapter roomAdapter, MonoBehaviour mono, UnityAction<string> callback)
+        public void JoinRoom(RoomAdapter adapter, string roomKey, string masterKey, MonoBehaviour mono, UnityAction<string> callback)
         {
-            mono.StartCoroutine(JoinRoomAsync(roomAdapter, callback));
+            mono.StartCoroutine(JoinRoomAsync(adapter, roomKey, masterKey, callback));
         }
 
-        public void ExitRoom(RoomAdapter roomAdapter, MonoBehaviour mono, UnityAction<string> callback)
+        public void ExitRoom(RoomAdapter adapter, string roomKey, MonoBehaviour mono, UnityAction<string> callback)
         {
-            mono.StartCoroutine(ExitRoomAsync(roomAdapter, callback));
+            mono.StartCoroutine(ExitRoomAsync(adapter, roomKey, callback));
         }
     }
 }

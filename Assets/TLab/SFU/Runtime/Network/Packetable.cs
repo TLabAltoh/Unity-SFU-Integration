@@ -12,7 +12,7 @@ namespace TLab.SFU.Network
 
         public static int pktId;
 
-        protected static int MD5From(string @string)
+        public static int MD5From(string @string)
         {
             // https://stackoverflow.com/a/26870764/22575350
             var hasher = MD5.Create();

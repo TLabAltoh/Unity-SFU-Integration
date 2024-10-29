@@ -95,14 +95,14 @@ namespace TLab.SFU.Network
     public class RequestAuth
     {
         public int room_id;
-        public string room_pass;
+        public string room_key;
         public int user_id;
         public uint user_token;
 
-        public RequestAuth(int room_id, string room_pass, int user_id, uint user_token)
+        public RequestAuth(int room_id, string room_key, int user_id, uint user_token)
         {
             this.room_id = room_id;
-            this.room_pass = room_pass;
+            this.room_key = room_key;
             this.user_id = user_id;
             this.user_token = user_token;
         }
@@ -110,7 +110,7 @@ namespace TLab.SFU.Network
         public RequestAuth(RequestAuth auth)
         {
             this.room_id = auth.room_id;
-            this.room_pass = auth.room_pass;
+            this.room_key = auth.room_key;
             this.user_id = auth.user_id;
             this.user_token = auth.user_token;
         }

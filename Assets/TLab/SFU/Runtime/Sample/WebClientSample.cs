@@ -40,6 +40,11 @@ namespace TLab.SFU.Sample
         private void OnAddTrack(MediaStreamTrackEvent e)
         {
             Debug.Log(THIS_NAME + "Receive track: " + e.Track.Id);
+
+            var track = e.Track as AudioStreamTrack;
+            m_audioSource.SetTrack(track);
+            m_audioSource.loop = true;
+            m_audioSource.Play();
         }
 
         private void StartAudio()

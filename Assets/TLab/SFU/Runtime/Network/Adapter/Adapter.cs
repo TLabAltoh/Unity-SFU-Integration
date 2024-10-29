@@ -27,29 +27,16 @@ namespace TLab.SFU.Network
             return instance;
         }
 
-        public RequestAuth GetRequestAuth()
-        {
-            return new RequestAuth(m_room.id, m_room.password, m_user.id, m_user.token);
-        }
+        public RequestAuth GetRequestAuth() => new RequestAuth(m_room.id, m_room.key, m_user.id, m_user.token);
 
-        public void CreateRoom(MonoBehaviour mono, UnityAction<string> callback)
-        {
-            m_room.CreateRoom(mono, callback);
-        }
+        public void GetRoomInfo(MonoBehaviour mono, UnityAction<string> callback) => m_room.GetRoomInfo(mono, callback);
 
-        public void DeleteRoom(MonoBehaviour mono, UnityAction<string> callback)
-        {
-            m_room.DeleteRoom(mono, callback);
-        }
+        public void CreateRoom(MonoBehaviour mono, UnityAction<string> callback) => m_room.CreateRoom(mono, callback);
 
-        public void JoinRoom(MonoBehaviour mono, UnityAction<string> callback)
-        {
-            m_user.JoinRoom(m_room, mono, callback);
-        }
+        public void DeleteRoom(MonoBehaviour mono, UnityAction<string> callback) => m_room.DeleteRoom(mono, callback);
 
-        public void ExitRoom(MonoBehaviour mono, UnityAction<string> callback)
-        {
-            m_user.ExitRoom(m_room, mono, callback);
-        }
+        public void JoinRoom(MonoBehaviour mono, UnityAction<string> callback) => m_user.JoinRoom(m_room, m_room.key, m_room.masterKey, mono, callback);
+
+        public void ExitRoom(MonoBehaviour mono, UnityAction<string> callback) => m_user.ExitRoom(m_room, m_room.key, mono, callback);
     }
 }

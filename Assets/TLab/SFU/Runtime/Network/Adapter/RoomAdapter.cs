@@ -13,58 +13,52 @@ namespace TLab.SFU.Network
 
         [SerializeField] private PrefabStore m_avatorStore;
 
+        [SerializeField] private string m_key;
+
+        [SerializeField] private string m_masterKey;
+
         private Dictionary<int, PrefabStore.StoreAction> m_avatorInstantiateHistory = new Dictionary<int, PrefabStore.StoreAction>();
 
         private int m_id;
 
         public int id => m_id;
 
-        public string password
-        {
-            get
-            {
-                m_config.GetAuth(out var room_pass, out var master_key);
-                return room_pass;
-            }
-        }
+        public string key => m_key;
+
+        public string masterKey => m_masterKey;
 
         public RoomConfig config => m_config;
 
         public PrefabStore avatorStore => m_avatorStore;
 
-        public PrefabStore.StoreAction[] avatorInstantiateHistorys
-        {
-            get
-            {
-                return m_avatorInstantiateHistory.Values.ToArray();
-            }
-        }
+        public PrefabStore.StoreAction[] avatorInstantiateHistorys => m_avatorInstantiateHistory.Values.ToArray();
 
-        public RoomAdapter(RoomConfig config)
+        public void Init(int id, string key, string masterKey)
         {
-            m_config = config;
-        }
-
-        public void Init(RoomConfig config, int id)
-        {
-            m_config = config;
-
             m_id = id;
+
+            m_key = key;
+
+            m_masterKey = masterKey;
+        }
+
+        public void Init(RoomConfig config, int id, string key, string masterKey)
+        {
+            Init(id, key, masterKey);
+
+            m_config = config;
         }
 
         public RoomAdapter GetClone()
         {
             var instance = CreateInstance<RoomAdapter>();
 
-            instance.Init(m_config, m_id);
+            instance.Init(m_config, m_id, m_key, m_masterKey);
 
             return instance;
         }
 
-        public bool IsPlayerJoined(int index)
-        {
-            return m_avatorInstantiateHistory.ContainsKey(index);
-        }
+        public bool IsPlayerJoined(int index) => m_avatorInstantiateHistory.ContainsKey(index);
 
         public bool GetInstantiateInfo(int index, out PrefabStore.StoreAction info)
         {
@@ -113,50 +107,73 @@ namespace TLab.SFU.Network
             return false;
         }
 
-        public RoomConfig.CreateOffer GetCreateOffer()
-        {
-            return config.GetCreateOffer();
-        }
+        public Offer.CreateRoom GetCreateRoom() => config.GetCreateRoom();
 
-        public RoomConfig.DeleteOffer GetDeleteOffer()
-        {
-            return config.GetDeleteOffer(m_id);
-        }
+        public Offer.DeleteRoom GetDeleteRoom() => config.GetDeleteRoom(m_id, m_masterKey);
 
-        public IEnumerator CreateRoomAsync(UnityAction<string> callback)
+        public IEnumerator GetRoomInfoAsync(UnityAction<string> callback)
         {
-            var url = config.GetUrl() + $"/room/create/{Http.GetBase64(GetCreateOffer())}/";
+            var url = config.GetUrl() + $"/room";
 
             var task = Http.GetResponse(url);
 
             yield return new WaitUntil(() => task.IsCompleted);
             if (task.Exception != null)
             {
-                Debug.Log($"WebRTC: Create Room failed, url={url}, err is {task.Exception}");
+                Debug.Log($"RoomAdapter: Enum Room failed, url={url}, err is {task.Exception}");
                 yield break;
             }
 
-            var answer = JsonUtility.FromJson<RoomConfig.CreateAnswer>(task.Result);
+            var answer = JsonUtility.FromJson<Answer.CreateRoom>(task.Result);
 
             m_id = answer.room_id;
+
+            m_config.GetAuth(out m_key, out m_masterKey);
+
+            callback.Invoke(task.Result);
+        }
+
+        public IEnumerator CreateRoomAsync(UnityAction<string> callback)
+        {
+            var url = config.GetUrl() + $"/room/create/{Http.GetBase64(GetCreateRoom())}/";
+
+            var task = Http.GetResponse(url);
+
+            yield return new WaitUntil(() => task.IsCompleted);
+            if (task.Exception != null)
+            {
+                Debug.Log($"RoomAdapter: Create Room failed, url={url}, err is {task.Exception}");
+                yield break;
+            }
+
+            var answer = JsonUtility.FromJson<Answer.CreateRoom>(task.Result);
+
+            m_id = answer.room_id;
+
+            m_config.GetAuth(out m_key, out m_masterKey);
 
             callback.Invoke(task.Result);
         }
 
         public IEnumerator DeleteRoomAsync(UnityAction<string> callback)
         {
-            var url = config.GetUrl() + $"/room/delete/{Http.GetBase64(GetDeleteOffer())}/";
+            var url = config.GetUrl() + $"/room/delete/{Http.GetBase64(GetDeleteRoom())}/";
 
             var task = Http.GetResponse(url);
 
             yield return new WaitUntil(() => task.IsCompleted);
             if (task.Exception != null)
             {
-                Debug.Log($"WebRTC: Delete Room failed, url={url}, err is {task.Exception}");
+                Debug.Log($"RoomAdapter: Delete Room failed, url={url}, err is {task.Exception}");
                 yield break;
             }
 
             callback.Invoke(task.Result);
+        }
+
+        public void GetRoomInfo(MonoBehaviour mono, UnityAction<string> callback)
+        {
+            mono.StartCoroutine(GetRoomInfoAsync(callback));
         }
 
         public void CreateRoom(MonoBehaviour mono, UnityAction<string> callback)

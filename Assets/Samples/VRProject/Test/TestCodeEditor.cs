@@ -1,6 +1,9 @@
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
+#if UNITY_EDITOR
 namespace TLab.VRProjct.Test.Editor
 {
     [CustomEditor(typeof(TestCode))]
@@ -36,3 +39,4 @@ namespace TLab.VRProjct.Test.Editor
         }
     }
 }
+#endif

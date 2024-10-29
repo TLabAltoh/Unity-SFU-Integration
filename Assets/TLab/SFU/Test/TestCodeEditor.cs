@@ -1,7 +1,10 @@
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using TLab.SFU.Network;
 
+#if UNITY_EDITOR
 namespace TLab.SFU.Test.Editor
 {
     [CustomEditor(typeof(TestCode))]
@@ -65,3 +68,4 @@ namespace TLab.SFU.Test.Editor
         }
     }
 }
+#endif
