@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: TLabAltoh
-  productName: VR_Classroom
+  productName: VRProjct
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.12156863, g: 0.12156863, b: 0.1254902, a: 1}
@@ -159,7 +159,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.TLabAltoh.VR_Classroom
+    Android: com.TLabAltoh.VRProjct
     Standalone: com.TLabAltoh.VR-Classroom
   buildNumber:
     Standalone: 0
@@ -645,7 +645,7 @@ PlayerSettings:
   webGLDecompressionFallback: 0
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    Android: UNITYWEBVIEW_ANDROID_SUPPORT_OCULUS;UNITYWEBVIEW_ANDROID_USES_CLEARTEXT_TRAFFIC;UNITYWEBVIEW_ANDROID_ENABLE_CAMERA;UNITYWEBVIEW_ANDROID_ENABLE_MICROPHONE
+    Android: 
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

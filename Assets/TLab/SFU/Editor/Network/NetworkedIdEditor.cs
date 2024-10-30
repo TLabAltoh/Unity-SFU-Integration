@@ -8,19 +8,20 @@ namespace TLab.SFU.Network.Editor
     {
         private NetworkedId m_instance;
 
-        private void OnEnable()
-        {
-            m_instance = target as NetworkedId;
-        }
+        private void OnEnable() => m_instance = target as NetworkedId;
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("Create Hash ID"))
+            if (GUILayout.Button("Generate Address"))
+                m_instance.GenerateAddress();
+
+            if (GUILayout.Button("For All of Scene Object"))
             {
-                m_instance.CreateHashID();
-                EditorUtility.SetDirty(m_instance);
+                var ids = FindObjectsOfType<NetworkedId>();
+                foreach (var id in ids)
+                    id.GenerateAddress();
             }
         }
     }

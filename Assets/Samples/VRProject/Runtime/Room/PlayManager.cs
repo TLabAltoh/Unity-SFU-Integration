@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Oculus.Interaction;
 using TLab.VKeyborad;
 using TLab.SFU.Network;
 
@@ -15,7 +14,6 @@ namespace TLab.VRProjct
 
         [Header("Keyborad")]
         [SerializeField] private TLabVKeyborad m_keyborad;
-        [SerializeField] private RayInteractable m_interactable;
 
         [Header("Network")]
         [SerializeField] private SyncClient m_syncClient;
@@ -84,20 +82,6 @@ namespace TLab.VRProjct
                     m_centerEyeAnchor.forward * zOffset;
         }
 
-        public void OnKeyboradSetVisibility(bool hide)
-        {
-            var active = !hide;
-
-            m_interactable.enabled = active;
-
-            if (active)
-            {
-                const float SCALE = 0.75f;
-                var position = GetEyeDirectionPos(0f, -HALF * SCALE, HALF * SCALE);
-                m_keyborad.SetTransform(position, cameraPos, Vector3.up);
-            }
-        }
-
         private void SwitchPanel(Transform target, bool active, Vector3 offset)
         {
             target.gameObject.SetActive(active);
@@ -119,16 +103,23 @@ namespace TLab.VRProjct
 
         public void SwitchKeyboradVisibility()
         {
+            if (m_keyborad == null)
+                return;
+
             m_keyborad.SetVisibility(!m_keyborad.isVisible);
 
-            OnKeyboradSetVisibility(m_keyborad.isVisible);
+            if (m_keyborad.isVisible)
+            {
+                const float SCALE = 0.75f;
+                var position = GetEyeDirectionPos(0f, -HALF * SCALE, HALF * SCALE);
+                m_keyborad.SetTransform(position, cameraPos, Vector3.up);
+            }
         }
 
         private void Start()
         {
-            m_keyborad.Hide(true);
-
-            SwitchPanel(m_targetPanel, false, Vector3.zero);
+            if (m_targetPanel != null)
+                SwitchPanel(m_targetPanel, false, Vector3.zero);
         }
 
         private void Update()

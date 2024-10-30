@@ -77,7 +77,7 @@ namespace TLab.SFU.Interact
                 transform.rotation = Quaternion.AngleAxis(m_angle, m_axis) * transform.rotation;
                 m_angle = Mathf.Clamp(m_angle - DURATION * Time.deltaTime, ZERO_ANGLE, float.MaxValue);
 
-                m_controller?.SyncTransformViaWebRTC();
+                m_controller?.SyncViaWebRTC();
             }
             else
             {

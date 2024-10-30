@@ -154,7 +154,7 @@ namespace TLab.SFU.Network
 
         public bool enableGravity => (m_rb == null) ? false : m_rb.useGravity;
 
-        public static bool mchCallbackRegisted = false;
+        public static bool msgCallbackRegisted = false;
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -264,7 +264,7 @@ namespace TLab.SFU.Network
             m_syncFromOutside = true;
         }
 
-        public virtual void SyncTransformViaWebRTC()
+        public override void SyncViaWebRTC()
         {
             if (!m_enableSync)
             {
@@ -310,7 +310,7 @@ namespace TLab.SFU.Network
             m_syncFromOutside = false;
         }
 
-        public virtual void SyncTransformViaWebSocket()
+        public override void SyncViaWebSocket()
         {
             if (!m_enableSync)
             {
@@ -419,7 +419,7 @@ namespace TLab.SFU.Network
         {
             base.Awake();
 
-            if (!mchCallbackRegisted)
+            if (!msgCallbackRegisted)
             {
                 SyncClient.RegisterOnMessage(MSG_SyncTransform.pktId, (from, to, bytes) =>
                 {
@@ -427,7 +427,7 @@ namespace TLab.SFU.Network
                     @object.UnMarshall(bytes);
                     Registry<SyncTransformer>.GetById(@object.transformerState.id)?.SyncTransformFromOutside(@object.transformerState);
                 });
-                mchCallbackRegisted = true;
+                msgCallbackRegisted = true;
             }
         }
 

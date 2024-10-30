@@ -4,11 +4,11 @@ namespace TLab.SFU.Network
 {
     public class NetworkedId : MonoBehaviour
     {
-        protected Address32 m_privateId;
+        [SerializeField, HideInInspector] protected Address32 m_privateId;
 
-        protected Address32 m_publicId;
+        [SerializeField, HideInInspector] protected Address32 m_publicId;
 
-        protected Address64 m_id;
+        [SerializeField, HideInInspector] protected Address64 m_id;
 
         public Address32 privateId => m_privateId;
 
@@ -23,7 +23,7 @@ namespace TLab.SFU.Network
         }
 
 #if UNITY_EDITOR
-        public virtual void CreateHashID()
+        public virtual void GenerateAddress()
         {
             var r = new System.Random();
             var v = new byte[4];
@@ -31,6 +31,10 @@ namespace TLab.SFU.Network
             r.NextBytes(v);
             m_privateId.Update(v[0], v[1], v[2], v[3]);
             m_id.UpdateLower32(v[0], v[1], v[2], v[3]);
+
+            Debug.Log(v);
+
+            UnityEditor.EditorUtility.SetDirty(this);
         }
 #endif
     }

@@ -35,10 +35,7 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
-        public virtual void SetSyncEnable(bool active)
-        {
-            m_enableSync = active;
-        }
+        public virtual void SetSyncEnable(bool active) => m_enableSync = active;
 
         public virtual void Shutdown()
         {
@@ -83,6 +80,10 @@ namespace TLab.SFU.Network
 
             m_state = State.INITIALIZED;
         }
+
+        public virtual void SyncViaWebRTC() { }
+
+        public virtual void SyncViaWebSocket() { }
 
         protected virtual void Awake() { }
 

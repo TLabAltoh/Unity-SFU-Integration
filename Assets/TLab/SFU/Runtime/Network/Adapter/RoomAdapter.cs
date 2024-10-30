@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.Collections;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,13 +9,9 @@ namespace TLab.SFU.Network
     {
         [SerializeField] private RoomConfig m_config;
 
-        [SerializeField] private PrefabStore m_avatorStore;
-
         [SerializeField] private string m_key;
 
         [SerializeField] private string m_masterKey;
-
-        private Dictionary<int, PrefabStore.StoreAction> m_avatorInstantiateHistory = new Dictionary<int, PrefabStore.StoreAction>();
 
         private int m_id;
 
@@ -28,10 +22,6 @@ namespace TLab.SFU.Network
         public string masterKey => m_masterKey;
 
         public RoomConfig config => m_config;
-
-        public PrefabStore avatorStore => m_avatorStore;
-
-        public PrefabStore.StoreAction[] avatorInstantiateHistorys => m_avatorInstantiateHistory.Values.ToArray();
 
         public void Init(int id, string key, string masterKey)
         {
@@ -56,55 +46,6 @@ namespace TLab.SFU.Network
             instance.Init(m_config, m_id, m_key, m_masterKey);
 
             return instance;
-        }
-
-        public bool IsPlayerJoined(int index) => m_avatorInstantiateHistory.ContainsKey(index);
-
-        public bool GetInstantiateInfo(int index, out PrefabStore.StoreAction info)
-        {
-            if (m_avatorInstantiateHistory.ContainsKey(index))
-            {
-                info = m_avatorInstantiateHistory[index];
-                return true;
-            }
-            else
-            {
-                info = new PrefabStore.StoreAction();
-                return false;
-            }
-        }
-
-        public bool UpdateState(PrefabStore.StoreAction info, out GameObject avator)
-        {
-            avator = null;
-
-            switch (info.action)
-            {
-                case PrefabStore.StoreAction.Action.INSTANTIATE:
-                    if (!m_avatorInstantiateHistory.ContainsKey(info.userId))
-                    {
-                        m_avatorInstantiateHistory.Add(info.userId, info);
-
-                        m_avatorStore.UpdateByInstantiateInfo(info, out avator);
-
-                        return true;
-                    }
-
-                    return false;
-                case PrefabStore.StoreAction.Action.DELETE:
-                    if (m_avatorInstantiateHistory.ContainsKey(info.userId))
-                    {
-                        m_avatorInstantiateHistory.Remove(info.userId);
-
-                        m_avatorStore.UpdateByInstantiateInfo(info, out avator);
-
-                        return true;
-                    }
-
-                    return false;
-            }
-
-            return false;
         }
 
         public Offer.CreateRoom GetCreateRoom() => config.GetCreateRoom();

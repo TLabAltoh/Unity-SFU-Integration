@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Collections;
 using System;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using static TLab.SFU.ComponentExtention;
@@ -13,11 +15,11 @@ namespace TLab.SFU.Network
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
         [SerializeField] private Adapter m_adapter;
-        [SerializeField] private PrefabStore m_prefabStore;
+        [SerializeField] private PrefabShop m_avatorShop;
 
-        [Header("Anchors")]
-        [SerializeField] private Transform[] m_instantiateAnchors;
-        [SerializeField] private Transform[] m_respownAnchors;
+        private Dictionary<int, PrefabStore.StoreAction> m_avatorHistory = new Dictionary<int, PrefabStore.StoreAction>();
+
+        public PrefabStore.StoreAction[] avatorHistorys => m_avatorHistory.Values.ToArray();
 
         private static WebSocketClient m_wsClient;
         private static WebRTCClient m_rtcClient;
@@ -42,9 +44,7 @@ namespace TLab.SFU.Network
             get
             {
                 if (instance == null)
-                {
                     return null;
-                }
 
                 return instance.m_adapter;
             }
@@ -55,9 +55,7 @@ namespace TLab.SFU.Network
             get
             {
                 if (adapter == null)
-                {
                     return null;
-                }
 
                 return adapter.user;
             }
@@ -68,43 +66,20 @@ namespace TLab.SFU.Network
             get
             {
                 if (adapter == null)
-                {
                     return null;
-                }
 
                 return adapter.room;
             }
         }
 
-        public static PrefabStore prefabStore
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    return null;
-                }
-
-                return instance.m_prefabStore;
-            }
-        }
-
-        public static bool created
-        {
-            get
-            {
-                return instance != null;
-            }
-        }
+        public static bool created => instance != null;
 
         public static bool wsConnected
         {
             get
             {
                 if (m_wsClient == null)
-                {
                     return false;
-                }
 
                 return m_wsClient.connected;
             }
@@ -115,9 +90,7 @@ namespace TLab.SFU.Network
             get
             {
                 if (userAdapter == null)
-                {
                     return false;
-                }
 
                 return userAdapter.regested && wsConnected;
             }
@@ -128,9 +101,7 @@ namespace TLab.SFU.Network
             get
             {
                 if (m_rtcClient == null)
-                {
                     return false;
-                }
 
                 return true;  // TODO: + Connected
             }
@@ -141,28 +112,18 @@ namespace TLab.SFU.Network
             get
             {
                 if (userAdapter == null)
-                {
                     return false;
-                }
 
                 return userAdapter.regested && rtcConnected;
             }
         }
 
-        public static int userId
-        {
-            get
-            {
-                return userAdapter.id;
-            }
-        }
+        public static int userId => userAdapter.id;
 
         public static bool IsOwn(int userId)
         {
             if (userAdapter == null)
-            {
                 return false;
-            }
 
             return userAdapter.id == userId;
         }
@@ -196,12 +157,12 @@ namespace TLab.SFU.Network
             static MSG_Join() => pktId = MD5From(nameof(MSG_Join));
 
             public int messageType; // 0: request, 1: response, 2: broadcast
-            public PrefabStore.StoreAction avatorInstantiateInfo;
+            public PrefabStore.StoreAction avatorAction;
 
             // response only
             public Address32[] idAvails;
             public PhysicsUpdateType physicsUpdateType;
-            public PrefabStore.StoreAction[] othersInstantiateInfos;
+            public PrefabStore.StoreAction[] othersHistory;
         }
 
         [Serializable]
@@ -246,32 +207,6 @@ namespace TLab.SFU.Network
 
         #endregion REFLESH
 
-        public WebTransform GetRespownAnchor(int userId)
-        {
-            if (userId > m_respownAnchors.Length)
-            {
-                return new WebTransform();
-            }
-
-            var anchor = m_respownAnchors[userId];
-            var @transform = new WebTransform(anchor.position, anchor.rotation);
-
-            return @transform;
-        }
-
-        public WebTransform GetInstantiateAnchor(int userId)
-        {
-            if (userId > m_instantiateAnchors.Length)
-            {
-                return new WebTransform();
-            }
-
-            var anchor = m_instantiateAnchors[userId];
-            var @transform = new WebTransform(anchor.position, anchor.rotation);
-
-            return @transform;
-        }
-
         public void UpdatePhysicsUpdateType(PhysicsUpdateType physicsUpdateType)
         {
             // TODO
@@ -280,9 +215,56 @@ namespace TLab.SFU.Network
         public static void RegisterOnMessage(int msgId, OnMessageCallback callback)
         {
             if (!m_messageCallbacks.ContainsKey(msgId))
-            {
                 m_messageCallbacks[msgId] = callback;
+        }
+
+        public bool IsPlayerJoined(int index) => m_avatorHistory.ContainsKey(index);
+
+        public bool GetInstantiateInfo(int index, out PrefabStore.StoreAction info)
+        {
+            if (m_avatorHistory.ContainsKey(index))
+            {
+                info = m_avatorHistory[index];
+                return true;
             }
+            else
+            {
+                info = new PrefabStore.StoreAction();
+                return false;
+            }
+        }
+
+        public bool UpdateState(PrefabStore.StoreAction info, out GameObject avator)
+        {
+            avator = null;
+
+            switch (info.action)
+            {
+                case PrefabStore.StoreAction.Action.INSTANTIATE:
+                    if (!m_avatorHistory.ContainsKey(info.userId))
+                    {
+                        m_avatorHistory.Add(info.userId, info);
+
+                        m_avatorShop.store.UpdateByInstantiateInfo(info, out avator);
+
+                        return true;
+                    }
+
+                    return false;
+                case PrefabStore.StoreAction.Action.DELETE:
+                    if (m_avatorHistory.ContainsKey(info.userId))
+                    {
+                        m_avatorHistory.Remove(info.userId);
+
+                        m_avatorShop.store.UpdateByInstantiateInfo(info, out avator);
+
+                        return true;
+                    }
+
+                    return false;
+            }
+
+            return false;
         }
 
         private IEnumerator ConnectTask()
@@ -306,42 +288,34 @@ namespace TLab.SFU.Network
                         {
                             var response = new MSG_Join();
                             response.messageType = 1;
-                            response.avatorInstantiateInfo = @object.avatorInstantiateInfo;
+                            response.avatorAction = @object.avatorAction;
 
                             // response
-                            response.avatorInstantiateInfo.publicId = UniqueId.Generate();
+                            response.avatorAction.publicId = UniqueId.Generate();
                             response.idAvails = UniqueId.Generate(5);   // TODO
                             response.physicsUpdateType = PhysicsUpdateType.RECEIVER;
-                            response.othersInstantiateInfos = roomAdapter.avatorInstantiateHistorys;
+                            response.othersHistory = avatorHistorys;
 
-                            roomAdapter.UpdateState(@object.avatorInstantiateInfo, out var avator);
+                            UpdateState(@object.avatorAction, out var avator);
 
-                            SendWS(response.avatorInstantiateInfo.userId, response.Marshall());
+                            SendWS(response.avatorAction.userId, response.Marshall());
 
-                            Foreach<NetworkedObject>((networkedObject) =>
-                            {
-                                // SyncState
-                            });
+                            Foreach<NetworkedObject>((networkedObject) => networkedObject.SyncViaWebSocket());
                         }
                         break;
                     case 1: // response
                         {
                             UpdatePhysicsUpdateType(@object.physicsUpdateType);
 
-                            foreach (var othersInstantiateInfo in @object.othersInstantiateInfos)
-                            {
-                                roomAdapter.UpdateState(othersInstantiateInfo, out var avator);
-                            }
+                            foreach (var othersInstantiateInfo in @object.othersHistory)
+                                UpdateState(othersInstantiateInfo, out var avator);
 
-                            Foreach<NetworkedObject>((networkedObject) =>
-                            {
-                                networkedObject.Init();
-                            });
+                            Foreach<NetworkedObject>((networkedObject) => networkedObject.Init());
                         }
                         break;
                     case 2: // broadcast
                         {
-                            roomAdapter.UpdateState(@object.avatorInstantiateInfo, out var avator);
+                            UpdateState(@object.avatorAction, out var avator);
                         }
                         break;
                 }
@@ -349,7 +323,7 @@ namespace TLab.SFU.Network
 
             RegisterOnMessage(MSG_PhysicsUpdateType.pktId, (from, to, bytes) =>
             {
-                var @object = new MSG_Join();
+                var @object = new MSG_PhysicsUpdateType();
                 @object.UnMarshall(bytes);
 
                 UpdatePhysicsUpdateType(@object.physicsUpdateType);
@@ -357,7 +331,7 @@ namespace TLab.SFU.Network
 
             RegisterOnMessage(MSG_IdAvails.pktId, (from, to, bytes) =>
             {
-                var @object = new MSG_Join();
+                var @object = new MSG_IdAvails();
                 @object.UnMarshall(bytes);
 
                 switch (@object.messageType)
@@ -460,10 +434,7 @@ namespace TLab.SFU.Network
             yield return 1;
         }
 
-        public void Connect()
-        {
-            m_connectTask = ConnectTask();
-        }
+        public void Connect() => m_connectTask = ConnectTask();
 
         #region WS
 
@@ -481,7 +452,9 @@ namespace TLab.SFU.Network
 
         public async void CloseWS()
         {
-            await m_wsClient?.HangUp();
+            if (m_wsClient != null)
+                await m_wsClient.HangUp();
+
             m_wsClient = null;
         }
 
@@ -505,20 +478,11 @@ namespace TLab.SFU.Network
 
         #endregion RTC
 
-        void Awake()
-        {
-            instance = this;
-        }
+        void Awake() => instance = this;
 
-        private void Start()
-        {
-            Connect();
-        }
+        private void Start() => Connect();
 
-        private void Update()
-        {
-            m_connectTask?.MoveNext();
-        }
+        private void Update() => m_connectTask?.MoveNext();
 
         private void OnDestroy()
         {
@@ -545,7 +509,41 @@ namespace TLab.SFU.Network
 
         public void OnOpen()
         {
-            throw new NotImplementedException();
+            if (m_adapter.user.id == 0)
+            {
+                UpdatePhysicsUpdateType(PhysicsUpdateType.SENDER);
+
+                Foreach<NetworkedObject>((networkedObject) => networkedObject.Init());
+
+                var action = new PrefabStore.StoreAction()
+                {
+                    action = PrefabStore.StoreAction.Action.INSTANTIATE,
+                    elemId = 0,
+                    userId = 0,
+                    publicId = UniqueId.Generate(),
+                    transform = m_avatorShop.GetAnchor(0),
+                };
+
+                UpdateState(action, out var avator);
+            }
+            else
+            {
+                var action = new PrefabStore.StoreAction()
+                {
+                    action = PrefabStore.StoreAction.Action.INSTANTIATE,
+                    elemId = userId,
+                    userId = userId,
+                    transform = m_avatorShop.GetAnchor(userId),
+                };
+
+                var @object = new MSG_Join()
+                {
+                    messageType = 0,
+                    avatorAction = action,
+                };
+
+                SendWS(MSG_Join.pktId, @object.Marshall());
+            }
         }
 
         public void OnClose()

@@ -133,9 +133,7 @@ namespace TLab.SFU.Interact
             transform.LookAt(mainCamera, Vector3.up);
 
             if (m_enableSync)
-            {
-                m_syncTransformer.SyncTransformViaWebRTC();
-            }
+                m_syncTransformer.SyncViaWebRTC();
         }
     }
 }

@@ -8,14 +8,16 @@ namespace TLab.SFU.Network.Editor
     {
         private SyncClient m_instance;
 
-        private void OnEnable()
-        {
-            m_instance = target as SyncClient;
-        }
+        private void OnEnable() => m_instance = target as SyncClient;
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
+
+            if (GUILayout.Button("Test"))
+            {
+
+            }
 
             if (Application.isPlaying)
             {

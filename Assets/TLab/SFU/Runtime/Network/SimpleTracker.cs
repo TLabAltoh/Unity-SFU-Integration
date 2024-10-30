@@ -26,7 +26,7 @@ namespace TLab.SFU.Network
 
             if (m_self)
             {
-                SyncTransformViaWebRTC();
+                SyncViaWebRTC();
             }
         }
 

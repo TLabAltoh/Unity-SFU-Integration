@@ -71,17 +71,7 @@ namespace TLab.SFU.Network
 
         #endregion REGISTORY
 
-        [SerializeField] private string m_storeName = "";
-
         [SerializeField] private List<StoreElement> m_store = new List<StoreElement>();
-
-        private int m_pktId;
-
-        public string storeName => m_storeName;
-
-        public int pktId => m_pktId;
-
-        [SerializeField, HideInInspector] private bool m_awaked = false;
 
         public StoreAction.Action UpdateByInstantiateInfo(StoreAction prefabInstantiateInfo, out GameObject prefab)
         {
@@ -212,29 +202,6 @@ namespace TLab.SFU.Network
 
             instance = null;
             return false;
-        }
-
-        public void Awake()
-        {
-            if (!m_awaked)
-            {
-                m_pktId = Packetable.MD5From(m_storeName);
-
-                SyncClient.RegisterOnMessage(m_pktId, (from, to, bytes) =>
-                {
-                    // TODO:
-
-                    // Instantiate by id
-
-                    // networked init
-
-                    // cache prefab to registory
-
-                    // boradcast
-                });
-
-                m_awaked = true;
-            }
         }
     }
 }

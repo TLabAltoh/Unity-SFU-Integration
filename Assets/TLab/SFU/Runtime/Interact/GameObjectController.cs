@@ -82,7 +82,7 @@ namespace TLab.SFU.Interact
         private Interactor m_mainHand;
         private Interactor m_subHand;
 
-        public static new bool mchCallbackRegisted = false;
+        public static new bool msgCallbackRegisted = false;
 
         public GrabState grabState => m_grabState;
 
@@ -221,7 +221,7 @@ namespace TLab.SFU.Interact
                 }
             }
 
-            SyncTransformViaWebSocket();
+            SyncViaWebSocket();
 
             var @object = new MSG_GrabbLock
             {
@@ -510,7 +510,7 @@ namespace TLab.SFU.Interact
         {
             base.Awake();
 
-            if (!mchCallbackRegisted)
+            if (!msgCallbackRegisted)
             {
                 SyncClient.RegisterOnMessage(MSG_GrabbLock.pktId, (from, to, bytes) =>
                 {
@@ -537,7 +537,7 @@ namespace TLab.SFU.Interact
                     Registry.GetById(@object.networkedId)?.Divide(@object.active);
                 });
 
-                mchCallbackRegisted = true;
+                msgCallbackRegisted = true;
             }
         }
 
@@ -550,6 +550,8 @@ namespace TLab.SFU.Interact
             m_position.Start(this.transform, m_rb);
             m_rotation.Start(this.transform, m_rb);
             m_scale.Start(this.transform, m_rb);
+
+            m_networkedId = GetComponent<NetworkedId>();
 
             Registry.Register(m_networkedId.id, this);
         }
@@ -571,23 +573,19 @@ namespace TLab.SFU.Interact
                     m_rotation.UpdateOneHandLogic();
                 }
 
-                SyncTransformViaWebRTC();
+                SyncViaWebRTC();
             }
             else
             {
                 if (m_grabState.isFree && m_scale.UpdateHandleLogic())
-                {
-                    SyncTransformViaWebRTC();
-                }
+                    SyncViaWebRTC();
             }
         }
 
         public override void Shutdown()
         {
             if (m_grabState.grabbByMe)
-            {
                 GrabbLock(GrabState.Action.FREE);
-            }
 
             Registry.UnRegister(m_networkedId.id);
         }
