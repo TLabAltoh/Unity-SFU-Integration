@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd0779c58ff58864c84ff4e0972298f2, type: 3}
   m_Name: Adapter
   m_EditorClassIdentifier: 
-  m_room: {fileID: 11400000, guid: 1890137f2b5d39846b315e7c6636c1c9, type: 2}
-  m_user: {fileID: 11400000, guid: 8922ebaf503d60247b46e1e143b8ab0b, type: 2}
+  m_config: {fileID: 11400000, guid: 280f97a8e8948a846b569db7c5ca3ad9, type: 2}
+  m_key: 
+  m_masterKey: 

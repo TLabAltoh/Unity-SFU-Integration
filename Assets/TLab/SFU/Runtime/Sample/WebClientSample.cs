@@ -21,7 +21,7 @@ namespace TLab.SFU.Sample
         {
             if (m_useWebRTC)
             {
-                if (m_useAudio && m_adapter.user.id == 0)
+                if (m_useAudio && m_adapter.userId == 0)
                 {
                     StartAudio();
                     m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), null, m_audioSource, null);
@@ -59,9 +59,9 @@ namespace TLab.SFU.Sample
 
         public override void Close() => m_client?.HangUp();
 
-        public override void SendText(string message) => m_client.Send(m_adapter.user.id, Encoding.UTF8.GetBytes(message));
+        public override void SendText(string message) => m_client.Send(m_adapter.userId, Encoding.UTF8.GetBytes(message));
 
-        public override void Send(byte[] bytes) => m_client.Send(m_adapter.user.id, bytes);
+        public override void Send(byte[] bytes) => m_client.Send(m_adapter.userId, bytes);
 
         public void OnMessage(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes, SfuClient.RECV_PACKET_HEADER_SIZE, bytes.Length - SfuClient.RECV_PACKET_HEADER_SIZE));
 

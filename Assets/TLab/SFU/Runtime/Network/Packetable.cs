@@ -27,6 +27,7 @@ namespace TLab.SFU.Network
         public virtual byte[] Marshall()
         {
             var json = JsonUtility.ToJson(this);
+            Debug.Log(json);
             return Combine(SfuClient.SEND_PACKET_HEADER_SIZE, packetId, Encoding.UTF8.GetBytes(json));
         }
 

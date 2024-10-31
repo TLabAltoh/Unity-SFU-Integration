@@ -17,15 +17,15 @@ namespace TLab.SFU.Network
         [SerializeField] private Adapter m_adapter;
         [SerializeField] private PrefabShop m_avatorShop;
 
-        private Dictionary<int, PrefabStore.StoreAction> m_avatorHistory = new Dictionary<int, PrefabStore.StoreAction>();
-
-        public PrefabStore.StoreAction[] avatorHistorys => m_avatorHistory.Values.ToArray();
-
         private static WebSocketClient m_wsClient;
         private static WebRTCClient m_rtcClient;
 
-        private static PhysicsUpdateType m_physicsUpdateType = PhysicsUpdateType.NONE;
+        public static Queue<Address32> idAvails = new Queue<Address32>();
 
+        private Dictionary<int, PrefabStore.StoreAction> m_avatorHistory = new Dictionary<int, PrefabStore.StoreAction>();
+        public PrefabStore.StoreAction[] avatorHistorys => m_avatorHistory.Values.ToArray();
+
+        private static PhysicsUpdateType m_physicsUpdateType = PhysicsUpdateType.NONE;
         public static PhysicsUpdateType physicsUpdateType => m_physicsUpdateType;
 
         public delegate void OnMessageCallback(int from, int to, byte[] bytes);
@@ -50,28 +50,6 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static UserAdapter userAdapter
-        {
-            get
-            {
-                if (adapter == null)
-                    return null;
-
-                return adapter.user;
-            }
-        }
-
-        public static RoomAdapter roomAdapter
-        {
-            get
-            {
-                if (adapter == null)
-                    return null;
-
-                return adapter.room;
-            }
-        }
-
         public static bool created => instance != null;
 
         public static bool wsConnected
@@ -85,16 +63,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static bool wsEnabled
-        {
-            get
-            {
-                if (userAdapter == null)
-                    return false;
-
-                return userAdapter.regested && wsConnected;
-            }
-        }
+        public static bool wsEnabled => adapter.regested && wsConnected;
 
         public static bool rtcConnected
         {
@@ -107,26 +76,11 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static bool rtcEnabled
-        {
-            get
-            {
-                if (userAdapter == null)
-                    return false;
+        public static bool rtcEnabled => adapter.regested && rtcConnected;
 
-                return userAdapter.regested && rtcConnected;
-            }
-        }
+        public static int userId => adapter.userId;
 
-        public static int userId => userAdapter.id;
-
-        public static bool IsOwn(int userId)
-        {
-            if (userAdapter == null)
-                return false;
-
-            return userAdapter.id == userId;
-        }
+        public static bool IsOwn(int userId) => adapter.userId == userId;
 
         #region STRUCT
 
@@ -296,11 +250,7 @@ namespace TLab.SFU.Network
                             response.physicsUpdateType = PhysicsUpdateType.RECEIVER;
                             response.othersHistory = avatorHistorys;
 
-                            UpdateState(@object.avatorAction, out var avator);
-
                             SendWS(response.avatorAction.userId, response.Marshall());
-
-                            Foreach<NetworkedObject>((networkedObject) => networkedObject.SyncViaWebSocket());
                         }
                         break;
                     case 1: // response
@@ -316,6 +266,9 @@ namespace TLab.SFU.Network
                     case 2: // broadcast
                         {
                             UpdateState(@object.avatorAction, out var avator);
+
+                            if (userId == 0)
+                                Foreach<NetworkedObject>((networkedObject) => networkedObject.SyncViaWebSocket());
                         }
                         break;
                 }
@@ -337,6 +290,8 @@ namespace TLab.SFU.Network
                 switch (@object.messageType)
                 {
                     case 0: // request
+                        @object.idAvails = UniqueId.Generate(@object.length);
+                        SendWS(@object.Marshall());
                         break;
                     case 1: // response
                         break;
@@ -431,10 +386,15 @@ namespace TLab.SFU.Network
 
             m_connectTask = null;
 
-            yield return 1;
+            yield break;
         }
 
-        public void Connect() => m_connectTask = ConnectTask();
+        public void Join() => m_adapter.Join(this, (@string) => {
+            Debug.Log("Join: Success");
+            m_connectTask = ConnectTask();
+        });
+
+        public void Exit() => m_adapter.Exit(this, (@string) => Debug.Log("Exit: Success"));
 
         #region WS
 
@@ -448,7 +408,7 @@ namespace TLab.SFU.Network
 
         public Task SendWS(int to, string message) => SendWS(to, Encoding.UTF8.GetBytes(message));
 
-        public Task SendWS(byte[] bytes) => SendWS(userAdapter.id, bytes);
+        public Task SendWS(byte[] bytes) => SendWS(userId, bytes);
 
         public async void CloseWS()
         {
@@ -464,11 +424,11 @@ namespace TLab.SFU.Network
 
         public void SendRTC(int to, byte[] bytes) => m_rtcClient?.Send(to, bytes);
 
-        public void SendRTC(byte[] bytes) => SendRTC(userAdapter.id, bytes);
+        public void SendRTC(byte[] bytes) => SendRTC(userId, bytes);
 
         public void SendRTC(int to, string text) => m_rtcClient?.Send(to, text);
 
-        public void SendRTC(string text) => SendRTC(userAdapter.id, text);
+        public void SendRTC(string text) => SendRTC(userId, text);
 
         public void CloseRTC()
         {
@@ -479,8 +439,6 @@ namespace TLab.SFU.Network
         #endregion RTC
 
         void Awake() => instance = this;
-
-        private void Start() => Connect();
 
         private void Update() => m_connectTask?.MoveNext();
 
@@ -509,7 +467,9 @@ namespace TLab.SFU.Network
 
         public void OnOpen()
         {
-            if (m_adapter.user.id == 0)
+            m_rtcClient = WebRTCClient.Whep(this, m_adapter, "stream", (from, to, bytes) => Debug.Log("OnMessage: "), (() => Debug.Log("[RTCClient] Open !"), (_) => { }), (() => Debug.Log("[RTCClient] Close !"), (_) => { }), () => Debug.LogError("[RTCClient] Error !"), new Unity.WebRTC.RTCDataChannelInit(), false, false, null);
+
+            if (userId == 0)
             {
                 UpdatePhysicsUpdateType(PhysicsUpdateType.SENDER);
 
@@ -542,7 +502,7 @@ namespace TLab.SFU.Network
                     avatorAction = action,
                 };
 
-                SendWS(MSG_Join.pktId, @object.Marshall());
+                SendWS(0, @object.Marshall());
             }
         }
 

@@ -8,11 +8,12 @@ namespace TLab.SFU.Sample
     {
         public static bool local => false;
 
+        [SerializeField] private ScrollRect m_scrollRect;
         [SerializeField] private Adapter m_adapter;
 
-        private ScrollRect m_scrollRect;
         private Transform m_scrollViewContent;
 
+        private bool m_scrollViewAvailable = false;
         private bool m_forceScrollToTail = true;
 
         public enum State
@@ -28,28 +29,6 @@ namespace TLab.SFU.Sample
 
         public Adapter adapter => m_adapter;
 
-        public RoomAdapter roomAdapter
-        {
-            get
-            {
-                if (adapter == null)
-                    return null;
-
-                return adapter.room;
-            }
-        }
-
-        public UserAdapter userAdapter
-        {
-            get
-            {
-                if (adapter == null)
-                    return null;
-
-                return adapter.user;
-            }
-        }
-
         public static AdapterSample instance;
 
         public string THIS_NAME => "[" + this.GetType() + "] ";
@@ -60,32 +39,41 @@ namespace TLab.SFU.Sample
 
         public void OnMessage(string message)
         {
-            var messageChunk = Instantiate(Resources.Load<GameObject>("Sample/Message"));
+            if (m_scrollViewAvailable)
+            {
+                var messageChunk = Instantiate(Resources.Load<GameObject>("Sample/Message"));
 
-            messageChunk.transform.SetParent(m_scrollViewContent);
-            messageChunk.GetComponent<MessageChunk>()?.InitMessage(message);
+                messageChunk.transform.SetParent(m_scrollViewContent);
+                messageChunk.GetComponent<MessageChunk>()?.InitMessage(message);
+            }
+            else
+            {
+                Debug.Log("OnMessage: " + message);
+            }
         }
 
-        public void GetFirstRoom() => m_adapter.GetRoomInfo(this, (response) => {
-            var @object = JsonUtility.FromJson<Network.Answer.RoomInfos>(response);
-            var id = @object.room_infos[0].room_id;
-            m_adapter.room.Init(id, m_adapter.room.key, m_adapter.room.masterKey);
+        public void GetFirstRoom() => m_adapter.GetInfo(this, (response) => {
+            var @object = JsonUtility.FromJson<Network.Answer.Infos>(response);
+            var roomId = @object.room_infos[0].room_id;
+            m_adapter.Init(m_adapter.config, roomId, m_adapter.key, m_adapter.masterKey);
             OnMessage(response);
         });
 
-        public void CreateRoom() => adapter.CreateRoom(this, (response) => {
+        public void Create() => adapter.Create(this, (response) => {
             m_state = State.CREATED;
             OnMessage(response);
         });
 
-        public void DeleteRoom() => adapter.DeleteRoom(this, (response) => {
+        public void Delete() => adapter.Delete(this, (response) => {
             m_state = State.DELETED;
             OnMessage(response);
         });
 
         private void Start()
         {
-            m_scrollRect = GetComponentInChildren<ScrollRect>();
+            if (m_scrollRect == null)
+                return;
+
             m_scrollViewContent = m_scrollRect.transform.Find("Viewport/Content");
 
             m_scrollRect.onValueChanged.AddListener((value) =>
@@ -93,11 +81,13 @@ namespace TLab.SFU.Sample
                 if (UnityEngine.Input.GetMouseButton(0))
                     m_forceScrollToTail = (value.y < 0.1f);
             });
+
+            m_scrollViewAvailable = true;
         }
 
         private void Update()
         {
-            if (m_forceScrollToTail && !UnityEngine.Input.GetMouseButton(0))
+            if (m_scrollViewAvailable && m_forceScrollToTail && !UnityEngine.Input.GetMouseButton(0))
                 m_scrollRect.verticalNormalizedPosition = 0.0f;
         }
     }

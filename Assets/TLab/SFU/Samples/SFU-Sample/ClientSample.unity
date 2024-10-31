@@ -959,6 +959,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 213c8594827cc264a9e9681779a7f89f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_scrollRect: {fileID: 837042771}
   m_adapter: {fileID: 11400000, guid: 4db9b2b4314be9e4ea6cac97593e43a6, type: 2}
 --- !u!1 &152972150
 GameObject:
@@ -1299,8 +1300,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 134605222}
-        m_TargetAssemblyTypeName: TLab.NetworkedVR.Sample.AdapterSample, Assembly-CSharp
-        m_MethodName: CreateRoom
+        m_TargetAssemblyTypeName: TLab.SFU.Sample.AdapterSample, TLabSFU.Runtime
+        m_MethodName: Create
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3578,8 +3579,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 134605222}
-        m_TargetAssemblyTypeName: TLab.NetworkedVR.Sample.AdapterSample, Assembly-CSharp
-        m_MethodName: DeleteRoom
+        m_TargetAssemblyTypeName: TLab.SFU.Sample.AdapterSample, TLabSFU.Runtime
+        m_MethodName: Delete
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

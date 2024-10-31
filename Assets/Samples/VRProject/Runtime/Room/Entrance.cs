@@ -2,17 +2,12 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TLab.VKeyborad;
-using TLab.SFU.Network;
 using TLab.SFU.Network.Security;
 
 namespace TLab.VRProjct
 {
     public class Entrance : MonoBehaviour
     {
-        [Header("Config")]
-        [SerializeField] private RoomConfig m_roomConfig;
-        [SerializeField] private UserConfig m_userConfig;
-
         [Header("Password")]
         public string password;
         public string passwordHash;
@@ -29,11 +24,6 @@ namespace TLab.VRProjct
             SceneManager.LoadSceneAsync(scene, LoadSceneMode.Single);
         }
 
-        public void UpdateConfig(string ipAddr)
-        {
-
-        }
-
         public void Enter()
         {
             var (addr, argments) = CommandLine.Parse(m_addrInput.text);
@@ -46,8 +36,6 @@ namespace TLab.VRProjct
 
                 scene = Authentication.ConfirmPassword(password, passwordHash) ? PlayManager.HOST_SCENE : scene;
             }
-
-            UpdateConfig(addr);
 
             StartCoroutine(ChangeScene(scene));
         }

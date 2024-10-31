@@ -73,6 +73,8 @@ namespace TLab.SFU.Network
 
         [SerializeField] private List<StoreElement> m_store = new List<StoreElement>();
 
+        private string THIS_NAME => "[" + this.GetType() + $"] ";
+
         public StoreAction.Action UpdateByInstantiateInfo(StoreAction prefabInstantiateInfo, out GameObject prefab)
         {
             switch (prefabInstantiateInfo.action)
@@ -131,14 +133,16 @@ namespace TLab.SFU.Network
 
         public bool InstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         {
-            GetByElementId(elemId, userId, out var prefab);
+            if (!GetByElementId(elemId, userId, out var prefab))
+            {
+                Debug.LogWarning(THIS_NAME + "element is null !");
+                instance = null;
+                return false;
+            }
 
             instance = Instantiate(prefab, @transform.position.raw, @transform.rotation.rotation);
 
-            instance.Foreach<NetworkedObject>((networkedObject) =>
-            {
-                networkedObject.Init(publicId);
-            });
+            instance.Foreach<NetworkedObject>((networkedObject) => networkedObject.Init(publicId));
 
             Register(publicId, instance);
 
@@ -151,10 +155,7 @@ namespace TLab.SFU.Network
 
             instance = Instantiate(prefab, @transform.position.raw, @transform.rotation.rotation);
 
-            instance.Foreach<NetworkedObject>((networkedObject) =>
-            {
-                networkedObject.Init(publicId);
-            });
+            instance.Foreach<NetworkedObject>((networkedObject) => networkedObject.Init(publicId));
 
             Register(publicId, instance);
 
@@ -170,15 +171,11 @@ namespace TLab.SFU.Network
             }
 
             if (SyncClient.IsOwn(userId))
-            {
                 instance = m_store[elemId].prefab;
-            }
             else
-            {
                 instance = (m_store[elemId].distribute != null) ? m_store[(int)elemId].distribute : m_store[(int)elemId].prefab;
-            }
 
-            return true;
+            return instance != null;
         }
 
         public bool GetByElementName(string elemName, int userId, out GameObject instance)
@@ -188,13 +185,9 @@ namespace TLab.SFU.Network
                 if (elem.name == elemName)
                 {
                     if (SyncClient.IsOwn(userId))
-                    {
                         instance = elem.prefab;
-                    }
                     else
-                    {
                         instance = (elem.distribute != null) ? elem.distribute : elem.prefab;
-                    }
 
                     return true;
                 }

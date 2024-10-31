@@ -9,17 +9,13 @@ namespace TLab.SFU.Network
         public static void UpdateAvails(IEnumerable<Address32> avails)
         {
             foreach (var available in avails)
-            {
                 m_avails.Enqueue(available);
-            }
         }
 
         public static void UpdateAvails(Address32[] avails)
         {
             foreach (var available in avails)
-            {
                 m_avails.Enqueue(available);
-            }
         }
 
         public static bool DequeueAvail(out Address32 available)
@@ -50,7 +46,7 @@ namespace TLab.SFU.Network
             var ids = new Address32[length];
             for (int i = 0; i < ids.Length; i++)
                 ids[i] = Generate();
-            return new Address32[0];
+            return ids;
         }
     }
 }

@@ -42,7 +42,7 @@ namespace TLab.SFU.Sample
 
             m_adapter = AdapterSample.instance.GetClone();
 
-            m_adapter.JoinRoom(this, (response) =>
+            m_adapter.Join(this, (response) =>
             {
                 OnMessage(response);
                 Open();
@@ -59,7 +59,7 @@ namespace TLab.SFU.Sample
 
             Close();
 
-            m_adapter.ExitRoom(this, (response) =>
+            m_adapter.Exit(this, (response) =>
             {
                 OnMessage(response);
             });

@@ -473,7 +473,7 @@ namespace TLab.SFU.Network
                     break;
             }
 
-            var url = "ws://" + m_adapter.room.config.GetHostPort() + $"/stream/{action}/{base64}/";
+            var url = "ws://" + m_adapter.config.GetHostPort() + $"/stream/{action}/{base64}/";
 
             m_signalingSocket = new WebSocket(url);
             m_signalingSocket.OnOpen += () => Debug.Log("[Signaling] Connection open!");

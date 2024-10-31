@@ -1,8 +1,6 @@
 using System.Threading.Tasks;
 using System.Collections;
-using System;
 using System.Text;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
@@ -38,25 +36,34 @@ namespace TLab.SFU.Network
 
             base64 = Http.GetBase64(new StreamRequest(m_adapter.GetRequestAuth(), stream));
 
-            var url = "ws://" + m_adapter.room.config.GetHostPort() + $"/ws/connect/{base64}/";
+            var url = "ws://" + m_adapter.config.GetHostPort() + $"/ws/connect/{base64}/";
 
             m_socket = new WebSocket(url);
             m_socket.OnOpen += () =>
             {
                 Debug.Log(THIS_NAME + "Open!");
-                CancelReceiveTask();
-                m_receiveTask = m_mono.StartCoroutine(ReceiveTask());
-                OnOpen1();
+                MainThreadUtil.synchronizationContext.Post((__) =>
+                {
+                    RestartReceiveTask();
+                    OnOpen1();
+                }, null);
             };
             m_socket.OnError += (e) =>
             {
-                Debug.Log(THIS_NAME + "Error! " + e);
-                OnError();
+                Debug.LogError(THIS_NAME + "Error! " + e);
+                MainThreadUtil.synchronizationContext.Post((__) =>
+                {
+                    OnError();
+                }, null);
             };
             m_socket.OnClose += (e) =>
             {
                 Debug.Log(THIS_NAME + "Close!");
-                OnClose1();
+                MainThreadUtil.synchronizationContext.Post((__) =>
+                {
+                    StopCurrentReceiveTask();
+                    OnClose1();
+                }, null);
             };
             m_socket.OnMessage += (bytes) => OnPacket(bytes);
             _ = m_socket.Connect();
@@ -80,14 +87,6 @@ namespace TLab.SFU.Network
             return Open(mono, adapter, stream, CreateEvent(onMessage), (CreateEvent(onOpen.Item1), CreateEvent(onOpen.Item2)), (CreateEvent(onClose.Item1), CreateEvent(onClose.Item2)), CreateEvent(onError));
         }
 
-        private void CancelReceiveTask()
-        {
-            if (m_receiveTask != null)
-                m_mono.StopCoroutine(m_receiveTask);
-
-            m_receiveTask = null;
-        }
-
         private IEnumerator ReceiveTask()
         {
             while (true)
@@ -99,14 +98,28 @@ namespace TLab.SFU.Network
             }
         }
 
+        private void StopCurrentReceiveTask()
+        {
+            if ((m_receiveTask != null) && (m_mono != null))
+                m_mono.StopCoroutine(m_receiveTask);
+
+            m_receiveTask = null;
+        }
+
+        private void RestartReceiveTask()
+        {
+            StopCurrentReceiveTask();
+
+            m_receiveTask = m_mono.StartCoroutine(ReceiveTask());
+        }
+
         public bool connected
         {
             get
             {
                 if (m_socket == null)
-                {
                     return false;
-                }
+
                 return m_socket.State == WebSocketState.Open;
             }
         }
@@ -119,10 +132,7 @@ namespace TLab.SFU.Network
             return m_socket.Send(bytes);
         }
 
-        public override Task Send(int to, string text)
-        {
-            return Send(to, Encoding.UTF8.GetBytes(text));
-        }
+        public override Task Send(int to, string text) => Send(to, Encoding.UTF8.GetBytes(text));
 
         public override Task HangUp()
         {

@@ -24,7 +24,7 @@ namespace TLab.SFU.Network
         {
             var json = JsonUtility.ToJson(@object);
 
-            Debug.Log(json);
+            Debug.Log("Json: " + json);
 
             var base64 = System.Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
 

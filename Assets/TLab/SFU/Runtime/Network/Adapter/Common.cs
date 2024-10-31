@@ -1,7 +1,7 @@
 namespace TLab.SFU.Network.Offer
 {
     [System.Serializable]
-    public class CreateRoom
+    public class Create
     {
         public string room_name = "default";
 
@@ -19,14 +19,14 @@ namespace TLab.SFU.Network.Offer
     }
 
     [System.Serializable]
-    public class DeleteRoom
+    public class Delete
     {
         public int room_id;
         public string master_key;
     }
 
     [System.Serializable]
-    public class JoinRoom
+    public class Join
     {
         public string user_name;
         public int room_id;
@@ -35,7 +35,7 @@ namespace TLab.SFU.Network.Offer
     }
 
     [System.Serializable]
-    public class ExitRoom
+    public class Exit
     {
         public int room_id;
         public string room_key;
@@ -47,7 +47,7 @@ namespace TLab.SFU.Network.Offer
 namespace TLab.SFU.Network.Answer
 {
     [System.Serializable]
-    public class CreateRoom
+    public class Create
     {
         public int room_id;
         public string room_name;
@@ -56,20 +56,20 @@ namespace TLab.SFU.Network.Answer
     };
 
     [System.Serializable]
-    public class JoinRoom
+    public class Join
     {
         public int user_id;
         public uint user_token;
     }
 
     [System.Serializable]
-    public class RoomInfos
+    public class Infos
     {
-        public RoomInfo[] room_infos;
+        public Info[] room_infos;
     }
 
     [System.Serializable]
-    public class RoomInfo
+    public class Info
     {
         public int room_id;
         public string room_name;
