@@ -163,7 +163,7 @@ namespace TLab.SFU.Network
 
         public void UpdatePhysicsUpdateType(PhysicsUpdateType physicsUpdateType)
         {
-            // TODO
+            // TODO:
         }
 
         public static void RegisterOnMessage(int msgId, OnMessageCallback callback)
@@ -394,7 +394,11 @@ namespace TLab.SFU.Network
             m_connectTask = ConnectTask();
         });
 
-        public void Exit() => m_adapter.Exit(this, (@string) => Debug.Log("Exit: Success"));
+        public void Exit()
+        {
+            m_rtcClient?.HangUp();
+            m_adapter.Exit(this, (@string) => Debug.Log("Exit: Success"));
+        }
 
         #region WS
 

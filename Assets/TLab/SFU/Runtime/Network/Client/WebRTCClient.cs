@@ -476,12 +476,12 @@ namespace TLab.SFU.Network
             var url = "ws://" + m_adapter.config.GetHostPort() + $"/stream/{action}/{base64}/";
 
             m_signalingSocket = new WebSocket(url);
-            m_signalingSocket.OnOpen += () => Debug.Log("[Signaling] Connection open!");
-            m_signalingSocket.OnError += (e) => Debug.Log("[Signaling] Error! " + e);
+            m_signalingSocket.OnOpen += () => Debug.Log("[Signaling] Open!");
+            m_signalingSocket.OnError += (e) => Debug.LogError("[Signaling] Error! " + e);
             m_signalingSocket.OnClose += (e) =>
             {
                 CancelSignalingTask();
-                Debug.Log("[Signaling] Connection closed!");
+                Debug.Log("[Signaling] Closed!");
             };
             m_signalingSocket.OnMessage += (bytes) =>
             {
@@ -513,7 +513,7 @@ namespace TLab.SFU.Network
                         OnSetSessionDescriptionError(ref error);
                     }
 
-                    Debug.Log("[Signaling] Answer received: " + desc.sdp);
+                    Debug.Log("[Signaling] Answer: " + desc.sdp);
                 }
             };
             _ = m_signalingSocket.Connect();
@@ -542,7 +542,7 @@ namespace TLab.SFU.Network
                     var json = JsonUtility.ToJson(signaling);
                     _ = m_signalingSocket?.SendText(json);
 
-                    Debug.Log("[Signaling] Send candidate: " + candidate.Candidate);
+                    Debug.Log("[Signaling] Candidate: " + candidate.Candidate);
                     yield return new WaitForSeconds(0.5f);
                 }
 
@@ -595,9 +595,6 @@ namespace TLab.SFU.Network
             return base.Send(to, bytes);
         }
 
-        public override Task Send(int to, string text)
-        {
-            return Send(to, Encoding.UTF8.GetBytes(text));
-        }
+        public override Task Send(int to, string text) => Send(to, Encoding.UTF8.GetBytes(text));
     }
 }
