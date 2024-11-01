@@ -10,32 +10,31 @@ namespace TLab.SFU
         {
             var @objects = Object.FindObjectsOfType<T>();
             foreach (var @object in @objects)
-            {
                 action.Invoke(@object);
-            }
         }
 
         public static void Foreach<T>(this GameObject self, UnityAction<T> action) where T : MonoBehaviour
         {
             var @objects = self.GetComponentsInChildren<T>();
             foreach (var @object in @objects)
-            {
                 action.Invoke(@object);
-            }
+        }
+
+        public static void Foreach<T>(this T[] @objects, UnityAction<T> action)
+        {
+            foreach (var @object in @objects)
+                action.Invoke(@object);
         }
 
         public static T[] GetComponentsInTargets<T>(GameObject[] targets) where T : Component
         {
-            List<T> componentList = new List<T>();
+            var componentList = new List<T>();
             foreach (GameObject target in targets)
             {
-                T component = target.GetComponent<T>();
+                var component = target.GetComponent<T>();
                 if (component != null)
-                {
                     componentList.Add(component);
-                }
             }
-
             return componentList.ToArray();
         }
 
@@ -44,9 +43,7 @@ namespace TLab.SFU
             var result = self.GetComponent<T>();
 
             if (result == null)
-            {
                 result = self.AddComponent<T>();
-            }
 
             return result;
         }
@@ -56,9 +53,7 @@ namespace TLab.SFU
             var result = self.GetComponent<T>();
 
             if (result != null)
-            {
                 Object.Destroy(result);
-            }
 
             Object.Destroy(result);
         }

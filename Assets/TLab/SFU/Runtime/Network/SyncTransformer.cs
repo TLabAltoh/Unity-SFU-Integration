@@ -3,6 +3,8 @@ using UnityEditor;
 
 namespace TLab.SFU.Network
 {
+    using Registry = Registry<SyncTransformer>;
+
     [AddComponentMenu("TLab/SFU/Sync Transformer (TLab)")]
     public class SyncTransformer : NetworkedObject
     {
@@ -162,9 +164,7 @@ namespace TLab.SFU.Network
         public virtual void UseRigidbody(bool rigidbody, bool gravity)
         {
             if (EditorApplication.isPlaying)
-            {
                 return;
-            }
 
             var rb = gameObject.AddComponent<Rigidbody>();
             rb.useGravity = gravity;
@@ -174,9 +174,7 @@ namespace TLab.SFU.Network
         protected Vector3 GuessVelocity()
         {
             if (m_prevPoss.Count < 2)
-            {
                 return Vector3.zero;
-            }
 
             var prevPoss = m_prevPoss.ToArray();
 
@@ -185,9 +183,7 @@ namespace TLab.SFU.Network
             var diff = Vector3.zero;
 
             for (int i = 1; i < prevPoss.Length; i++)
-            {
                 diff += prevPoss[i] - prevPoss[i - 1];
-            }
 
             return diff / (prevPoss.Length - 1) / Time.deltaTime;
         }
@@ -195,9 +191,7 @@ namespace TLab.SFU.Network
         protected Vector3 GuessAngulerVelocity()
         {
             if (m_prevRots.Count < 2)
-            {
                 return Vector3.zero;
-            }
 
             var prevRots = m_prevRots.ToArray();
 
@@ -220,9 +214,7 @@ namespace TLab.SFU.Network
         public virtual void SetGravity(bool active)
         {
             if (m_rb == null)
-            {
                 return;
-            }
 
             if (active)
             {
@@ -267,9 +259,7 @@ namespace TLab.SFU.Network
         public override void SyncViaWebRTC()
         {
             if (!m_enableSync)
-            {
                 return;
-            }
 
             CashRbTransform();
 
@@ -313,9 +303,7 @@ namespace TLab.SFU.Network
         public override void SyncViaWebSocket()
         {
             if (!m_enableSync)
-            {
                 return;
-            }
 
             CashRbTransform();
 
@@ -365,18 +353,6 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override void Shutdown()
-        {
-            if (m_state == State.SHUTDOWNED)
-            {
-                return;
-            }
-
-            Registry<SyncTransformer>.UnRegister(m_networkedId.id);
-
-            base.Shutdown();
-        }
-
         protected virtual void InitRigidbody()
         {
             m_rb = GetComponent<Rigidbody>();
@@ -392,9 +368,18 @@ namespace TLab.SFU.Network
                 SetGravity(false);
             }
             else
-            {
                 m_rbState = new RigidbodyState(false, false);
-            }
+        }
+
+        public override void Shutdown()
+        {
+            if (m_state == State.SHUTDOWNED)
+                return;
+
+            if (m_networkedId)
+                Registry.UnRegister(m_networkedId.id);
+
+            base.Shutdown();
         }
 
         public override void Init(Address32 publicId)
@@ -403,7 +388,7 @@ namespace TLab.SFU.Network
 
             InitRigidbody();
 
-            Registry<SyncTransformer>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
         }
 
         public override void Init()
@@ -412,7 +397,7 @@ namespace TLab.SFU.Network
 
             InitRigidbody();
 
-            Registry<SyncTransformer>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
         }
 
         protected override void Awake()
@@ -430,9 +415,5 @@ namespace TLab.SFU.Network
                 msgCallbackRegisted = true;
             }
         }
-
-        protected override void OnDestroy() => Shutdown();
-
-        protected override void OnApplicationQuit() => Shutdown();
     }
 }

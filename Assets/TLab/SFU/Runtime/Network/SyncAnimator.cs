@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
+    using Registry = Registry<SyncAnimator>;
+
     [AddComponentMenu("TLab/SFU/Sync Animator (TLab)")]
     public class SyncAnimator : NetworkedObject
     {
@@ -152,11 +154,10 @@ namespace TLab.SFU.Network
         public override void Shutdown()
         {
             if (m_state == State.SHUTDOWNED)
-            {
                 return;
-            }
 
-            Registry<SyncAnimator>.UnRegister(m_networkedId.id);
+            if (m_networkedId)
+                Registry.UnRegister(m_networkedId.id);
 
             base.Shutdown();
         }
@@ -199,7 +200,7 @@ namespace TLab.SFU.Network
 
             InitParameter();
 
-            Registry<SyncAnimator>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
         }
 
         public override void Init()
@@ -208,7 +209,7 @@ namespace TLab.SFU.Network
 
             InitParameter();
 
-            Registry<SyncAnimator>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
         }
 
         protected override void Awake()
@@ -219,7 +220,7 @@ namespace TLab.SFU.Network
                 {
                     var @object = new MSG_SyncAnim();
                     @object.UnMarshall(bytes);
-                    Registry<SyncAnimator>.GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
+                    Registry.GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
                 });
                 mchCallbackRegisted = true;
             }
@@ -267,9 +268,5 @@ namespace TLab.SFU.Network
                 }
             }
         }
-
-        protected override void OnDestroy() => Shutdown();
-
-        protected override void OnApplicationQuit() => Shutdown();
     }
 }

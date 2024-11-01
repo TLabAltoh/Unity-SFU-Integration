@@ -65,17 +65,13 @@ namespace TLab.SFU.Interact
         public void OnMainHandReleased(Interactor interactor)
         {
             if (m_mainHand == interactor)
-            {
                 m_mainHand = null;
-            }
         }
 
         public void OnSubHandReleased(Interactor interactor)
         {
             if (m_subHand == interactor)
-            {
                 m_subHand = null;
-            }
         }
 
         public void UpdateTwoHandLogic()
@@ -98,13 +94,9 @@ namespace TLab.SFU.Interact
                 var updatedPosition = Vector3.Lerp(updatedPositionMain, updatedPositionSub, 0.5f);
 
                 if (m_targetRigidbody)
-                {
                     m_targetRigidbody.MovePosition(updatedPosition);
-                }
                 else
-                {
                     m_targetTransform.position = updatedPosition;
-                }
             }
         }
 
@@ -115,22 +107,14 @@ namespace TLab.SFU.Interact
                 Vector3 updatedPosition;
 
                 if (m_smooth)
-                {
                     updatedPosition = Vector3.Lerp(m_targetTransform.position, m_mainHand.pointer.TransformPoint(m_mainPositionOffset), m_lerp);
-                }
                 else
-                {
                     updatedPosition = m_mainHand.pointer.TransformPoint(m_mainPositionOffset);
-                }
 
                 if (m_targetRigidbody)
-                {
                     m_targetRigidbody.MovePosition(updatedPosition);
-                }
                 else
-                {
                     m_targetTransform.position = updatedPosition;
-                }
             }
         }
 

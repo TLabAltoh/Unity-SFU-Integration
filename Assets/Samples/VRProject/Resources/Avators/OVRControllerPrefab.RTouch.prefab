@@ -139,8 +139,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4027050243225658031}
   - component: {fileID: 4027050243232845149}
-  - component: {fileID: 1317954215713218254}
-  - component: {fileID: 4096764830294014107}
   m_Layer: 8
   m_Name: OVRControllerPrefab.RTouch
   m_TagString: Untagged
@@ -187,37 +185,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1317954215713218254
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4027050243225435791}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed795df9b6bf57d4294afc739409e072, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_enableSync: 0
-  m_hash: 
-  m_useRigidbody: 0
-  m_useGravity: 0
-  m_partsType: 2
-  m_self: 0
-  m_initializeOnStartUp: 1
---- !u!114 &4096764830294014107
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4027050243225435791}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0741831496f601e40b3ccc06d967db69, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &4027050243225435793
 GameObject:
   m_ObjectHideFlags: 0

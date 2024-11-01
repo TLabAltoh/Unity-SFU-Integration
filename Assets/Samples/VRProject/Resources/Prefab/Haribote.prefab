@@ -3149,7 +3149,7 @@ MonoBehaviour:
     \u5DE6\u80BA, 2. \u53F3\u80BA\n3. \u5DE6\u80BA\u5BA4, 4. \u53F3\u80BA\u5BA4"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3948,7 +3948,7 @@ MonoBehaviour:
   m_text: "\u7B54\u3048\u5408\u308F\u305B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4360,6 +4360,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -5013,7 +5014,7 @@ MonoBehaviour:
   m_text: "\u5C0F\u30C6\u30B9\u30C8"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -20513,7 +20514,7 @@ MonoBehaviour:
   m_text: "\u96C6\u8A08"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -20626,7 +20627,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4308215442733732551}
-  - component: {fileID: 7008133513254423944}
   - component: {fileID: 833715561242097575}
   m_Layer: 0
   m_Name: MiniTest (1)
@@ -20654,23 +20654,6 @@ Transform:
   m_Father: {fileID: 1011406196980393463}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7008133513254423944
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4308215442733732548}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81e4057746dbc6d4395994f3b852d4f5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_outlineTarget:
-  - {fileID: 0}
-  m_outline: {fileID: 4800000, guid: cb74c94b3f9560344b9e9ce73d796a5f, type: 3}
-  m_savePathMesh: Assets/ClassRoom/Prefab/MiniTest/OutlineMesh
-  m_savePathMaterial: Assets/ClassRoom/Prefab/MiniTest/OutlineMaterial
 --- !u!114 &833715561242097575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20683,8 +20666,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54cea738de3bcee4e96d80d8fef8dcaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_controllers:
-  - {fileID: 0}
+  m_anchors: []
   m_pointerPairs: []
 --- !u!1 &4604591842097407336
 GameObject:
@@ -21307,7 +21289,7 @@ MonoBehaviour:
     \u5DE6\u80BA, 2. \u53F3\u80BA\n3. \u5DE6\u80BA\u5BA4, 4. \u53F3\u80BA\u5BA4"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -22148,7 +22130,7 @@ MonoBehaviour:
   m_text: "\u7B54\u3048\u5408\u308F\u305B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -22676,6 +22658,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -23211,7 +23194,7 @@ MonoBehaviour:
   m_text: "\u5C0F\u30C6\u30B9\u30C8"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -23628,7 +23611,7 @@ MonoBehaviour:
   m_text: "\u96C6\u8A08"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
-  m_sharedMaterial: {fileID: 8868489198506428640, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
+  m_sharedMaterial: {fileID: -5236126164763006126, guid: fb8dd4899febc2c4e84f32bbf885a667, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -23786,7 +23769,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7735299264345013390}
-  - component: {fileID: 3589776687097357249}
   - component: {fileID: 6557633920977607150}
   m_Layer: 0
   m_Name: MiniTest
@@ -23814,23 +23796,6 @@ Transform:
   m_Father: {fileID: 1011406196980393463}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3589776687097357249
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7735299264345013389}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81e4057746dbc6d4395994f3b852d4f5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_outlineTarget:
-  - {fileID: 0}
-  m_outline: {fileID: 4800000, guid: cb74c94b3f9560344b9e9ce73d796a5f, type: 3}
-  m_savePathMesh: Assets/ClassRoom/Prefab/MiniTest/OutlineMesh
-  m_savePathMaterial: Assets/ClassRoom/Prefab/MiniTest/OutlineMaterial
 --- !u!114 &6557633920977607150
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23843,8 +23808,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54cea738de3bcee4e96d80d8fef8dcaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_controllers:
-  - {fileID: 0}
+  m_anchors: []
   m_pointerPairs: []
 --- !u!1 &8031709576367721249
 GameObject:

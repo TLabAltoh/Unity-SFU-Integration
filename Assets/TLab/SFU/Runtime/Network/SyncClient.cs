@@ -471,7 +471,7 @@ namespace TLab.SFU.Network
 
         public void OnOpen()
         {
-            m_rtcClient = WebRTCClient.Whep(this, m_adapter, "stream", (from, to, bytes) => Debug.Log("OnMessage: "), (() => Debug.Log("[RTCClient] Open !"), (_) => { }), (() => Debug.Log("[RTCClient] Close !"), (_) => { }), () => Debug.LogError("[RTCClient] Error !"), new Unity.WebRTC.RTCDataChannelInit(), false, false, null);
+            m_rtcClient = WebRTCClient.Whep(this, m_adapter, "stream", (from, to, bytes) => Debug.Log("OnMessage: "), (() => Debug.Log("OnOpen !"), (_) => { }), (() => Debug.Log("OnClose !"), (_) => { }), () => Debug.LogError("[RTCClient] Error !"), new Unity.WebRTC.RTCDataChannelInit(), false, false, null);
 
             if (userId == 0)
             {

@@ -143,27 +143,6 @@ namespace TLab.SFU.Interact
             m_scale.OnSubHandReleased(m_subHand);
         }
 
-        protected override void InitRigidbody()
-        {
-            base.InitRigidbody();
-
-            // TODO:
-        }
-
-        public override void Init(Address32 publicId)
-        {
-            base.Init(publicId);
-
-            Registry.Register(m_networkedId.id, this);
-        }
-
-        public override void Init()
-        {
-            base.Init();
-
-            Registry.Register(m_networkedId.id, this);
-        }
-
         #region MESSAGE
 
         [System.Serializable]
@@ -285,7 +264,7 @@ namespace TLab.SFU.Interact
             }
         }
 
-        private void CreateCombineMeshCollider()
+        private void CreateCombinedMeshCollider()
         {
             var meshColliders = GetComponentsInTargets<MeshCollider>(divideTargets);
 
@@ -302,9 +281,7 @@ namespace TLab.SFU.Interact
             mesh.CombineMeshes(combine);
 
             if (m_meshCollider != null)
-            {
                 m_meshCollider.sharedMesh = mesh;
-            }
         }
 
         public void Divide(bool active)
@@ -323,36 +300,20 @@ namespace TLab.SFU.Interact
 
             meshCollider.enabled = !active;
 
-            var childs = GetComponentsInTargets<MeshCollider>(divideTargets);
-            foreach (var child in childs)
-            {
-                child.enabled = active;
-            }
+            GetComponentsInTargets<MeshCollider>(divideTargets).Foreach((c) => c.enabled = active);
 
-            var rotatables = this.gameObject.GetComponentsInChildren<GameObjectRotatable>();
-            foreach (var rotatable in rotatables)
-            {
-                rotatable.Stop();
-            }
+            gameObject.Foreach<GameObjectRotatable>((c) => c.Stop());
 
-            var controllers = GetComponentsInTargets<GameObjectController>(divideTargets);
-            foreach (var controller in controllers)
-            {
-                controller.ForceRelease(true);
-            }
+            GetComponentsInTargets<GameObjectController>(divideTargets).Foreach((c) => c.ForceRelease(true));
 
             if (!active)
-            {
-                CreateCombineMeshCollider();
-            }
+                CreateCombinedMeshCollider();
         }
 
         public void Devide()
         {
             if (!m_enableDivide)
-            {
                 return;
-            }
 
             var meshCollider = gameObject.GetComponent<MeshCollider>();
             if (meshCollider == null)
@@ -370,27 +331,20 @@ namespace TLab.SFU.Interact
         public void SetInitialChildTransform()
         {
             if (!m_enableDivide)
-            {
                 return;
-            }
 
             int index = 0;
 
-            var childTransforms = GetComponentsInTargets<Transform>(divideTargets);
-            foreach (var childTransform in childTransforms)
+            GetComponentsInTargets<Transform>(divideTargets).Foreach((childTransform) =>
             {
                 var cashTransform = m_cashTransforms[index++];
 
                 childTransform.localPosition = cashTransform.LocalPosiiton;
                 childTransform.localRotation = cashTransform.LocalRotation;
                 childTransform.localScale = cashTransform.LocalScale;
-            }
+            });
 
-            var rotatables = this.gameObject.GetComponentsInChildren<GameObjectRotatable>();
-            foreach (var rotatable in rotatables)
-            {
-                rotatable.Stop();
-            }
+            gameObject.Foreach<GameObjectRotatable>((c) => c.Stop());
 
             var meshCollider = gameObject.GetComponent<MeshCollider>();
             if (meshCollider == null)
@@ -400,9 +354,7 @@ namespace TLab.SFU.Interact
             }
 
             if (meshCollider.enabled)
-            {
-                CreateCombineMeshCollider();
-            }
+                CreateCombinedMeshCollider();
         }
 
         private void GetInitialChildTransform()
@@ -411,30 +363,19 @@ namespace TLab.SFU.Interact
             {
                 m_cashTransforms.Clear();
 
-                var childTransforms = GetComponentsInTargets<Transform>(divideTargets);
-                foreach (var childTransform in childTransforms)
-                {
-                    m_cashTransforms.Add(new CashTransform(
-                        childTransform.localPosition,
-                        childTransform.localScale,
-                        childTransform.localRotation));
-                }
+                GetComponentsInTargets<Transform>(divideTargets).Foreach((childTransform) => m_cashTransforms.Add(new CashTransform(childTransform.localPosition, childTransform.localScale, childTransform.localRotation)));
 
-                CreateCombineMeshCollider();
+                CreateCombinedMeshCollider();
             }
         }
 
         public HandType GetHandType(Interactor interactor)
         {
             if (m_mainHand == interactor)
-            {
                 return HandType.MAIN_HAND;
-            }
 
             if (m_subHand == interactor)
-            {
                 return HandType.SUB_HAND;
-            }
 
             return HandType.NONE;
         }
@@ -442,9 +383,7 @@ namespace TLab.SFU.Interact
         public HandType OnGrabbed(Interactor interactor)
         {
             if (m_locked || (!m_grabState.isFree && !m_grabState.grabbByMe))
-            {
                 return HandType.NONE;
-            }
 
             if (m_mainHand == null)
             {
@@ -506,6 +445,38 @@ namespace TLab.SFU.Interact
             return false;
         }
 
+        protected override void InitRigidbody()
+        {
+            base.InitRigidbody();
+
+            // TODO:
+        }
+
+        public override void Init(Address32 publicId)
+        {
+            base.Init(publicId);
+
+            Registry.Register(m_networkedId.id, this);
+        }
+
+        public override void Init()
+        {
+            base.Init();
+
+            Registry.Register(m_networkedId.id, this);
+        }
+
+        public override void Shutdown()
+        {
+            if (m_grabState.grabbByMe)
+                GrabbLock(GrabState.Action.FREE);
+
+            if (m_networkedId)
+                Registry.UnRegister(m_networkedId.id);
+
+            base.Shutdown();
+        }
+
         protected override void Awake()
         {
             base.Awake();
@@ -550,10 +521,6 @@ namespace TLab.SFU.Interact
             m_position.Start(this.transform, m_rb);
             m_rotation.Start(this.transform, m_rb);
             m_scale.Start(this.transform, m_rb);
-
-            m_networkedId = GetComponent<NetworkedId>();
-
-            Registry.Register(m_networkedId.id, this);
         }
 
         protected override void Update()
@@ -580,28 +547,6 @@ namespace TLab.SFU.Interact
                 if (m_grabState.isFree && m_scale.UpdateHandleLogic())
                     SyncViaWebRTC();
             }
-        }
-
-        public override void Shutdown()
-        {
-            if (m_grabState.grabbByMe)
-                GrabbLock(GrabState.Action.FREE);
-
-            Registry.UnRegister(m_networkedId.id);
-        }
-
-        protected override void OnDestroy()
-        {
-            Shutdown();
-
-            base.OnDestroy();
-        }
-
-        protected override void OnApplicationQuit()
-        {
-            Shutdown();
-
-            base.OnApplicationQuit();
         }
     }
 }

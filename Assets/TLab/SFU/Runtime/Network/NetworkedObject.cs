@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
+    using Registry = Registry<NetworkedObject>;
+
     [AddComponentMenu("TLab/SFU/Networked Object (TLab)")]
     [RequireComponent(typeof(NetworkedId))]
     public class NetworkedObject : MonoBehaviour
@@ -40,13 +42,12 @@ namespace TLab.SFU.Network
         public virtual void Shutdown()
         {
             if (m_state == State.SHUTDOWNED)
-            {
                 return;
-            }
 
             m_enableSync = false;
 
-            Registry<NetworkedObject>.UnRegister(m_networkedId.id);
+            if (m_networkedId)
+                Registry.UnRegister(m_networkedId.id);
 
             m_state = State.SHUTDOWNED;
         }
@@ -54,15 +55,19 @@ namespace TLab.SFU.Network
         public virtual void Init(Address32 publicId)
         {
             if (m_state == State.INITIALIZED)
-            {
                 return;
-            }
 
             m_networkedId = GetComponent<NetworkedId>();
 
+            if (!m_networkedId)
+            {
+                Debug.LogError(THIS_NAME + "NetworkedId doesn't found");
+                return;
+            }
+
             m_networkedId.SetPublicId(publicId);
 
-            Registry<NetworkedObject>.Register(m_networkedId.id, this);
+            Registry.Register(m_networkedId.id, this);
 
             m_state = State.INITIALIZED;
         }
@@ -70,13 +75,17 @@ namespace TLab.SFU.Network
         public virtual void Init()
         {
             if (m_state == State.INITIALIZED)
-            {
                 return;
-            }
 
             m_networkedId = GetComponent<NetworkedId>();
 
-            Registry<NetworkedObject>.Register(m_networkedId.id, this);
+            if (!m_networkedId)
+            {
+                Debug.LogError(THIS_NAME + "NetworkedId doesn't found");
+                return;
+            }
+
+            Registry.Register(m_networkedId.id, this);
 
             m_state = State.INITIALIZED;
         }

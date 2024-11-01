@@ -591,9 +591,8 @@ GameObject:
   m_Component:
   - component: {fileID: 9132622068279262454}
   - component: {fileID: 6530710217201467848}
-  - component: {fileID: 7973313811925463366}
-  - component: {fileID: -4587372854882708160}
   - component: {fileID: 6831233037385194731}
+  - component: {fileID: 1746604097514878627}
   m_Layer: 0
   m_Name: Head
   m_TagString: Untagged
@@ -635,39 +634,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb7c505fb2b1c8f43bfdc0e68ed0b888, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_identifier: {fileID: 7973313811925463366}
-  m_outputAudioSource: {fileID: 6831233037385194731}
---- !u!114 &7973313811925463366
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8500060301043820108}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0741831496f601e40b3ccc06d967db69, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &-4587372854882708160
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8500060301043820108}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed795df9b6bf57d4294afc739409e072, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
   m_enableSync: 0
   m_hash: 
-  m_useRigidbody: 0
-  m_useGravity: 0
-  m_partsType: 0
-  m_self: 0
-  m_initializeOnStartUp: 1
 --- !u!82 &6831233037385194731
 AudioSource:
   m_ObjectHideFlags: 0
@@ -764,3 +732,37 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1746604097514878627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8500060301043820108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_privateId:
+    m_a0: 0
+    m_a1: 0
+    m_a2: 0
+    m_a3: 0
+    m_hash: 0
+  m_publicId:
+    m_a0: 0
+    m_a1: 0
+    m_a2: 0
+    m_a3: 0
+    m_hash: 0
+  m_id:
+    m_a0: 0
+    m_a1: 0
+    m_a2: 0
+    m_a3: 0
+    m_a4: 0
+    m_a5: 0
+    m_a6: 0
+    m_a7: 0
+    m_hash: 0
