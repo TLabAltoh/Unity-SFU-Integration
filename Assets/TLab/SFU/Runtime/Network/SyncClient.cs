@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Events;
 using static TLab.SFU.ComponentExtention;
 
 namespace TLab.SFU.Network
@@ -25,15 +26,18 @@ namespace TLab.SFU.Network
         private Dictionary<int, PrefabStore.StoreAction> m_avatorHistory = new Dictionary<int, PrefabStore.StoreAction>();
         public PrefabStore.StoreAction[] avatorHistorys => m_avatorHistory.Values.ToArray();
 
+        private IEnumerator m_connectTask = null;
+
+        public static SyncClient instance;
+
         private static PhysicsUpdateType m_physicsUpdateType = PhysicsUpdateType.NONE;
         public static PhysicsUpdateType physicsUpdateType => m_physicsUpdateType;
 
         public delegate void OnMessageCallback(int from, int to, byte[] bytes);
         private static Hashtable m_messageCallbacks = new Hashtable();
 
-        private IEnumerator m_connectTask = null;
-
-        public static SyncClient instance;
+        private static List<(UnityAction, UnityAction<int>)> m_onJoin = new List<(UnityAction, UnityAction<int>)>();
+        private static List<(UnityAction, UnityAction<int>)> m_onExit = new List<(UnityAction, UnityAction<int>)>();
 
         public const int HEADER_SIZE = 4;   // pktId (4)
 
@@ -72,7 +76,7 @@ namespace TLab.SFU.Network
                 if (m_rtcClient == null)
                     return false;
 
-                return true;  // TODO: + Connected
+                return m_rtcClient.connected;
             }
         }
 
@@ -166,10 +170,44 @@ namespace TLab.SFU.Network
             // TODO:
         }
 
+        public static void RegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
+        {
+            var @object = (callback0, callback1);
+            if (!m_onJoin.Contains(@object))
+                m_onJoin.Add(@object);
+        }
+
+        public static void UnRegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
+        {
+            var @object = (callback0, callback1);
+            if (m_onJoin.Contains(@object))
+                m_onJoin.Remove(@object);
+        }
+
+        public static void RegisterOnExit(UnityAction callback0, UnityAction<int> callback1)
+        {
+            var @object = (callback0, callback1);
+            if (!m_onExit.Contains(@object))
+                m_onExit.Add(@object);
+        }
+
+        public static void UnRegisterOnExit(UnityAction callback0, UnityAction<int> callback1)
+        {
+            var @object = (callback0, callback1);
+            if (m_onExit.Contains(@object))
+                m_onExit.Remove(@object);
+        }
+
         public static void RegisterOnMessage(int msgId, OnMessageCallback callback)
         {
             if (!m_messageCallbacks.ContainsKey(msgId))
                 m_messageCallbacks[msgId] = callback;
+        }
+
+        public static void UnRegisterOnMessage(int msgId)
+        {
+            if (m_messageCallbacks.ContainsKey(msgId))
+                m_messageCallbacks.Remove(msgId);
         }
 
         public bool IsPlayerJoined(int index) => m_avatorHistory.ContainsKey(index);
@@ -257,10 +295,12 @@ namespace TLab.SFU.Network
                         {
                             UpdatePhysicsUpdateType(@object.physicsUpdateType);
 
-                            foreach (var othersInstantiateInfo in @object.othersHistory)
-                                UpdateState(othersInstantiateInfo, out var avator);
+                            foreach (var action in @object.othersHistory)
+                                UpdateState(action, out var avator);
 
                             Foreach<NetworkedObject>((networkedObject) => networkedObject.Init());
+
+                            m_onJoin.ForEach((c) => c.Item1.Invoke());
                         }
                         break;
                     case 2: // broadcast
@@ -269,6 +309,8 @@ namespace TLab.SFU.Network
 
                             if (userId == 0)
                                 Foreach<NetworkedObject>((networkedObject) => networkedObject.SyncViaWebSocket());
+
+                            m_onJoin.ForEach((c) => c.Item2.Invoke(from));
                         }
                         break;
                 }
@@ -299,42 +341,6 @@ namespace TLab.SFU.Network
             });
 
 #if false
-            m_messageCallbacks[(int)WebAction.ACEPT] = (from, obj) => {
-
-                m_id = obj.dstIndex;
-
-                m_guestTable[m_id] = true;
-
-                foreach (var trackTarget in m_trackTargets)
-                {
-                    var parts = trackTarget.parts;
-                    var target = trackTarget.target;
-
-                    var trackerName = GetBodyTrackerID(PREFAB_NAME, m_id, parts);
-                    target.name = trackerName;
-
-                    var tracker = target.gameObject.AddComponent<BodyTracker>();
-                    tracker.Init(parts, true);
-                    tracker.SetSyncEnable(true);
-
-                    CacheAvatorParts(m_id, tracker.gameObject);
-                }
-
-                if (m_instantiateAnchor != null)
-                {
-                    m_playerRoot.SetLocalPositionAndRotation(m_instantiateAnchor.position, m_instantiateAnchor.rotation);
-                }
-                else
-                {
-                    m_playerRoot.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-                }
-
-                var anchor = m_respownAnchors[m_id];
-                m_playerRoot.SetPositionAndRotation(anchor.position, anchor.rotation);
-
-                m_rtcClient.Join(GetClientID(m_id), m_roomConfig.id);
-
-            };
             m_messageCallbacks[(int)WebAction.GUEST_DISCONNECT] = (from, obj) => {
 
                 int index = obj.srcIndex;
@@ -356,29 +362,6 @@ namespace TLab.SFU.Network
                 Debug.Log(THIS_NAME + "Guest disconncted: " + index.ToString());
 
             };
-            m_messageCallbacks[(int)WebAction.GUEST_PARTICIPATION] = (from, obj) => {
-
-                var index = obj.srcIndex;
-
-                if (m_guestTable[index])
-                {
-                    Debug.LogError(THIS_NAME + $"Guest already exists: {index}");
-                    return;
-                }
-
-                CloneAvator(index, m_avatorConfig);
-
-                m_guestTable[index] = true;
-
-                foreach (var callback in m_customCallbacks)
-                {
-                    callback.OnGuestParticipated(index);
-                }
-
-                Debug.Log(THIS_NAME + $"Guest participated: {index}");
-
-                return;
-            };
 #endif
             #endregion ADD_CALLBACKS
 
@@ -397,7 +380,10 @@ namespace TLab.SFU.Network
         public void Exit()
         {
             m_rtcClient?.HangUp();
-            m_adapter.Exit(this, (@string) => Debug.Log("Exit: Success"));
+            m_adapter.Exit(this, (@string) => {
+                Debug.Log("Exit: Success");
+                m_onExit.ForEach((c) => c.Item1.Invoke());
+            });
         }
 
         #region WS
@@ -495,7 +481,7 @@ namespace TLab.SFU.Network
                 var action = new PrefabStore.StoreAction()
                 {
                     action = PrefabStore.StoreAction.Action.INSTANTIATE,
-                    elemId = userId,
+                    elemId = 0,
                     userId = userId,
                     transform = m_avatorShop.GetAnchor(userId),
                 };
@@ -510,20 +496,14 @@ namespace TLab.SFU.Network
             }
         }
 
-        public void OnClose()
-        {
-            throw new NotImplementedException();
-        }
+        public void OnClose() => m_onExit.ForEach((c) => c.Item1.Invoke());
 
         public void OnOpen(int from)
         {
             throw new NotImplementedException();
         }
 
-        public void OnClose(int from)
-        {
-            throw new NotImplementedException();
-        }
+        public void OnClose(int from) => m_onExit.ForEach((c) => c.Item2.Invoke(from));
 
         public void OnError()
         {

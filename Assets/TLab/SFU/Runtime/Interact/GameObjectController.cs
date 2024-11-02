@@ -548,5 +548,19 @@ namespace TLab.SFU.Interact
                     SyncViaWebRTC();
             }
         }
+
+        protected override void Register()
+        {
+            base.Register();
+
+            Registry.Register(m_networkedId.id, this);
+        }
+
+        protected override void UnRegister()
+        {
+            Registry.UnRegister(m_networkedId.id);
+
+            base.UnRegister();
+        }
     }
 }

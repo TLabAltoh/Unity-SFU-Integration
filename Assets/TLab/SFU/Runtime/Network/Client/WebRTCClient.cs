@@ -53,6 +53,16 @@ namespace TLab.SFU.Network
             }
         }
 
+        public bool connected
+        {
+            get
+            {
+                if (m_pc == null)
+                    return false;
+                return (m_pc.ConnectionState == RTCPeerConnectionState.Connected);
+            }
+        }
+
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
         #region STRUCT

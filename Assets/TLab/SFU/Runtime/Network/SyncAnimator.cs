@@ -66,7 +66,7 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
-        public virtual void SyncAnim(AnimParameter parameter)
+        protected virtual void SyncAnim(AnimParameter parameter)
         {
             var animState = new WebAnimState
             {
@@ -102,7 +102,39 @@ namespace TLab.SFU.Network
 
             SyncClient.instance.SendWS(@object.Marshall());
 
-            m_syncFromOutside = false;
+            m_synchronised = false;
+        }
+
+        protected virtual void SyncAnim()
+        {
+            foreach (AnimParameter parameter in m_parameters.Values)
+            {
+                int prevValueHash = parameter.lastValueHash;
+                int currentValueHash;
+
+                switch (parameter.type)
+                {
+                    case AnimatorControllerParameterType.Int:
+                        currentValueHash = m_animator.GetInteger(parameter.name).GetHashCode();
+                        parameter.lastValueHash = currentValueHash;
+                        break;
+                    case AnimatorControllerParameterType.Float:
+                        currentValueHash = m_animator.GetFloat(parameter.name).GetHashCode();
+                        parameter.lastValueHash = currentValueHash;
+                        break;
+                    case AnimatorControllerParameterType.Bool:
+                        currentValueHash = m_animator.GetBool(parameter.name).GetHashCode();
+                        parameter.lastValueHash = currentValueHash;
+                        break;
+                    default:    //  AnimatorControllerParameterType.Trigger
+                        currentValueHash = m_animator.GetBool(parameter.name).GetHashCode();
+                        parameter.lastValueHash = false.GetHashCode();
+                        break;
+                }
+
+                if (prevValueHash != currentValueHash)
+                    SyncAnim(parameter);
+            }
         }
 
         public virtual void SyncAnimFromOutside(WebAnimState animState)
@@ -127,8 +159,10 @@ namespace TLab.SFU.Network
                     break;
             }
 
-            m_syncFromOutside = true;
+            m_synchronised = true;
         }
+
+        public override void SyncViaWebRTC() => SyncAnim();
 
         protected virtual void OnChangeParameter(string paramName, int hashCode)
         {
@@ -226,6 +260,20 @@ namespace TLab.SFU.Network
             }
         }
 
+        protected override void Register()
+        {
+            base.Register();
+
+            Registry.Register(m_networkedId.id, this);
+        }
+
+        protected override void UnRegister()
+        {
+            Registry.UnRegister(m_networkedId.id);
+
+            base.UnRegister();
+        }
+
         protected override void Start()
         {
             base.Start();
@@ -237,36 +285,7 @@ namespace TLab.SFU.Network
         {
             base.Update();
 
-            foreach (AnimParameter parameter in m_parameters.Values)
-            {
-                int prevValueHash = parameter.lastValueHash;
-                int currentValueHash;
-
-                switch (parameter.type)
-                {
-                    case AnimatorControllerParameterType.Int:
-                        currentValueHash = m_animator.GetInteger(parameter.name).GetHashCode();
-                        parameter.lastValueHash = currentValueHash;
-                        break;
-                    case AnimatorControllerParameterType.Float:
-                        currentValueHash = m_animator.GetFloat(parameter.name).GetHashCode();
-                        parameter.lastValueHash = currentValueHash;
-                        break;
-                    case AnimatorControllerParameterType.Bool:
-                        currentValueHash = m_animator.GetBool(parameter.name).GetHashCode();
-                        parameter.lastValueHash = currentValueHash;
-                        break;
-                    default:    //  AnimatorControllerParameterType.Trigger
-                        currentValueHash = m_animator.GetBool(parameter.name).GetHashCode();
-                        parameter.lastValueHash = false.GetHashCode();
-                        break;
-                }
-
-                if (prevValueHash != currentValueHash)
-                {
-                    SyncAnim(parameter);
-                }
-            }
+            SyncViaWebRTC();
         }
     }
 }

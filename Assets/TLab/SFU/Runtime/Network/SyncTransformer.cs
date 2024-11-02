@@ -253,7 +253,7 @@ namespace TLab.SFU.Network
 
             CashRbTransform();
 
-            m_syncFromOutside = true;
+            m_synchronised = true;
         }
 
         public override void SyncViaWebRTC()
@@ -297,7 +297,7 @@ namespace TLab.SFU.Network
 
             SyncClient.instance.SendWS(@object.Marshall());
 
-            m_syncFromOutside = false;
+            m_synchronised = false;
         }
 
         public override void SyncViaWebSocket()
@@ -341,7 +341,7 @@ namespace TLab.SFU.Network
 
             SyncClient.instance.SendWS(@object.Marshall());
 
-            m_syncFromOutside = false;
+            m_synchronised = false;
         }
 
         protected virtual void CashRbTransform()
@@ -414,6 +414,20 @@ namespace TLab.SFU.Network
                 });
                 msgCallbackRegisted = true;
             }
+        }
+
+        protected override void Register()
+        {
+            base.Register();
+
+            Registry.Register(m_networkedId.id, this);
+        }
+
+        protected override void UnRegister()
+        {
+            Registry.UnRegister(m_networkedId.id);
+
+            base.UnRegister();
         }
     }
 }

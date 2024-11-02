@@ -35,6 +35,20 @@ namespace TLab.SFU.Network
             Registry.Register(m_networkedId.id, this);
         }
 
+        protected override void Register()
+        {
+            base.Register();
+
+            Registry.Register(m_networkedId.id, this);
+        }
+
+        protected override void UnRegister()
+        {
+            Registry.UnRegister(m_networkedId.id);
+
+            base.UnRegister();
+        }
+
         protected override void Update()
         {
             base.Update();

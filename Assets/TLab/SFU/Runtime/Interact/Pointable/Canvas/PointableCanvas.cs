@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<PointableCanvas>;
+
     [AddComponentMenu("TLab/SFU/Pointable Canvas (TLab)")]
     public class PointableCanvas : Pointable
     {
@@ -24,7 +26,7 @@ namespace TLab.SFU.Interact
         {
             CanvasModule.RegisterPointableCanvas(this);
 
-            Registry<PointableCanvas>.Register(this);
+            Registry.Register(this);
 
             m_registered = true;
         }
@@ -38,7 +40,7 @@ namespace TLab.SFU.Interact
 
             CanvasModule.UnregisterPointableCanvas(this);
 
-            Registry<PointableCanvas>.UnRegister(this);
+            Registry.UnRegister(this);
 
             m_registered = false;
         }
@@ -59,17 +61,13 @@ namespace TLab.SFU.Interact
             base.OnEnable();
 
             if (m_started)
-            {
                 Register();
-            }
         }
 
         protected override void OnDisable()
         {
             if (m_started)
-            {
                 Unregister();
-            }
 
             base.OnDisable();
         }

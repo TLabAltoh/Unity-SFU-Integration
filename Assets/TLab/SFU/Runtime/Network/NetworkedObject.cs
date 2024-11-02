@@ -21,13 +21,13 @@ namespace TLab.SFU.Network
 
         protected NetworkedId m_networkedId;
 
-        protected bool m_syncFromOutside = false;
+        protected bool m_synchronised = false;
 
         public State state => m_state;
 
         public NetworkedId networkedId => m_networkedId;
 
-        public bool syncFromOutside => m_syncFromOutside;
+        public bool synchronised => m_synchronised;
 
         public Direction direction { get => m_direction; set => m_direction = value; }
 
@@ -88,11 +88,27 @@ namespace TLab.SFU.Network
 
         public virtual void SyncViaWebSocket() { }
 
+        protected virtual void Register() => Registry.Register(m_networkedId.id, this);
+
+        protected virtual void UnRegister() => Registry.UnRegister(m_networkedId.id);
+
         protected virtual void Awake() { }
 
         protected virtual void Start() { }
 
         protected virtual void Update() { }
+
+        protected virtual void OnEnable()
+        {
+            if ((m_state == State.INITIALIZED) && m_networkedId)
+                Register();
+        }
+
+        protected virtual void OnDisable()
+        {
+            if ((m_state == State.INITIALIZED) && m_networkedId)
+                UnRegister();
+        }
 
         protected virtual void OnDestroy() => Shutdown();
 

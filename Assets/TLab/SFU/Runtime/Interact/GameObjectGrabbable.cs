@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<GameObjectGrabbable>;
+
     [AddComponentMenu("TLab/SFU/Game Object Grabbable (TLab)")]
     [RequireComponent(typeof(GameObjectController))]
     public class GameObjectGrabbable : Interactable
@@ -57,19 +59,14 @@ namespace TLab.SFU.Interact
         {
             base.OnEnable();
 
-            Registry<GameObjectGrabbable>.Register(this);
+            Registry.Register(this);
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
 
-            Registry<GameObjectGrabbable>.UnRegister(this);
-        }
-
-        public override void WhileSelected(Interactor interactor)
-        {
-            base.WhileSelected(interactor);
+            Registry.UnRegister(this);
         }
 
         protected override void Start()

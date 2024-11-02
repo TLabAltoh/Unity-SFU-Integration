@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<GameObjectRotatable>;
+
     [AddComponentMenu("TLab/SFU/Game Object Rotatable (TLab)")]
     [RequireComponent(typeof(GameObjectController))]
     public class GameObjectRotatable : Interactable
@@ -18,13 +20,13 @@ namespace TLab.SFU.Interact
 
         public static float ZERO_ANGLE = 0.0f;
 
-        private bool grabbled => m_controller.grabState.grabbed;
+        private bool grabbed => m_controller.grabState.grabbed;
 
-        private bool syncFromOutside => m_controller.syncFromOutside;
+        private bool synchronised => m_controller.synchronised;
 
         public void Stop()
         {
-            if (!grabbled)
+            if (!grabbed)
             {
                 m_axis = -Vector3.one;
                 m_angle = ZERO_ANGLE;
@@ -33,21 +35,11 @@ namespace TLab.SFU.Interact
             }
         }
 
-        public override void Selected(Interactor interactor)
-        {
-            base.Selected(interactor);
-        }
-
-        public override void UnSelected(Interactor interactor)
-        {
-            base.UnSelected(interactor);
-        }
-
         public override void WhileSelected(Interactor interactor)
         {
             base.WhileSelected(interactor);
 
-            if (interactor.pressed || !grabbled)
+            if (interactor.pressed || !grabbed)
             {
                 var angulerVel = interactor.rotateVelocity;
 
@@ -56,6 +48,20 @@ namespace TLab.SFU.Interact
 
                 m_onShot = true;
             }
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            Registry.Register(this);
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+
+            Registry.UnRegister(this);
         }
 
         protected override void Start()
@@ -69,10 +75,7 @@ namespace TLab.SFU.Interact
         {
             base.Update();
 
-            // controller == null --> ‚¾‚ê‚à’Í‚ñ‚Å‚¢‚È‚¢‚Ì‚ÅOK
-            // controller != null --> ‚¾‚ê‚à’Í‚ñ‚Å‚¢‚È‚¯‚ê‚ÎOK
-
-            if ((m_controller == null || !grabbled) && (!syncFromOutside || m_onShot) && m_angle > ZERO_ANGLE)
+            if ((m_controller == null || !grabbed) && (!synchronised || m_onShot) && m_angle > ZERO_ANGLE)
             {
                 transform.rotation = Quaternion.AngleAxis(m_angle, m_axis) * transform.rotation;
                 m_angle = Mathf.Clamp(m_angle - DURATION * Time.deltaTime, ZERO_ANGLE, float.MaxValue);
@@ -80,25 +83,9 @@ namespace TLab.SFU.Interact
                 m_controller?.SyncViaWebRTC();
             }
             else
-            {
                 m_angle = ZERO_ANGLE;
-            }
 
             m_onShot = false;
-        }
-
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-
-            Registry<GameObjectRotatable>.Register(this);
-        }
-
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-
-            Registry<GameObjectRotatable>.UnRegister(this);
         }
     }
 }

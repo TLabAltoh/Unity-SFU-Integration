@@ -5,6 +5,8 @@ using UnityEngine.Events;
 
 namespace TLab.SFU.Interact
 {
+    using Registry = Registry<Interactable>;
+
     [System.Serializable]
     public struct HoverCallback
     {
@@ -144,9 +146,9 @@ namespace TLab.SFU.Interact
 
         #endregion RAYCAST
 
-        protected virtual void OnEnable() => Registry<Interactable>.Register(this);
+        protected virtual void OnEnable() => Registry.Register(this);
 
-        protected virtual void OnDisable() => Registry<Interactable>.UnRegister(this);
+        protected virtual void OnDisable() => Registry.UnRegister(this);
 
         protected virtual void Start() { }
 
