@@ -488,15 +488,15 @@ namespace TLab.SFU.Network
                 var json = Encoding.UTF8.GetString(bytes);
                 var signaling = JsonUtility.FromJson<Signaling>(json);
 
-                if (signaling.is_candidate)
+                if (signaling.is_candidate && signaling.candidate != "")
                 {
+                    Debug.Log("[Signaling] recv: " + signaling.candidate);
+
                     m_pc.AddIceCandidate(new RTCIceCandidate(new RTCIceCandidateInit
                     {
                         candidate = signaling.candidate,
                         sdpMLineIndex = 0,
                     }));
-
-                    Debug.Log("[Signaling] " + signaling.candidate);
                 }
                 else
                 {
@@ -513,7 +513,7 @@ namespace TLab.SFU.Network
                         OnSetSessionDescriptionError(ref error);
                     }
 
-                    Debug.Log("[Signaling] Answer: " + desc.sdp);
+                    Debug.Log("[Signaling] answer: " + desc.sdp);
                 }
             };
             _ = m_signalingSocket.Connect();
@@ -542,7 +542,7 @@ namespace TLab.SFU.Network
                     var json = JsonUtility.ToJson(signaling);
                     _ = m_signalingSocket?.SendText(json);
 
-                    Debug.Log("[Signaling] Candidate: " + candidate.Candidate);
+                    Debug.Log("[Signaling] send: " + candidate.Candidate);
                     yield return new WaitForSeconds(0.5f);
                 }
 

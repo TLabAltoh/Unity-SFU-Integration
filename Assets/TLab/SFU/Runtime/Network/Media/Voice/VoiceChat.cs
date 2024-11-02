@@ -10,12 +10,14 @@ namespace TLab.SFU.Network
     {
         public static VoiceChat instance;
 
+        [SerializeField] private WebRTCClient.ClientType m_type = WebRTCClient.ClientType.WHIP;
+
         private AudioSource m_microphoneSource;
         private AudioClip m_microphoneClip;
         private string m_microphoneName;
         private bool m_recording = false;
 
-        private WebRTCClient m_mediaChannel;
+        private WebRTCClient m_rtcClient;
 
         public const int VOICE_BUFFER_SIZE = 1024;
         public const int CHANNEL = 1;
@@ -23,34 +25,9 @@ namespace TLab.SFU.Network
 
         [HideInInspector] public int m_frequency = 16000;
 
-        private static Hashtable m_voicePlayers = new Hashtable();
-
         private string THIS_NAME => "[" + GetType().Name + "] ";
 
         public AudioSource microphoneSource => m_microphoneSource;
-
-        public static void RegistClient(Address64 id, VoiceChatPlayer player)
-        {
-            m_voicePlayers[id] = player;
-        }
-
-        public static void RemoveClient(Address64 id)
-        {
-            m_voicePlayers.Remove(id);
-        }
-
-        public void OnVoice(string userId, AudioStreamTrack track)
-        {
-            var player = m_voicePlayers[userId] as VoiceChatPlayer;
-
-            if (player == null)
-            {
-                Debug.LogError(THIS_NAME + $"Player not found: {userId}");
-                return;
-            }
-
-            player.SetAudioStreamTrack(track);
-        }
 
         private string GetMicrophone()
         {
@@ -91,16 +68,12 @@ namespace TLab.SFU.Network
 
         public void Whip()
         {
-            if (m_mediaChannel == null)
-            {
+            if (m_rtcClient == null)
                 return;
-            }
 
             m_recording = StartRecording();
             if (!m_recording)
-            {
                 return;
-            }
 
             while (!(Microphone.GetPosition(m_microphoneName) > 0)) { }
 
@@ -111,16 +84,13 @@ namespace TLab.SFU.Network
             WebRTCClient.Whip(this, SyncClient.adapter, "voice", null, null, microphoneSource);
         }
 
-        public void Pause(bool active)
-        {
-            m_mediaChannel.Pause(active);
-        }
+        public void Pause(bool active) => m_rtcClient?.Pause(active);
 
         private void InitializeDPSBuffer()
         {
-            var configuration = AudioSettings.GetConfiguration();
-            configuration.dspBufferSize = VOICE_BUFFER_SIZE;
-            if (!AudioSettings.Reset(configuration))
+            var cnf = AudioSettings.GetConfiguration();
+            cnf.dspBufferSize = VOICE_BUFFER_SIZE;
+            if (!AudioSettings.Reset(cnf))
             {
                 Debug.LogError(THIS_NAME + "Failed changing Audio Settings");
             }

@@ -15,11 +15,7 @@ namespace TLab.SFU.Network
             SHUTDOWNED
         }
 
-        [Header("Sync Setting")]
-
-        [SerializeField] protected bool m_enableSync = false;
-
-        [SerializeField] protected string m_hash = "";
+        [SerializeField] protected Direction m_direction = Direction.SENDRECV;
 
         protected State m_state = State.NONE;
 
@@ -33,18 +29,16 @@ namespace TLab.SFU.Network
 
         public bool syncFromOutside => m_syncFromOutside;
 
-        public bool enableSync => m_enableSync;
+        public Direction direction { get => m_direction; set => m_direction = value; }
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
-
-        public virtual void SetSyncEnable(bool active) => m_enableSync = active;
 
         public virtual void Shutdown()
         {
             if (m_state == State.SHUTDOWNED)
                 return;
 
-            m_enableSync = false;
+            m_direction = Direction.RECVONLY;
 
             if (m_networkedId)
                 Registry.UnRegister(m_networkedId.id);

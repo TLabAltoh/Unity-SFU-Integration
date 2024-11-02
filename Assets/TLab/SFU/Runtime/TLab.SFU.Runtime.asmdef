@@ -1,5 +1,5 @@
 {
-    "name": "TLabSFU.Runtime",
+    "name": "TLab.SFU.Runtime",
     "rootNamespace": "",
     "references": [
         "GUID:04376767bc1f3b428aefa3d20743e819",

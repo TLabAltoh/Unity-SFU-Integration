@@ -258,7 +258,7 @@ namespace TLab.SFU.Network
 
         public override void SyncViaWebRTC()
         {
-            if (!m_enableSync)
+            if (!Const.SEND.HasFlag(m_direction))
                 return;
 
             CashRbTransform();
@@ -302,7 +302,7 @@ namespace TLab.SFU.Network
 
         public override void SyncViaWebSocket()
         {
-            if (!m_enableSync)
+            if (!Const.SEND.HasFlag(m_direction))
                 return;
 
             CashRbTransform();
@@ -410,7 +410,7 @@ namespace TLab.SFU.Network
                 {
                     var @object = new MSG_SyncTransform();
                     @object.UnMarshall(bytes);
-                    Registry<SyncTransformer>.GetById(@object.transformerState.id)?.SyncTransformFromOutside(@object.transformerState);
+                    Registry.GetById(@object.transformerState.id)?.SyncTransformFromOutside(@object.transformerState);
                 });
                 msgCallbackRegisted = true;
             }

@@ -1,5 +1,5 @@
 {
-    "name": "TLabSFU.Editor",
+    "name": "TLab.SFU.Editor",
     "rootNamespace": "",
     "references": [
         "GUID:c35681fc4daa8ef45aa4e44da5524875"

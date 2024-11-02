@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
+using TLab.SFU.Network;
 
 namespace TLab.SFU
 {
@@ -37,13 +38,7 @@ namespace TLab.SFU
 
         #endregion REGISTRY
 
-        public enum Type
-        {
-            RECEIVER,
-            PROVIDER,
-        };
-
-        [SerializeField] private Type m_type;
+        [SerializeField] private Direction m_direction;
 
         [SerializeField] private string m_id;
 
@@ -51,27 +46,27 @@ namespace TLab.SFU
 
         private void Awake()
         {
-            if (m_type == Type.PROVIDER)
+            if (Const.SEND.HasFlag(m_direction))
                 Register(m_id, this);
         }
 
         private void Start()
         {
-            if (m_type == Type.RECEIVER)
+            if (Const.RECV.HasFlag(m_direction))
                 m_parent = GetById(m_id);
         }
 
         private void Update()
         {
-            if ((m_type == Type.PROVIDER) && (m_parent != null))
+            if (Const.SEND.HasFlag(m_direction) && (m_parent != null))
             {
-
+                // TODO:
             }
         }
 
         private void OnDestroy()
         {
-            if (m_type == Type.PROVIDER)
+            if (Const.SEND.HasFlag(m_direction))
                 UnRegister(m_id);
         }
     }

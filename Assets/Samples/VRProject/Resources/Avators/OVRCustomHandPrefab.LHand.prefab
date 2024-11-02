@@ -2000,6 +2000,9 @@ GameObject:
   - component: {fileID: 4927695388962516}
   - component: {fileID: 114320645607636018}
   - component: {fileID: 114674612155881938}
+  - component: {fileID: 315180520259186388}
+  - component: {fileID: 6383552243657263469}
+  - component: {fileID: 8347335838764753054}
   m_Layer: 0
   m_Name: OVRCustomHandPrefab.LHand
   m_TagString: Untagged
@@ -2142,6 +2145,67 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   retargetingType: 0
+--- !u!114 &315180520259186388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732268206786806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 1
+  m_id: Hand.L
+--- !u!114 &6383552243657263469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732268206786806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_privateId:
+    m_a0: 0
+    m_a1: 0
+    m_a2: 0
+    m_a3: 0
+    m_hash: 0
+  m_publicId:
+    m_a0: 0
+    m_a1: 0
+    m_a2: 0
+    m_a3: 0
+    m_hash: 0
+  m_id:
+    m_a0: 0
+    m_a1: 0
+    m_a2: 0
+    m_a3: 0
+    m_a4: 0
+    m_a5: 0
+    m_a6: 0
+    m_a7: 0
+    m_hash: 0
+--- !u!114 &8347335838764753054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732268206786806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7785ca2b8bacd0742afa415159cb6613, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 1
 --- !u!1 &1738046394478382
 GameObject:
   m_ObjectHideFlags: 0

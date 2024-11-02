@@ -2,6 +2,19 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
+    public enum Direction
+    {
+        SENDONLY,
+        RECVONLY,
+        SENDRECV,
+    };
+
+    public static class Const
+    {
+        public const Direction SEND = Direction.SENDRECV | Direction.SENDONLY;
+        public const Direction RECV = Direction.SENDONLY | Direction.RECVONLY;
+    }
+
     [System.Serializable]
     public struct WebVector3
     {

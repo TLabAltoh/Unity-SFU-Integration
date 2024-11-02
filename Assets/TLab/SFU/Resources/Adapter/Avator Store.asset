@@ -12,12 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaa16f1d705b2b744b576ee4ba0d313e, type: 3}
   m_Name: Avator Store
   m_EditorClassIdentifier: 
-  m_storeName: 
   m_store:
-  - name: 
-    prefab: {fileID: 0}
-    distribute: {fileID: 0}
-  - name: 
-    prefab: {fileID: 0}
-    distribute: {fileID: 0}
-  mchCallbackRegisted: 1
+  - name: default
+    prefab: {fileID: 3478780567771759180, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
+    distribute: {fileID: 3478780567771759180, guid: 0bbff4a54e89e1e42b954ba7e52b7dfc, type: 3}

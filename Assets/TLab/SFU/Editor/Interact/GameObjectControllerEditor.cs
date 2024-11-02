@@ -9,12 +9,9 @@ namespace TLab.SFU.Interact.Editor
     {
         private GameObjectController m_controller;
 
-        private void OnEnable()
-        {
-            m_controller = target as GameObjectController;
-        }
+        private void OnEnable() => m_controller = target as GameObjectController;
 
-        private void InitializeForRotateble(GameObjectController controller)
+        private void InitializeForRotatable(GameObjectController controller)
         {
             controller.InitializeGameObjectRotatable();
             EditorUtility.SetDirty(controller);
@@ -29,21 +26,21 @@ namespace TLab.SFU.Interact.Editor
             meshCollider.convex = true;     // meshCollider.ClosestPoint only works with convex = true
 
             var controller = target.RequireComponent<GameObjectController>();
-            controller.SetSyncEnable(true);
+            controller.direction = Network.Direction.SENDRECV;
             controller.UseRigidbody(false, false);  // Disable Rigidbody.useGrabity
 
             var goGrabbable = target.RequireComponent<GameObjectGrabbable>();
             goGrabbable.enableCollision = true;
 
-            var goRotatable = target.RequireComponent<GameObjectRotatable>();
-            goRotatable.enableCollision = true;
+            var rotatable = target.RequireComponent<GameObjectRotatable>();
+            rotatable.enableCollision = true;
 
             var rayInteractable = target.RequireComponent<RayInteractable>();
 
             EditorUtility.SetDirty(meshFilter);
             EditorUtility.SetDirty(meshCollider);
             EditorUtility.SetDirty(controller);
-            EditorUtility.SetDirty(goRotatable);
+            EditorUtility.SetDirty(rotatable);
             EditorUtility.SetDirty(goGrabbable);
 
             EditorUtility.SetDirty(rayInteractable);
@@ -53,11 +50,9 @@ namespace TLab.SFU.Interact.Editor
         {
             base.OnInspectorGUI();
 
-            var goRotatable = m_controller.gameObject.GetComponent<GameObjectRotatable>();
-            if (goRotatable != null && GUILayout.Button("Initialize for GameObjectRotatable"))
-            {
-                InitializeForRotateble(m_controller);
-            }
+            var rotatable = m_controller.gameObject.GetComponent<GameObjectRotatable>();
+            if (rotatable != null && GUILayout.Button("Initialize for GameObjectRotatable"))
+                InitializeForRotatable(m_controller);
 
             if (m_controller.enableDivide && GUILayout.Button("Initialize for Devibable"))
             {
