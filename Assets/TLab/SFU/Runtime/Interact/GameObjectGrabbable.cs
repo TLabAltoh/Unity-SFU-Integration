@@ -21,7 +21,7 @@ namespace TLab.SFU.Interact
 
         public override void Selected(Interactor interactor)
         {
-            switch (m_controller.OnGrabbed(interactor))
+            switch (m_controller.OnGrab(interactor))
             {
                 case GameObjectController.HandType.MAIN_HAND:
                     IgnoreCollision(interactor, true);

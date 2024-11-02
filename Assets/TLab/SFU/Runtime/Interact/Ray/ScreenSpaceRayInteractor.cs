@@ -39,24 +39,17 @@ namespace TLab.SFU.Interact
 
         public void Grab()
         {
+
             foreach (var controller in m_controllers)
             {
-                controller.OnGrabbed(this);
+                controller.OnGrab(this);
             }
         }
 
-        public void Release()
-        {
-            foreach (var controller in m_controllers)
-            {
-                controller.OnRelease(this);
-            }
-        }
+        public void Release() => m_controllers.Foreach((c) => c.OnRelease(this));
 
         protected override void UpdateRaycast()
         {
-            base.UpdateRaycast();
-
             m_candidate = null;
 
             var minDist = float.MaxValue;
@@ -80,8 +73,6 @@ namespace TLab.SFU.Interact
 
         protected override void UpdateInput()
         {
-            base.UpdateInput();
-
             m_pressed = UnityEngine.Input.GetMouseButton(0);
 
             m_onPress = UnityEngine.Input.GetMouseButtonDown(0);
@@ -115,7 +106,7 @@ namespace TLab.SFU.Interact
 
             MousePanning();
             if (isPanning)
-            { return; }
+                return;
 
             if (UnityEngine.Input.GetMouseButton(1))
             {
@@ -184,19 +175,13 @@ namespace TLab.SFU.Interact
             panComplete = new Vector3(pan_x, pan_y, 0);
 
             if (UnityEngine.Input.GetMouseButtonDown(2))
-            {
                 isPanning = true;
-            }
 
             if (UnityEngine.Input.GetMouseButtonUp(2))
-            {
                 isPanning = false;
-            }
 
             if (isPanning)
-            {
                 Camera.main.transform.Translate(panComplete);
-            }
         }
     }
 }

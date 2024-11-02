@@ -23,8 +23,6 @@ namespace TLab.SFU.Interact
 
         protected override void UpdateRaycast()
         {
-            base.UpdateRaycast();
-
             m_candidate = null;
 
             var minDist = float.MaxValue;
@@ -46,8 +44,6 @@ namespace TLab.SFU.Interact
 
         protected override void UpdateInput()
         {
-            base.UpdateInput();
-
             m_pressed = (m_interactable != null) ?
                 m_interactable.Spherecast(m_pointer.position, out var raycastHit, m_selectThreshold) : false;
 
@@ -69,13 +65,9 @@ namespace TLab.SFU.Interact
         protected override void Process()
         {
             if (m_interactDataSource.currentGesture == m_gesture)
-            {
                 base.Process();
-            }
             else
-            {
-                ForceClear();
-            }
+                ForceRelease();
         }
     }
 }

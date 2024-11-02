@@ -4,11 +4,15 @@ using UnityEngine;
 namespace TLab.SFU.Interact
 {
     [AddComponentMenu("TLab/SFU/Interactor (TLab)")]
-    public class Interactor : MonoBehaviour
+    public abstract class Interactor : MonoBehaviour, IActiveState
     {
         [SerializeField] protected InteractDataSource m_interactDataSource;
 
         [SerializeField] protected Transform m_pointer;
+
+        [SerializeField, Interface(typeof(IActiveState))]
+        private UnityEngine.Object m_activeState;
+        public IActiveState activeState;
 
         protected static List<int> m_identifiers = new List<int>();
 
@@ -25,6 +29,8 @@ namespace TLab.SFU.Interact
                 return identifier;
             }
         }
+
+        public virtual bool Active => m_interactable != null;
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -70,13 +76,19 @@ namespace TLab.SFU.Interact
 
         public Vector3 rotateVelocity => m_rotateVelocity;
 
-        protected virtual void UpdateRaycast() { }
+        protected abstract void UpdateRaycast();
 
-        protected virtual void UpdateInput() { }
+        protected abstract void UpdateInput();
 
         protected virtual void Process()
         {
-            if (m_interactable != null && m_interactable.IsSelectes(this))
+            if ((activeState != null) && activeState.Active)
+            {
+                ForceRelease();
+                return;
+            }
+
+            if ((m_interactable != null) && m_interactable.IsSelectes(this))
             {
                 m_interactable.WhileHovered(this);
 
@@ -108,13 +120,11 @@ namespace TLab.SFU.Interact
                     }
                 }
                 else
-                {
-                    ForceClear();
-                }
+                    ForceRelease();
             }
         }
 
-        protected virtual void ForceClear()
+        protected virtual void ForceRelease()
         {
             if (m_interactable != null)
             {
@@ -128,7 +138,11 @@ namespace TLab.SFU.Interact
 
         protected virtual void Awake() => m_identifier = GenerateIdentifier();
 
-        protected virtual void Start() => UpdateInput();
+        protected virtual void Start()
+        {
+            if (m_activeState)
+                activeState = m_activeState as IActiveState;
+        }
 
         protected virtual void Update()
         {

@@ -111,32 +111,19 @@ namespace TLab.VRProjct
 
             g.name = DEFAULT_GESTUR_NAME;
 
-            List<Vector3> data = new List<Vector3>();
-            foreach (var bone in m_fingerBones)
-            {
-                data.Add(m_skeleton.transform.InverseTransformPoint(bone.Transform.position));
-            }
+            var data = new List<Vector3>();
+            m_fingerBones.ForEach((b) => data.Add(m_skeleton.transform.InverseTransformPoint(b.Transform.position)));
 
             g.fingerDatas = data;
             m_gestures.Add(g);
         }
 #endif
 
-        void Start()
-        {
-
-        }
-
         void Update()
         {
 #if UNITY_EDITOR
-            if (m_editMode)
-            {
-                if (UnityEngine.Input.GetKeyDown(m_recordKey))
-                {
-                    SavePose();
-                }
-            }
+            if (m_editMode && Input.GetKeyDown(m_recordKey))
+                SavePose();
 #endif
 
             // Update Pose
@@ -161,13 +148,9 @@ namespace TLab.VRProjct
             m_onRelease = false;
 
             if (triggerFired && !prevTriggerFired)
-            {
                 m_onPress = true;
-            }
             else if (!triggerFired && prevTriggerFired)
-            {
                 m_onRelease = true;
-            }
 
             // Detect Grab Press
 
@@ -177,10 +160,7 @@ namespace TLab.VRProjct
 
                 bool grabFired = m_usePinchAsGrab ? m_triggerFired : false;
 
-                m_grabGestures.ForEach((g) =>
-                {
-                    grabFired = grabFired || (m_currentGesture == g);
-                });
+                m_grabGestures.ForEach((g) => grabFired = grabFired || (m_currentGesture == g));
 
                 bool prevGrabFired = m_grabFired;
 
@@ -193,13 +173,9 @@ namespace TLab.VRProjct
                 m_onFree = false;
 
                 if (grabFired && !prevGrabFired)
-                {
                     m_onGrab = true;
-                }
                 else if (!grabFired && prevGrabFired)
-                {
                     m_onFree = true;
-                }
             }
             else
             {

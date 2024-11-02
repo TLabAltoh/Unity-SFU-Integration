@@ -380,7 +380,7 @@ namespace TLab.SFU.Interact
             return HandType.NONE;
         }
 
-        public HandType OnGrabbed(Interactor interactor)
+        public HandType OnGrab(Interactor interactor)
         {
             if (m_locked || (!m_grabState.isFree && !m_grabState.grabbByMe))
                 return HandType.NONE;

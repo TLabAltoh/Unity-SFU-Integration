@@ -331,6 +331,17 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!114 &222755305 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 183181523847522081, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
+  m_PrefabInstance: {fileID: 1577959518}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f860115ee3b41c94884f02527681afe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!21 &253066873
 Material:
   serializedVersion: 8
@@ -2605,6 +2616,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 0}
   m_pointer: {fileID: 991280127}
+  m_activeState: {fileID: 0}
   m_maxDistance: 5
   m_rotateBias: 5
   navigationSpeed: 0.25
@@ -3788,6 +3800,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 145231111422548581, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
+      propertyPath: m_activeState
+      value: 
+      objectReference: {fileID: 222755305}
     - target: {fileID: 183181523962253270, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.121300004
@@ -3992,6 +4008,18 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
+    - target: {fileID: 5512542031051134851, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6823631591110257157, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6905849405974143823, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
+      propertyPath: m_RootOrder
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 7970735298625079054, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.1694175
@@ -4019,6 +4047,10 @@ PrefabInstance:
     - target: {fileID: 7970735298625079054, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0.026800059
+      objectReference: {fileID: 0}
+    - target: {fileID: 8453564885356459490, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
+      propertyPath: m_RootOrder
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8583710705580369132, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_LocalPosition.x

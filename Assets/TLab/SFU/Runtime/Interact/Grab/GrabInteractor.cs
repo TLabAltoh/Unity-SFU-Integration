@@ -14,8 +14,6 @@ namespace TLab.SFU.Interact
 
         protected override void UpdateRaycast()
         {
-            base.UpdateRaycast();
-
             m_candidate = null;
 
             var minDist = float.MaxValue;
@@ -37,8 +35,6 @@ namespace TLab.SFU.Interact
 
         protected override void UpdateInput()
         {
-            base.UpdateInput();
-
             m_pressed = m_interactDataSource.grabbed;
 
             m_onPress = m_interactDataSource.onGrab;

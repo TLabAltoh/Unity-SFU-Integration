@@ -131,6 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155003687588486}
   m_pointer: {fileID: 8400155004066166363}
+  m_activeState: {fileID: 2152031649924543354}
   m_maxDistance: 5
   m_rotateBias: 5
 --- !u!114 &2152031649924543354
@@ -147,6 +148,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155003687588486}
   m_pointer: {fileID: 73998992089852306}
+  m_activeState: {fileID: 0}
   m_hoverThreshold: 0.05
 --- !u!114 &5653176526128380306
 MonoBehaviour:
@@ -155,13 +157,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8400155003687588483}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60052d6ae5d31314199c89d7869b6a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155003687588486}
   m_pointer: {fileID: 1766589032606878320}
+  m_activeState: {fileID: 0}
   m_hoverThreshold: 0.05
   m_selectThreshold: 0.01
   m_gesture: Poke
@@ -292,6 +295,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155004204083807}
   m_pointer: {fileID: 8400155004108949751}
+  m_activeState: {fileID: 1190404506298778767}
   m_maxDistance: 5
   m_rotateBias: 5
 --- !u!114 &1190404506298778767
@@ -308,6 +312,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155004204083807}
   m_pointer: {fileID: 5652524501028215141}
+  m_activeState: {fileID: 0}
   m_hoverThreshold: 0.05
 --- !u!114 &5758554062362474497
 MonoBehaviour:
@@ -316,13 +321,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8400155004204083800}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60052d6ae5d31314199c89d7869b6a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155004204083807}
   m_pointer: {fileID: 6526838500432518503}
+  m_activeState: {fileID: 0}
   m_hoverThreshold: 0.05
   m_selectThreshold: 0.01
   m_gesture: Poke
