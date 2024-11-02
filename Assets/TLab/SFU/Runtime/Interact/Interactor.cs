@@ -6,13 +6,22 @@ namespace TLab.SFU.Interact
     [AddComponentMenu("TLab/SFU/Interactor (TLab)")]
     public abstract class Interactor : MonoBehaviour, IActiveState
     {
+        public enum ActiveStateOption
+        {
+            NONE,
+            HOVER,
+            SELECT
+        };
+
         [SerializeField] protected InteractDataSource m_interactDataSource;
 
         [SerializeField] protected Transform m_pointer;
 
+        [SerializeField] protected ActiveStateOption m_raycastBlockerOption = ActiveStateOption.NONE;
+
         [SerializeField, Interface(typeof(IActiveState))]
-        private UnityEngine.Object m_activeState;
-        public IActiveState activeState;
+        private UnityEngine.Object m_raycastBlocker;
+        public IActiveState raycastBlocker;
 
         protected static List<int> m_identifiers = new List<int>();
 
@@ -30,7 +39,21 @@ namespace TLab.SFU.Interact
             }
         }
 
-        public virtual bool Active => m_interactable != null;
+        public virtual bool Active
+        {
+            get
+            {
+                switch (m_raycastBlockerOption)
+                {
+                    case ActiveStateOption.HOVER:
+                        return m_interactable != null;
+                    case ActiveStateOption.SELECT:
+                        return m_interactable.IsSelected(this);
+                    default:
+                        return false;
+                }
+            }
+        }
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -82,13 +105,7 @@ namespace TLab.SFU.Interact
 
         protected virtual void Process()
         {
-            if ((activeState != null) && activeState.Active)
-            {
-                ForceRelease();
-                return;
-            }
-
-            if ((m_interactable != null) && m_interactable.IsSelectes(this))
+            if ((m_interactable != null) && m_interactable.IsSelected(this))
             {
                 m_interactable.WhileHovered(this);
 
@@ -99,7 +116,10 @@ namespace TLab.SFU.Interact
             }
             else
             {
-                UpdateRaycast();
+                if ((raycastBlocker != null) && raycastBlocker.Active)
+                    m_candidate = null;
+                else
+                    UpdateRaycast();
 
                 if (m_candidate != null)        // candidate was found
                 {
@@ -128,7 +148,7 @@ namespace TLab.SFU.Interact
         {
             if (m_interactable != null)
             {
-                if (m_interactable.IsSelectes(this))
+                if (m_interactable.IsSelected(this))
                     m_interactable.UnSelected(this);
 
                 m_interactable.UnHovered(this);
@@ -140,8 +160,8 @@ namespace TLab.SFU.Interact
 
         protected virtual void Start()
         {
-            if (m_activeState)
-                activeState = m_activeState as IActiveState;
+            if (m_raycastBlocker)
+                raycastBlocker = m_raycastBlocker as IActiveState;
         }
 
         protected virtual void Update()

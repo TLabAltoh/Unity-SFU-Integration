@@ -52,11 +52,11 @@ namespace TLab.SFU.Interact
 
         public virtual bool IsHovered() => m_hovereds.Count > 0;
 
-        public virtual bool IsHoveres(Interactor interactor) => m_hovereds.Contains(interactor);
+        public virtual bool IsHovered(Interactor interactor) => m_hovereds.Contains(interactor);
 
         public virtual bool IsSelected() => m_selecteds.Count > 0;
 
-        public virtual bool IsSelectes(Interactor interactor) => m_selecteds.Contains(interactor);
+        public virtual bool IsSelected(Interactor interactor) => m_selecteds.Contains(interactor);
 
         public virtual void Hovered(Interactor interactor)
         {

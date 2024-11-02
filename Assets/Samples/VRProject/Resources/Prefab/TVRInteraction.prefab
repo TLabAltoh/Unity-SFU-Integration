@@ -131,7 +131,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155003687588486}
   m_pointer: {fileID: 8400155004066166363}
-  m_activeState: {fileID: 2152031649924543354}
+  m_raycastBlockerOption: 2
+  m_raycastBlocker: {fileID: 2152031649924543354}
   m_maxDistance: 5
   m_rotateBias: 5
 --- !u!114 &2152031649924543354
@@ -148,7 +149,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155003687588486}
   m_pointer: {fileID: 73998992089852306}
-  m_activeState: {fileID: 0}
+  m_raycastBlockerOption: 1
+  m_raycastBlocker: {fileID: 3920937937535399344}
   m_hoverThreshold: 0.05
 --- !u!114 &5653176526128380306
 MonoBehaviour:
@@ -164,7 +166,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155003687588486}
   m_pointer: {fileID: 1766589032606878320}
-  m_activeState: {fileID: 0}
+  m_raycastBlockerOption: 0
+  m_raycastBlocker: {fileID: 0}
   m_hoverThreshold: 0.05
   m_selectThreshold: 0.01
   m_gesture: Poke
@@ -295,7 +298,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155004204083807}
   m_pointer: {fileID: 8400155004108949751}
-  m_activeState: {fileID: 1190404506298778767}
+  m_raycastBlockerOption: 2
+  m_raycastBlocker: {fileID: 1190404506298778767}
   m_maxDistance: 5
   m_rotateBias: 5
 --- !u!114 &1190404506298778767
@@ -312,7 +316,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155004204083807}
   m_pointer: {fileID: 5652524501028215141}
-  m_activeState: {fileID: 0}
+  m_raycastBlockerOption: 1
+  m_raycastBlocker: {fileID: 8366109438053472027}
   m_hoverThreshold: 0.05
 --- !u!114 &5758554062362474497
 MonoBehaviour:
@@ -328,7 +333,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 8400155004204083807}
   m_pointer: {fileID: 6526838500432518503}
-  m_activeState: {fileID: 0}
+  m_raycastBlockerOption: 0
+  m_raycastBlocker: {fileID: 0}
   m_hoverThreshold: 0.05
   m_selectThreshold: 0.01
   m_gesture: Poke
