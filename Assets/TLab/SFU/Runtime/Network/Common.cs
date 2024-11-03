@@ -29,6 +29,13 @@ namespace TLab.SFU.Network
             this.z = z;
         }
 
+        public WebVector3(Vector3 src)
+        {
+            this.x = src.x;
+            this.y = src.y;
+            this.z = src.z;
+        }
+
         public Vector3 raw => new Vector3(x, y, z);
     }
 
@@ -48,6 +55,22 @@ namespace TLab.SFU.Network
             this.w = w;
         }
 
+        public WebVector4(Vector4 src)
+        {
+            this.x = src.x;
+            this.y = src.y;
+            this.z = src.z;
+            this.w = src.w;
+        }
+
+        public WebVector4(Quaternion src)
+        {
+            this.x = src.x;
+            this.y = src.y;
+            this.z = src.z;
+            this.w = src.w;
+        }
+
         public Vector4 raw => new Vector4(x, y, z, w);
 
         public Quaternion rotation => new Quaternion(x, y, z, w);
@@ -59,6 +82,13 @@ namespace TLab.SFU.Network
         public WebVector3 position;
         public WebVector4 rotation;
         public WebVector3 scale;
+
+        public WebTransform(Transform transform)
+        {
+            this.position = new WebVector3(transform.position);
+            this.rotation = new WebVector4(transform.rotation);
+            this.scale = new WebVector3(transform.localScale);
+        }
 
         public WebTransform(WebVector3 position, WebVector4 rotation)
         {

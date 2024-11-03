@@ -6,7 +6,7 @@ namespace TLab.SFU.Network
     {
         [SerializeField] private string m_storeName = "default";
         [SerializeField] private PrefabStore m_store;
-        [SerializeField] private Transform[] m_anchors;
+        [SerializeField] private BaseAnchorProvider m_anchorProvider;
 
         private int m_pktId;
 
@@ -16,16 +16,7 @@ namespace TLab.SFU.Network
 
         public int pktId => m_pktId;
 
-        public WebTransform GetAnchor(int id)
-        {
-            if (id > m_anchors.Length)
-                return new WebTransform(new WebVector3(), new WebVector4());
-
-            var anchor = m_anchors[id];
-            var @transform = new WebTransform(anchor.position, anchor.rotation);
-
-            return @transform;
-        }
+        public bool GetAnchor(int id, out WebTransform anchor) => m_anchorProvider.Get(id, out anchor);
 
         private bool m_callOnce = true;
 

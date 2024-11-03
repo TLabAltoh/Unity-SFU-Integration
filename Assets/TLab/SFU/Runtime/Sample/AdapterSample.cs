@@ -47,9 +47,7 @@ namespace TLab.SFU.Sample
                 messageChunk.GetComponent<MessageChunk>()?.InitMessage(message);
             }
             else
-            {
                 Debug.Log("OnMessage: " + message);
-            }
         }
 
         public void GetFirstRoom() => m_adapter.GetInfo(this, (response) => {

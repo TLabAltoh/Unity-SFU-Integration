@@ -280,10 +280,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &478801621792658387
 GameObject:
@@ -329,10 +327,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &518692962425566922
 GameObject:
@@ -646,13 +642,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_storeName: item
   m_store: {fileID: 0}
-  m_anchors:
-  - {fileID: 1992072393675170862}
-  - {fileID: 6333577597745751774}
-  - {fileID: 6441956610176949711}
-  - {fileID: 8617865302753864229}
-  - {fileID: 3231699071141962331}
-  m_awaked: 0
+  m_anchorProvider: {fileID: 0}
 --- !u!1 &1007663859490097145
 GameObject:
   m_ObjectHideFlags: 0
@@ -697,10 +687,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &1064966872162078245
 GameObject:
@@ -900,10 +888,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &1992072393951519846
 GameObject:
@@ -2062,14 +2048,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2390972933763374387}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -3, y: 0.25, z: 0.021}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6520838109942486381}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7883960655703864146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2082,10 +2068,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &2519201812795347418
 GameObject:
@@ -2268,6 +2252,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6520838109942486381}
   - component: {fileID: 178742584058474640}
+  - component: {fileID: 75741989075287186}
   m_Layer: 0
   m_Name: Avator Shop
   m_TagString: Untagged
@@ -2309,13 +2294,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_storeName: Item
   m_store: {fileID: 11400000, guid: cba48bb44de940e4f84daeabb33e6dd5, type: 2}
-  m_anchors:
-  - {fileID: 1082589660096402943}
-  - {fileID: 4853837590586330987}
-  - {fileID: 2788812511116698841}
-  - {fileID: 3161772401705600758}
-  - {fileID: 4367700361704887816}
-  m_awaked: 0
+  m_anchorProvider: {fileID: 75741989075287186}
+--- !u!114 &75741989075287186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3285399129392332156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3940a60cb770cbf4eacdebba5e04a639, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_host: {fileID: 1082589660096402943}
+  m_curves:
+  - radius: 1.77
+    height: 0.33
+    range: {x: 0.35, y: 0.65}
+    angle: 0
+    users: {x: 0, y: 10}
+    draw: 1
+    color: {r: 0.38785827, g: 1, b: 0, a: 1}
+  m_testId: 2
+  m_size: 0.5
 --- !u!1 &3435909176549944901
 GameObject:
   m_ObjectHideFlags: 0
@@ -2487,10 +2489,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &4009348800212443258
 GameObject:
@@ -2573,10 +2573,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &4535720658350377845
 GameObject:
@@ -3625,10 +3623,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &7271035575205559342
 GameObject:
@@ -3674,10 +3670,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &7309504665223736387
 GameObject:
@@ -4177,10 +4171,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc43eeabdc952041b8b750b5b63e4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gizmoXColor: {r: 1, g: 0, b: 0, a: 1}
-  m_gizmoYColor: {r: 0, g: 1, b: 0, a: 1}
-  m_gizmoZColor: {r: 0, g: 0, b: 1, a: 1}
-  m_gizmoSize: {x: 0.1, y: 0.1, z: 0.5}
+  m_size: 0.1
+  m_length: 4
   m_enabled: 1
 --- !u!1 &8358150919090946547
 GameObject:

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using TLab.SFU.Network;
-using static TLab.SFU.ComponentExtention;
+using static TLab.SFU.ComponentExtension;
 
 namespace TLab.SFU.Interact
 {

@@ -42,7 +42,11 @@ namespace TLab.SFU
 
         [SerializeField] private string m_id;
 
+        [SerializeField, Min(0f)] private float m_scale = 1f;
+
         private Constraint m_parent;
+
+        public float scale { get => m_scale; set => m_scale = value; }
 
         private void Awake()
         {

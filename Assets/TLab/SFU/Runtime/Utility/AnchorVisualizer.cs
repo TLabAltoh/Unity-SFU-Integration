@@ -5,50 +5,38 @@ namespace TLab.SFU
     [AddComponentMenu("TLab/SFU/Anchor Visualizer (TLab)")]
     public class AnchorVisualizer : MonoBehaviour
     {
-        [Header("Gizmo Settings")]
-
-        [SerializeField] private Color m_gizmoXColor = Color.red;
-
-        [SerializeField] private Color m_gizmoYColor = Color.green;
-
-        [SerializeField] private Color m_gizmoZColor = Color.blue;
-
-        [SerializeField] private Vector3 m_gizmoSize = new Vector3(0.1f, 0.1f, 0.5f);
+        [SerializeField, Min(0f)] private float m_size = 0.1f;
+        [SerializeField, Min(0f)] private float m_length = 4f;
 
         [SerializeField] bool m_enabled = true;
-
-        private const float HALF = 0.5f;
 
 #if UNITY_EDITOR
         void OnDrawGizmos()
         {
             if (!m_enabled)
-            {
                 return;
-            }
 
-            Gizmos.color = m_gizmoXColor;
+            var old = Gizmos.matrix;
 
-            var cache = Gizmos.matrix;
+            Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale);
 
-            var offset = new Vector3(0f, 0f, HALF);
-            offset.z *= m_gizmoSize.z;
+            var hsize = m_size * 0.5f;
 
-            // https://hacchi-man.hatenablog.com/entry/2021/05/23/220000
+            var offset = hsize * (m_length + 1);
 
-            Gizmos.color = m_gizmoXColor;
-            Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation * Quaternion.Euler(0f, Mathf.PI * Mathf.Rad2Deg * HALF, 0f) * Quaternion.identity, transform.lossyScale);
-            Gizmos.DrawCube(offset, m_gizmoSize);
+            Gizmos.color = Color.red;
+            Gizmos.DrawCube(new Vector3(offset, 0, 0), new Vector3(m_length, 1f, 1f) * m_size);
 
-            Gizmos.color = m_gizmoYColor;
-            Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation * Quaternion.Euler(-Mathf.PI * Mathf.Rad2Deg * HALF, 0f, 0f) * Quaternion.identity, transform.lossyScale);
-            Gizmos.DrawCube(offset, m_gizmoSize);
+            Gizmos.color = Color.green;
+            Gizmos.DrawCube(new Vector3(0, offset, 0), new Vector3(1f, m_length, 1f) * m_size);
 
-            Gizmos.color = m_gizmoZColor;
-            Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation * Quaternion.Euler(0f, 0f, 0f) * Quaternion.identity, transform.lossyScale);
-            Gizmos.DrawCube(offset, m_gizmoSize);
+            Gizmos.color = Color.blue;
+            Gizmos.DrawCube(new Vector3(0, 0, offset), new Vector3(1f, 1f, m_length) * m_size);
 
-            Gizmos.matrix = cache;
+            Gizmos.color = Color.white;
+            Gizmos.DrawCube(Vector3.zero, Vector3.one * m_size);
+
+            Gizmos.matrix = old;
         }
 #endif
     }

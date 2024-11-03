@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
-using static TLab.SFU.ComponentExtention;
+using static TLab.SFU.ComponentExtension;
 
 namespace TLab.SFU.Network
 {
@@ -465,34 +465,40 @@ namespace TLab.SFU.Network
 
                 Foreach<NetworkedObject>((networkedObject) => networkedObject.Init());
 
-                var action = new PrefabStore.StoreAction()
+                if (m_avatorShop.GetAnchor(0, out var anchor))
                 {
-                    action = PrefabStore.StoreAction.Action.INSTANTIATE,
-                    elemId = 0,
-                    userId = 0,
-                    publicId = UniqueId.Generate(),
-                    transform = m_avatorShop.GetAnchor(0),
-                };
+                    var action = new PrefabStore.StoreAction()
+                    {
+                        action = PrefabStore.StoreAction.Action.INSTANTIATE,
+                        elemId = 0,
+                        userId = 0,
+                        publicId = UniqueId.Generate(),
+                        transform = anchor,
+                    };
 
-                UpdateState(action, out var avator);
+                    UpdateState(action, out var avator);
+                }
             }
             else
             {
-                var action = new PrefabStore.StoreAction()
+                if (m_avatorShop.GetAnchor(userId, out var anchor))
                 {
-                    action = PrefabStore.StoreAction.Action.INSTANTIATE,
-                    elemId = 0,
-                    userId = userId,
-                    transform = m_avatorShop.GetAnchor(userId),
-                };
+                    var action = new PrefabStore.StoreAction()
+                    {
+                        action = PrefabStore.StoreAction.Action.INSTANTIATE,
+                        elemId = 0,
+                        userId = userId,
+                        transform = anchor,
+                    };
 
-                var @object = new MSG_Join()
-                {
-                    messageType = 0,
-                    avatorAction = action,
-                };
+                    var @object = new MSG_Join()
+                    {
+                        messageType = 0,
+                        avatorAction = action,
+                    };
 
-                SendWS(0, @object.Marshall());
+                    SendWS(0, @object.Marshall());
+                }
             }
         }
 

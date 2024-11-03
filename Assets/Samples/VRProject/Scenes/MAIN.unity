@@ -2616,7 +2616,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 0}
   m_pointer: {fileID: 991280127}
-  m_activeState: {fileID: 0}
+  m_raycastBlockerOption: 0
+  m_raycastBlocker: {fileID: 0}
   m_maxDistance: 5
   m_rotateBias: 5
   navigationSpeed: 0.25
@@ -5725,6 +5726,26 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 5157
       objectReference: {fileID: 0}
+    - target: {fileID: 75741989075287186, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+      propertyPath: a
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 75741989075287186, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+      propertyPath: test
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 75741989075287186, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+      propertyPath: curves.Array.data[0].angle
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 75741989075287186, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+      propertyPath: curves.Array.data[0].users.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 75741989075287186, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+      propertyPath: curves.Array.data[0].users.y
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 86160658940622253, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -8127,11 +8148,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2888145849011971499, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: -0.0000019669533
       objectReference: {fileID: 0}
     - target: {fileID: 2888145849011971499, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.0000015199184
+      value: 0.000010550022
       objectReference: {fileID: 0}
     - target: {fileID: 2893025282853977174, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchorMax.y
@@ -11589,6 +11610,10 @@ PrefabInstance:
       propertyPath: m_interactableChain.Array.data[1]
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 6520838109942486381, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 5.973
+      objectReference: {fileID: 0}
     - target: {fileID: 6555887719230637848, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -12427,11 +12452,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7384892855922926641, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: -0.000012218952
       objectReference: {fileID: 0}
     - target: {fileID: 7384892855922926641, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.00000333786
+      value: -0.000006109476
       objectReference: {fileID: 0}
     - target: {fileID: 7400622639650894544, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
       propertyPath: m_AnchorMax.y
