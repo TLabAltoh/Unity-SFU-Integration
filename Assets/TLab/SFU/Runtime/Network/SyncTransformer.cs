@@ -211,12 +211,25 @@ namespace TLab.SFU.Network
             return diff0 / (prevRots.Length - 1) / Time.deltaTime;
         }
 
-        public virtual void SetGravity(bool active)
+        public virtual void OnPhysicsUpdateTypeChange()
+        {
+            switch (SyncClient.physicsUpdateType)
+            {
+                case SyncClient.PhysicsUpdateType.SEND:
+                    EnableGravity(true);
+                    break;
+                case SyncClient.PhysicsUpdateType.RECV:
+                    EnableGravity(false);
+                    break;
+            }
+        }
+
+        public virtual void EnableGravity(bool active, bool force = false)
         {
             if (m_rb == null)
                 return;
 
-            if (active)
+            if (active && m_rbState.gravity)
             {
                 m_rb.isKinematic = false;
                 m_rb.useGravity = true;
@@ -365,7 +378,7 @@ namespace TLab.SFU.Network
 
                 m_rbState = new RigidbodyState(true, m_rb.useGravity);
 
-                SetGravity(false);
+                EnableGravity(false);
             }
             else
                 m_rbState = new RigidbodyState(false, false);
@@ -386,16 +399,12 @@ namespace TLab.SFU.Network
         {
             base.Init(publicId);
 
-            InitRigidbody();
-
             Registry.Register(m_networkedId.id, this);
         }
 
         public override void Init()
         {
             base.Init();
-
-            InitRigidbody();
 
             Registry.Register(m_networkedId.id, this);
         }
@@ -414,6 +423,13 @@ namespace TLab.SFU.Network
                 });
                 msgCallbackRegisted = true;
             }
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+
+            InitRigidbody();
         }
 
         protected override void Register()

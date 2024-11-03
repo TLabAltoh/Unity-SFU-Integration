@@ -6,7 +6,7 @@ namespace TLab.SFU.Interact
     [AddComponentMenu("TLab/SFU/Interactor (TLab)")]
     public abstract class Interactor : MonoBehaviour, IActiveState
     {
-        public enum ActiveStateOption
+        public enum ActivateOption
         {
             NONE,
             HOVER,
@@ -17,11 +17,11 @@ namespace TLab.SFU.Interact
 
         [SerializeField] protected Transform m_pointer;
 
-        [SerializeField] protected ActiveStateOption m_raycastBlockerOption = ActiveStateOption.NONE;
+        [SerializeField] protected ActivateOption m_activateOption = ActivateOption.NONE;
 
         [SerializeField, Interface(typeof(IActiveState))]
-        private UnityEngine.Object m_raycastBlocker;
-        public IActiveState raycastBlocker;
+        private Object m_parentState;
+        public IActiveState parentState;
 
         protected static List<int> m_identifiers = new List<int>();
 
@@ -39,21 +39,10 @@ namespace TLab.SFU.Interact
             }
         }
 
-        public virtual bool Active
-        {
-            get
-            {
-                switch (m_raycastBlockerOption)
-                {
-                    case ActiveStateOption.HOVER:
-                        return m_interactable != null;
-                    case ActiveStateOption.SELECT:
-                        return m_interactable.IsSelected(this);
-                    default:
-                        return false;
-                }
-            }
-        }
+        private delegate bool GetActiveState();
+        private GetActiveState m_getActiveState;
+
+        public virtual bool Active => m_getActiveState.Invoke();
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -116,7 +105,7 @@ namespace TLab.SFU.Interact
             }
             else
             {
-                if ((raycastBlocker != null) && raycastBlocker.Active)
+                if ((parentState != null) && parentState.Active)
                     m_candidate = null;
                 else
                     UpdateRaycast();
@@ -160,8 +149,26 @@ namespace TLab.SFU.Interact
 
         protected virtual void Start()
         {
-            if (m_raycastBlocker)
-                raycastBlocker = m_raycastBlocker as IActiveState;
+            if (m_parentState)
+                parentState = m_parentState as IActiveState;
+
+            switch (m_activateOption)
+            {
+                case ActivateOption.HOVER:
+                    m_getActiveState = () => (m_interactable != null);
+                    break;
+                case ActivateOption.SELECT:
+                    m_getActiveState = () =>
+                    {
+                        if (m_interactable == null)
+                            return false;
+                        return m_interactable.IsSelected(this);
+                    };
+                    break;
+                default:
+                    m_getActiveState = () => false;
+                    break;
+            }
         }
 
         protected virtual void Update()

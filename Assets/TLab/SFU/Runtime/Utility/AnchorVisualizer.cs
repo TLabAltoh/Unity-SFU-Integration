@@ -8,12 +8,12 @@ namespace TLab.SFU
         [SerializeField, Min(0f)] private float m_size = 0.1f;
         [SerializeField, Min(0f)] private float m_length = 4f;
 
-        [SerializeField] bool m_enabled = true;
+        [SerializeField] bool m_gizmo = true;
 
 #if UNITY_EDITOR
         void OnDrawGizmos()
         {
-            if (!m_enabled)
+            if (!m_gizmo)
                 return;
 
             var old = Gizmos.matrix;

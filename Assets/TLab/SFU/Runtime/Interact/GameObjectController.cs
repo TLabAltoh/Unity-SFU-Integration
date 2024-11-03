@@ -187,17 +187,14 @@ namespace TLab.SFU.Interact
         {
             m_grabState.Update(action);
 
-            if (SyncClient.physicsUpdateType == SyncClient.PhysicsUpdateType.SENDER)
+            switch (action)
             {
-                switch (action)
-                {
-                    case GrabState.Action.GRABB:
-                        SetGravity(false);
-                        break;
-                    case GrabState.Action.FREE:
-                        SetGravity(true);
-                        break;
-                }
+                case GrabState.Action.GRABB:
+                    EnableGravity(false);
+                    break;
+                case GrabState.Action.FREE:
+                    EnableGravity(true);
+                    break;
             }
 
             SyncViaWebSocket();
@@ -212,6 +209,28 @@ namespace TLab.SFU.Interact
             SyncClient.instance.SendWS(@object.Marshall());
         }
 
+        public override void OnPhysicsUpdateTypeChange()
+        {
+            if (m_grabState.grabbed)
+                return;
+
+            switch (SyncClient.physicsUpdateType)
+            {
+                case SyncClient.PhysicsUpdateType.SEND:
+                    EnableGravity(true);
+                    break;
+                case SyncClient.PhysicsUpdateType.RECV:
+                    EnableGravity(false);
+                    break;
+            }
+        }
+
+        public override void EnableGravity(bool active, bool force = false)
+        {
+            if (force || (SyncClient.physicsUpdateType == SyncClient.PhysicsUpdateType.SEND))
+                EnableGravity(active);
+        }
+
         public void GrabbLock(int index)
         {
             if (index != (int)GrabState.GrabberId.FREE)
@@ -224,19 +243,13 @@ namespace TLab.SFU.Interact
 
                 m_grabState.Update(index);
 
-                if (SyncClient.physicsUpdateType == SyncClient.PhysicsUpdateType.SENDER)
-                {
-                    SetGravity(false);
-                }
+                EnableGravity(false);
             }
             else
             {
                 m_grabState.Update(GrabState.Action.FREE);
 
-                if (SyncClient.physicsUpdateType == SyncClient.PhysicsUpdateType.SENDER)
-                {
-                    SetGravity(true);
-                }
+                EnableGravity(true);
             }
         }
 
@@ -248,7 +261,7 @@ namespace TLab.SFU.Interact
                 m_subHand = null;
                 m_grabState.Update(GrabState.Action.FREE);
 
-                SetGravity(false);
+                EnableGravity(false);
             }
 
             if (self)
@@ -443,13 +456,6 @@ namespace TLab.SFU.Interact
             }
 
             return false;
-        }
-
-        protected override void InitRigidbody()
-        {
-            base.InitRigidbody();
-
-            // TODO:
         }
 
         public override void Init(Address32 publicId)

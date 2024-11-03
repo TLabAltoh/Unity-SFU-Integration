@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
+using TLab.SFU.Editor;
 
 namespace TLab.SFU.Interact.Editor
 {
-    public class OutlineProcessor : EditorWindow
+    public class OutlineProcessor : SerializeableEditorWindow
     {
         [SerializeField, HideInInspector] private GameObject[] m_targets;
         [SerializeField, HideInInspector] private Shader m_outline;
@@ -23,46 +24,34 @@ namespace TLab.SFU.Interact.Editor
 
         private const float ERROR = 1e-8f;
 
+        private void DrawProperty(in SerializedObject @object, string name, string label)
+        {
+            var prop = @object.FindProperty(name);
+            if (prop != null)
+                EditorGUILayout.PropertyField(prop, new GUIContent(label), true);
+        }
+
         private void OnGUI()
         {
             var @object = new SerializedObject(this);
-            var propTargets = @object.FindProperty("m_targets");
-            EditorGUILayout.PropertyField(propTargets, new GUIContent("Targets"), true);
-            var propShader = @object.FindProperty("m_outline");
-            EditorGUILayout.PropertyField(propShader, new GUIContent("Shader"), true);
+            DrawProperty(@object, "m_targets", "Targets");
+            DrawProperty(@object, "m_outline", "Shader");
             @object.ApplyModifiedProperties();
 
-            if (GUILayout.Button("Process Mesh"))
-            {
-                if (SelectPath(ref m_meshSavePath, "Save Path"))
-                    ProcessMesh();
+            if (GUILayout.Button("Process Mesh") && PathUtil.SelectPath(ref m_meshSavePath, "Save Path"))
+                ProcessMesh();
 
-                EditorUtility.SetDirty(this);
-            }
+            if (GUILayout.Button("Create Outline") && PathUtil.SelectPath(ref m_materialSavePath, "Save Path"))
+                CreateOutline();
 
             if (GUILayout.Button("Create Outline"))
-            {
-                if (SelectPath(ref m_materialSavePath, "Save Path"))
-                    CreateOutline();
-
-                EditorUtility.SetDirty(this);
-            }
-
-            if (GUILayout.Button("Create Outline"))
-            {
                 CreatePointable();
-
-                EditorUtility.SetDirty(this);
-            }
         }
-
-#if UNITY_EDITOR
-        // https://blog.syn-sophia.co.jp/articles/2022/10/17/outline_rendering_01
 
         public void SaveMesh(Mesh mesh, MeshFilter meshFilter)
         {
             var path = m_meshSavePath + "/" + mesh.name + ".asset";
-            var copyMesh = GameObject.Instantiate(mesh);
+            var copyMesh = Instantiate(mesh);
             var copyMeshName = copyMesh.name.ToString();
             copyMesh.name = copyMeshName.Substring(0, copyMeshName.Length - "(Clone)".Length);
             var asset = AssetDatabase.LoadAssetAtPath<Mesh>(path);
@@ -96,9 +85,7 @@ namespace TLab.SFU.Interact.Editor
                 meshRenderer.sharedMaterials = newMaterials;
             }
             else
-            {
                 AssetDatabase.CreateAsset(outline, path);
-            }
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -216,29 +203,5 @@ namespace TLab.SFU.Interact.Editor
             foreach (var target in m_targets)
                 CreatePointable(target);
         }
-
-        private static string GetDiskPath(string assetPath) => Directory.GetCurrentDirectory() + assetPath.Substring("Assets".Length - 1);
-
-        private static bool FileExists(string assetPath)
-        {
-            if (assetPath.Length < "Assets".Length - 1)
-                return false;
-
-            return File.Exists(GetDiskPath(assetPath));
-        }
-
-        public static bool SelectPath(ref string currentPath, string panelTitle)
-        {
-            var initialDir = currentPath != null && FileExists(currentPath) ? currentPath : "Assets";
-            var path = EditorUtility.SaveFolderPanel(panelTitle, initialDir, "");
-            if (path == "")
-            {
-                return false;
-            }
-            var fullPath = Directory.GetCurrentDirectory();
-            currentPath = path.Remove(0, fullPath.Length + 1);
-            return true;
-        }
-#endif
     }
 }

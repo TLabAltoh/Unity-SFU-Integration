@@ -834,6 +834,7 @@ GameObject:
   - component: {fileID: 134605220}
   - component: {fileID: 134605221}
   - component: {fileID: 134605222}
+  - component: {fileID: 134605223}
   m_Layer: 5
   m_Name: Adapters
   m_TagString: Untagged
@@ -959,8 +960,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 213c8594827cc264a9e9681779a7f89f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_scrollRect: {fileID: 837042771}
   m_adapter: {fileID: 11400000, guid: 4db9b2b4314be9e4ea6cac97593e43a6, type: 2}
+  m_logView: {fileID: 134605223}
+--- !u!114 &134605223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 134605215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d53ff4770ed7dd746bf05b0ba4633a21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_scrollRect: {fileID: 837042771}
 --- !u!1 &152972150
 GameObject:
   m_ObjectHideFlags: 0
@@ -1011,6 +1025,7 @@ GameObject:
   - component: {fileID: 175886458}
   - component: {fileID: 175886457}
   - component: {fileID: 175886456}
+  - component: {fileID: 175886461}
   - component: {fileID: 175886460}
   m_Layer: 5
   m_Name: Client (1)
@@ -1055,6 +1070,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03122dfd2da12344abb2ec81e5199076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_logView: {fileID: 175886461}
 --- !u!114 &175886457
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1215,6 +1231,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &175886461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 175886454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d53ff4770ed7dd746bf05b0ba4633a21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_scrollRect: {fileID: 1284455539}
 --- !u!1 &210011156
 GameObject:
   m_ObjectHideFlags: 0
@@ -1720,6 +1749,7 @@ GameObject:
   - component: {fileID: 416040542}
   - component: {fileID: 416040544}
   - component: {fileID: 416040545}
+  - component: {fileID: 416040547}
   - component: {fileID: 416040546}
   m_Layer: 5
   m_Name: Client (0)
@@ -1828,6 +1858,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03122dfd2da12344abb2ec81e5199076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_logView: {fileID: 416040547}
 --- !u!82 &416040546
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1924,6 +1955,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &416040547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416040540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d53ff4770ed7dd746bf05b0ba4633a21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_scrollRect: {fileID: 931395278}
 --- !u!1 &452671857
 GameObject:
   m_ObjectHideFlags: 0

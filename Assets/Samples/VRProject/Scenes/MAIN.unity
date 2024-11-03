@@ -2616,8 +2616,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_interactDataSource: {fileID: 0}
   m_pointer: {fileID: 991280127}
-  m_raycastBlockerOption: 0
-  m_raycastBlocker: {fileID: 0}
+  m_activateOption: 0
+  m_parentState: {fileID: 0}
   m_maxDistance: 5
   m_rotateBias: 5
   navigationSpeed: 0.25

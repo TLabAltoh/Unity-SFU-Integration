@@ -6,21 +6,20 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 
-namespace TLab.VR
+namespace TLab.VR.Editor
 {
-#if UNITY_EDITOR
     public class AssetBundleBuilder : EditorWindow
     {
-        static string root_path = "AssetBundle";
-        static string variant = "assetbundl";
+        private static string rootPath = "AssetBundle";
+        private static string variant = "assetbundl";
 
         private VisualElement m_rightPanel;
 
-        private const string THIS_NAME = "[assetbundlebuilder] ";
+        private const string THIS_NAME = "[AssetBundleBuilder] ";
 
         private void BuildAssetBundle(string assetBundleName, BuildTarget targetPlatform)
         {
-            var outputPath = Path.Combine(root_path, targetPlatform.ToString(), assetBundleName);
+            var outputPath = Path.Combine(rootPath, targetPlatform.ToString(), assetBundleName);
             if (!Directory.Exists(outputPath)) Directory.CreateDirectory(outputPath);
 
             var builder = new AssetBundleBuild();
@@ -35,7 +34,7 @@ namespace TLab.VR
                 targetPlatform);
         }
 
-        private Button CreateButton(string title, System.Action action, int width, int height)
+        private Button CreateButton(string title, Action action, int width, int height)
         {
             var label = new Label(title);
             label.style.unityTextAlign = new StyleEnum<TextAnchor>
@@ -104,7 +103,7 @@ namespace TLab.VR
             leftPane.onSelectionChange += OnAssetSelectionChange;
         }
 
-        [MenuItem("Tools/Build AssetBundle")]
+        [MenuItem("TLab/VRProj/Build AssetBundle")]
         public static void ShowWindow()
         {
             // Create window
@@ -116,5 +115,4 @@ namespace TLab.VR
             wnd.maxSize = new Vector2(1920, 720);
         }
     }
-#endif
 }

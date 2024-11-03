@@ -1,14 +1,15 @@
 using UnityEngine;
 using TMPro;
 
-namespace TLab.SFU.Sample
+namespace TLab.SFU.UI
 {
-    public class MessageChunk : MonoBehaviour
+    [AddComponentMenu("TLab/SFU/Log Chunk (TLab)")]
+    public class LogChunk : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI m_message;
         [SerializeField] private RectTransform m_rect;
 
-        public void InitMessage(string message)
+        public void Init(string message)
         {
             m_message.text = message;
 

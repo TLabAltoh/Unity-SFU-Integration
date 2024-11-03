@@ -27,14 +27,10 @@ namespace TLab.SFU.Sample
                     m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), null, m_audioSource, null);
                 }
                 else
-                {
                     m_client = WebRTCClient.Whep(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), false, m_useAudio, OnAddTrack);
-                }
             }
             else
-            {
                 m_client = WebSocketClient.Open(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError);
-            }
         }
 
         private void OnAddTrack(MediaStreamTrackEvent e)
@@ -63,7 +59,7 @@ namespace TLab.SFU.Sample
 
         public override void Send(byte[] bytes) => m_client.Send(m_adapter.userId, bytes);
 
-        public void OnMessage(int from, int to, byte[] bytes) => OnMessage(Encoding.UTF8.GetString(bytes, SfuClient.RECV_PACKET_HEADER_SIZE, bytes.Length - SfuClient.RECV_PACKET_HEADER_SIZE));
+        public void OnMessage(int from, int to, byte[] bytes) => m_logView?.Append(Encoding.UTF8.GetString(bytes, SfuClient.RECV_PACKET_HEADER_SIZE, bytes.Length - SfuClient.RECV_PACKET_HEADER_SIZE));
 
         public void OnOpen() => Debug.Log(THIS_NAME + "Open");
 

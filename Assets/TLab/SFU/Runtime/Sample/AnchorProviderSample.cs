@@ -9,16 +9,13 @@ namespace TLab.SFU.Sample
         [System.Serializable]
         public class AnchorCurve
         {
-            [Header("Curve Settings")]
             [Min(0f)] public float radius;
             public float height;
             [MinMaxRange(0f, 1f)] public Vector2 range;
             [Range(0f, 1f)] public float angle = 0.4f;
+            public bool flipZ = false;
+            public bool flipY = false;
             [Min(0f)] public Vector2Int users;
-
-            [Header("Gizmo Settings")]
-            public bool draw = true;
-            public Color color = Color.green;
         }
 
         [Header("Anchor Settings")]
@@ -28,8 +25,10 @@ namespace TLab.SFU.Sample
         [SerializeField] private AnchorCurve[] m_curves;
 
         [Header("Gizmo Settings")]
-        [Range(1, 5), SerializeField] private int m_testId;
-        [Range(0, 1), SerializeField] private float m_size = 0.5f;
+
+        [SerializeField] private bool m_gizmo = true;
+
+        [SerializeField] private Color m_gizmoColor = Color.green;
 
         public override bool Get(int userId, out WebTransform anchor)
         {
@@ -54,7 +53,7 @@ namespace TLab.SFU.Sample
             var offset = (curve.range.y - curve.range.x) * t;
             var forward = Quaternion.AngleAxis(2 * Mathf.PI * Mathf.Rad2Deg * (curve.angle + curve.range.x + offset - 0.5f), Vector3.up) * transform.forward;
 
-            anchor = new WebTransform(forward * curve.radius + new Vector3(0, curve.height, 0), Quaternion.LookRotation(-forward));
+            anchor = new WebTransform(forward * curve.radius + new Vector3(0, curve.height, 0), Quaternion.LookRotation(-forward * (curve.flipZ ? -1 : 1)));
             return true;
         }
 
@@ -71,29 +70,20 @@ namespace TLab.SFU.Sample
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
+            if (!m_gizmo)
+                return;
+
             var color = Gizmos.color;
+
+            Gizmos.color = m_gizmoColor;
 
             m_curves.Foreach((c) =>
             {
-                if (!c.draw)
-                    return;
-
-                Gizmos.color = c.color;
                 var start = transform.rotation * Quaternion.AngleAxis(2 * Mathf.PI * Mathf.Rad2Deg * (c.angle + c.range.x - 0.5f), Vector3.up);
                 var angle = 2 * Mathf.PI * Mathf.Rad2Deg * (c.range.y - c.range.x);
                 var pos = transform.position + new Vector3(0f, c.height, 0f);
                 GizmosExtensions.DrawWireArc(pos, c.radius, angle, rotation: start);
             });
-
-            if (Get(m_testId, out var anchor))
-            {
-                var old = Gizmos.matrix;
-
-                Gizmos.matrix = Matrix4x4.TRS(anchor.position.raw, anchor.rotation.rotation, anchor.scale.raw);
-                Gizmos.DrawCube(Vector3.zero, Vector3.one * m_size);
-
-                Gizmos.matrix = old;
-            }
 
             Gizmos.color = color;
         }

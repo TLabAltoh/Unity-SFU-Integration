@@ -18,6 +18,8 @@ namespace TLab.SFU.Network
         [SerializeField] private Adapter m_adapter;
         [SerializeField] private PrefabShop m_avatorShop;
 
+        [SerializeField] private UnityEvent<string> m_onLog;
+
         private static WebSocketClient m_wsClient;
         private static WebRTCClient m_rtcClient;
 
@@ -92,8 +94,8 @@ namespace TLab.SFU.Network
         public enum PhysicsUpdateType
         {
             NONE,
-            SENDER,
-            RECEIVER
+            SEND,
+            RECV
         };
 
         public enum DstIndex
@@ -167,7 +169,17 @@ namespace TLab.SFU.Network
 
         public void UpdatePhysicsUpdateType(PhysicsUpdateType physicsUpdateType)
         {
-            // TODO:
+            switch (physicsUpdateType)
+            {
+                case PhysicsUpdateType.SEND:
+                    Foreach<SyncTransformer>((transformer) => transformer.EnableGravity(true));
+                    break;
+                case PhysicsUpdateType.RECV:
+                    Foreach<SyncTransformer>((transformer) => transformer.EnableGravity(false, true));
+                    break;
+                default:
+                    break;
+            }
         }
 
         public static void RegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
@@ -285,7 +297,7 @@ namespace TLab.SFU.Network
                             // response
                             response.avatorAction.publicId = UniqueId.Generate();
                             response.idAvails = UniqueId.Generate(5);   // TODO
-                            response.physicsUpdateType = PhysicsUpdateType.RECEIVER;
+                            response.physicsUpdateType = PhysicsUpdateType.RECV;
                             response.othersHistory = avatorHistorys;
 
                             SendWS(response.avatorAction.userId, response.Marshall());
@@ -372,16 +384,38 @@ namespace TLab.SFU.Network
             yield break;
         }
 
-        public void Join() => m_adapter.Join(this, (@string) => {
-            Debug.Log("Join: Success");
-            m_connectTask = ConnectTask();
+        public void Join() => m_adapter.GetInfo(this, (@string) =>
+        {
+            m_onLog.Invoke(@string);
+            var @object = JsonUtility.FromJson<Answer.Infos>(@string);
+            if (@object.room_infos.Length == 0)
+            {
+                m_adapter.Create(this, (@string) =>
+                {
+                    m_onLog.Invoke(@string);
+                    m_adapter.Join(this, (@string) => {
+                        m_onLog.Invoke(@string);
+                        m_connectTask = ConnectTask();
+                    });
+                });
+            }
+            else
+            {
+                var roomId = @object.room_infos[0].room_id;
+                m_adapter.Init(m_adapter.config, roomId, m_adapter.key, m_adapter.masterKey);
+
+                m_adapter.Join(this, (@string) => {
+                    m_onLog.Invoke(@string);
+                    m_connectTask = ConnectTask();
+                });
+            }
         });
 
         public void Exit()
         {
             m_rtcClient?.HangUp();
             m_adapter.Exit(this, (@string) => {
-                Debug.Log("Exit: Success");
+                m_onLog.Invoke(@string);
                 m_onExit.ForEach((c) => c.Item1.Invoke());
             });
         }
@@ -461,7 +495,7 @@ namespace TLab.SFU.Network
 
             if (userId == 0)
             {
-                UpdatePhysicsUpdateType(PhysicsUpdateType.SENDER);
+                UpdatePhysicsUpdateType(PhysicsUpdateType.SEND);
 
                 Foreach<NetworkedObject>((networkedObject) => networkedObject.Init());
 

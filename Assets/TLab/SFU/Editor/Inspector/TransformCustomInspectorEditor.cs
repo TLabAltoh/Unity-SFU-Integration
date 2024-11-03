@@ -2,27 +2,28 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 
-namespace TLab.Editor
+namespace TLab.SFU.Editor
 {
     [SerializeField]
     public class SaveTransform
     {
-        [SerializeField] private Vector3 position;
-        [SerializeField] private Quaternion rotation;
-        [SerializeField] private Vector3 scale;
+        [SerializeField] private Vector3 m_position;
+        [SerializeField] private Quaternion m_rotation;
+        [SerializeField] private Vector3 m_scale;
+
         public Transform GetValue(Transform t)
         {
-            t.localPosition = position;
-            t.localRotation = rotation;
-            t.localScale = scale;
+            t.localPosition = m_position;
+            t.localRotation = m_rotation;
+            t.localScale = m_scale;
             return t;
         }
 
         public void SetValue(Transform t)
         {
-            position = t.localPosition;
-            rotation = t.localRotation;
-            scale = t.localScale;
+            m_position = t.localPosition;
+            m_rotation = t.localRotation;
+            m_scale = t.localScale;
         }
     }
 
@@ -41,20 +42,18 @@ namespace TLab.Editor
 
         private void OnEnable()
         {
-            Transform transform = target as Transform;
+            var transform = target as Transform;
             m_param = transform;
 
-            System.Type t = typeof(UnityEditor.EditorApplication).Assembly.GetType("UnityEditor.TransformInspector");
-            m_editor = UnityEditor.Editor.CreateEditor(m_param, t);
+            System.Type t = typeof(EditorApplication).Assembly.GetType("UnityEditor.TransformInspector");
+            m_editor = CreateEditor(m_param, t);
         }
 
         private void OnDisable()
         {
-            MethodInfo disableMethod = m_editor.GetType().GetMethod("OnDisable", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            var disableMethod = m_editor.GetType().GetMethod("OnDisable", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (disableMethod != null)
-            {
                 disableMethod.Invoke(m_editor, null);
-            }
             m_param = null;
             DestroyImmediate(m_editor);
         }
@@ -66,7 +65,7 @@ namespace TLab.Editor
             {
                 if (GUILayout.Button("Save Current State"))
                 {
-                    SaveTransform s = new SaveTransform();
+                    var s = new SaveTransform();
                     s.SetValue(m_param);
                     string json = JsonUtility.ToJson(s);
                     EditorPrefs.SetString("Save Param " + m_param.GetInstanceID().ToString(), json);
@@ -83,10 +82,10 @@ namespace TLab.Editor
         {
             if (state == PlayModeStateChange.EnteredEditMode)
             {
-                Transform transform = target as Transform;
-                string key = "Save Param " + transform.GetInstanceID().ToString();
-                string json = EditorPrefs.GetString(key);
-                SaveTransform t = JsonUtility.FromJson<SaveTransform>(json);
+                var transform = target as Transform;
+                var key = "Save Param " + transform.GetInstanceID().ToString();
+                var json = EditorPrefs.GetString(key);
+                var t = JsonUtility.FromJson<SaveTransform>(json);
                 EditorPrefs.DeleteKey(key);
                 transform = t.GetValue(transform);
                 EditorUtility.SetDirty(target);

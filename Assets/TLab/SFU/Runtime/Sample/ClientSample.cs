@@ -1,28 +1,19 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
+using TLab.SFU.UI;
 using TLab.SFU.Network;
 
 namespace TLab.SFU.Sample
 {
     public class ClientSample : MonoBehaviour
     {
-        private bool m_forceScrollToTail = true;
-        private ScrollRect m_scrollRect;
-        private Transform m_scrollViewContent;
+        [SerializeField] protected LogView m_logView;
 
         protected Adapter m_adapter;
 
         protected const string STREAM = "defualt";
 
         private string THIS_NAME => "[" + this.GetType() + "] ";
-
-        public void OnMessage(string message)
-        {
-            var chunk = Instantiate(Resources.Load<GameObject>("Sample/Message"));
-            chunk.transform.SetParent(m_scrollViewContent);
-            chunk.GetComponent<MessageChunk>()?.InitMessage(message);
-        }
 
         public virtual void Open() { }
 
@@ -44,7 +35,7 @@ namespace TLab.SFU.Sample
 
             m_adapter.Join(this, (response) =>
             {
-                OnMessage(response);
+                m_logView?.Append("Response: " + response);
                 Open();
             });
         }
@@ -59,10 +50,7 @@ namespace TLab.SFU.Sample
 
             Close();
 
-            m_adapter.Exit(this, (response) =>
-            {
-                OnMessage(response);
-            });
+            m_adapter.Exit(this, (response) => m_logView?.Append("Response: " + response));
         }
 
         private IEnumerator CloneAdapter()
@@ -75,23 +63,8 @@ namespace TLab.SFU.Sample
 
         protected virtual void Start()
         {
-            m_scrollRect = GetComponentInChildren<ScrollRect>();
-            m_scrollViewContent = m_scrollRect.transform.Find("Viewport/Content");
-
-            m_scrollRect.onValueChanged.AddListener((value) =>
-            {
-                if (UnityEngine.Input.GetMouseButton(0))
-                    m_forceScrollToTail = (value.y < 0.1f);
-            });
-
             if (AdapterSample.local)
                 StartCoroutine(CloneAdapter());
-        }
-
-        protected virtual void Update()
-        {
-            if (m_forceScrollToTail && !UnityEngine.Input.GetMouseButton(0))
-                m_scrollRect.verticalNormalizedPosition = 0.0f;
         }
     }
 }
