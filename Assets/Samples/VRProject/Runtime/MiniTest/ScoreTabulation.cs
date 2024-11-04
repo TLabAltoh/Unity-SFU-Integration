@@ -4,7 +4,7 @@ using TLab.SFU.Network;
 
 namespace TLab.VRProjct
 {
-    public class ScoreTabulation : MonoBehaviour, INetworkEventHandler, ISyncEventHandler
+    public class ScoreTabulation : MonoBehaviour, INetworkConnectionEventHandler, INetworkSyncEventHandler
     {
         private Dictionary<int, int> m_scores = new Dictionary<int, int>();
 
@@ -40,21 +40,21 @@ namespace TLab.VRProjct
 
         public void RegistScore(int score = 0)
         {
-            m_scores[SyncClient.userId] = score;
+            m_scores[NetworkClient.userId] = score;
 
             var @object = new MSG_MiniTest
             {
                 score = score,
             };
 
-            SyncClient.instance.SendWS(@object.Marshall());
+            NetworkClient.instance.SendWS(@object.Marshall());
         }
 
         void Awake()
         {
             instance = this;
 
-            SyncClient.RegisterOnMessage(MSG_MiniTest.pktId, OnMessage);
+            NetworkClient.RegisterOnMessage(MSG_MiniTest.pktId, OnMessage);
         }
 
         public void OnMessage(int from, int to, byte[] bytes)

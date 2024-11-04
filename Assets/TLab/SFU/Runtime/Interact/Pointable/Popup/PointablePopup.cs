@@ -28,9 +28,7 @@ namespace TLab.SFU.Interact
 
             var instance = m_popupController.GetFloatingAnchor(m_index);
             if (instance)
-            {
-                instance.FadeIn();
-            }
+                instance.FadeInAsync();
         }
 
         public override void UnHovered(Interactor interactor)
@@ -39,9 +37,7 @@ namespace TLab.SFU.Interact
 
             var instance = m_popupController.GetFloatingAnchor(m_index);
             if (instance)
-            {
-                instance.FadeOut();
-            }
+                instance.FadeOutAsync();
         }
     }
 }

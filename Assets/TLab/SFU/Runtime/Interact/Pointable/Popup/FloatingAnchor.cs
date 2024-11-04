@@ -4,11 +4,11 @@ using TLab.SFU.Network;
 
 namespace TLab.SFU.Interact
 {
-    public class FloatingAnchor : MonoBehaviour
+    public class FloatingAnchor : NetworkTransform
     {
-        public class CacheTransform
+        public class TransformCache
         {
-            public CacheTransform(Vector3 localPosition, Vector3 localScale, Quaternion localRotation)
+            public TransformCache(Vector3 localPosition, Vector3 localScale, Quaternion localRotation)
             {
                 this.localPosotion = localPosition;
                 this.localScale = localScale;
@@ -22,16 +22,12 @@ namespace TLab.SFU.Interact
 
         [SerializeField] private Transform m_target;
 
+        [Header("Offset")]
         [SerializeField] private float m_forward;
         [SerializeField] private float m_vertical;
         [SerializeField] private float m_horizontal;
 
-        [SerializeField] private bool m_enableSync = false;
-        [SerializeField] private bool m_autoUpdate = false;
-
-        private SyncTransformer m_syncTransformer;
-
-        private CacheTransform m_initialTransform;
+        private TransformCache m_initialTransform;
 
         const float DURATION = 0.25f;
 
@@ -42,14 +38,14 @@ namespace TLab.SFU.Interact
         }
 #endif
 
-        private void LerpScale(Transform target, CacheTransform start, CacheTransform end, float lerpValue)
+        private void LerpScale(Transform target, TransformCache start, TransformCache end, float lerpValue)
         {
             target.localScale = Vector3.Lerp(start.localScale, end.localScale, lerpValue);
         }
 
         private IEnumerator FadeInTask()
         {
-            var currentTransform = new CacheTransform(
+            var currentTransform = new TransformCache(
                 transform.localPosition,
                 transform.localScale,
                 transform.localRotation);
@@ -65,12 +61,12 @@ namespace TLab.SFU.Interact
 
         private IEnumerator FadeOutTask()
         {
-            var currentTransform = new CacheTransform(
+            var currentTransform = new TransformCache(
                 transform.localPosition,
                 transform.localScale,
                 transform.localRotation);
 
-            var targetTransform = new CacheTransform(
+            var targetTransform = new TransformCache(
                 transform.localPosition,
                 Vector3.zero,
                 transform.localRotation);
@@ -84,24 +80,18 @@ namespace TLab.SFU.Interact
             }
         }
 
-        public void FadeIn()
-        {
-            StartCoroutine(FadeInTask());
-        }
+        public void FadeInAsync() => StartCoroutine(FadeInTask());
 
-        public void FadeOut()
-        {
-            StartCoroutine(FadeOutTask());
-        }
+        public void FadeOutAsync() => StartCoroutine(FadeOutTask());
 
         public void FadeOutImmidiately()
         {
-            m_initialTransform = new CacheTransform(
+            m_initialTransform = new TransformCache(
                 this.transform.localPosition,
                 this.transform.localScale,
                 this.transform.localRotation);
 
-            var targetTransform = new CacheTransform(
+            var targetTransform = new TransformCache(
                 this.transform.localPosition,
                 Vector3.zero,
                 this.transform.localRotation);
@@ -109,21 +99,21 @@ namespace TLab.SFU.Interact
             LerpScale(this.transform, m_initialTransform, targetTransform, 1.0f);
         }
 
-        void Start()
+        protected override void Start()
         {
-            m_syncTransformer = GetComponent<SyncTransformer>();
+            base.Start();
 
             transform.parent = null;
 
             FadeOutImmidiately();
         }
 
-        void Update()
+        protected override void Update()
         {
-            if (!m_autoUpdate)
-            {
+            base.Update();
+
+            if (!Const.SEND.HasFlag(m_direction))
                 return;
-            }
 
             var mainCamera = Camera.main.transform;
             var diff = mainCamera.position - m_target.position;
@@ -131,9 +121,6 @@ namespace TLab.SFU.Interact
 
             transform.position = m_target.position + offset;
             transform.LookAt(mainCamera, Vector3.up);
-
-            if (m_enableSync)
-                m_syncTransformer.SyncViaWebRTC();
         }
     }
 }

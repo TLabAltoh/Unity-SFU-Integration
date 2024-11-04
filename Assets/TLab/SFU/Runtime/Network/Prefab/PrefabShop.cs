@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
-    public class PrefabShop : MonoBehaviour, ISyncEventHandler
+    public class PrefabShop : MonoBehaviour, INetworkSyncEventHandler
     {
         [SerializeField] private string m_storeName = "default";
         [SerializeField] private PrefabStore m_store;
@@ -28,7 +28,7 @@ namespace TLab.SFU.Network
                 m_callOnce = false;
             }
 
-            SyncClient.RegisterOnMessage(m_pktId, (from, to, bytes) =>
+            NetworkClient.RegisterOnMessage(m_pktId, (from, to, bytes) =>
             {
                 // TODO:
 
@@ -41,15 +41,15 @@ namespace TLab.SFU.Network
                 // boradcast
             });
 
-            SyncClient.RegisterOnJoin(OnJoin, OnJoin);
-            SyncClient.RegisterOnExit(OnExit, OnExit);
+            NetworkClient.RegisterOnJoin(OnJoin, OnJoin);
+            NetworkClient.RegisterOnExit(OnExit, OnExit);
         }
 
         private void OnDisable()
         {
-            SyncClient.UnRegisterOnJoin(OnJoin, OnJoin);
-            SyncClient.UnRegisterOnExit(OnExit, OnExit);
-            SyncClient.UnRegisterOnMessage(m_pktId);
+            NetworkClient.UnRegisterOnJoin(OnJoin, OnJoin);
+            NetworkClient.UnRegisterOnExit(OnExit, OnExit);
+            NetworkClient.UnRegisterOnMessage(m_pktId);
         }
 
         public void OnJoin()

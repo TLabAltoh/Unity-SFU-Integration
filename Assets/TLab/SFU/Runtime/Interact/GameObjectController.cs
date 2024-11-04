@@ -9,7 +9,7 @@ namespace TLab.SFU.Interact
     using Registry = Network.Registry<GameObjectController>;
 
     [AddComponentMenu("TLab/SFU/Game Object Controller (TLab)")]
-    public class GameObjectController : SyncTransformer
+    public class GameObjectController : NetworkTransform
     {
         public enum HandType
         {
@@ -39,7 +39,7 @@ namespace TLab.SFU.Interact
 
             public bool isFree => !grabbed;
 
-            public bool grabbByMe => grabbed && SyncClient.IsOwn(m_grabberId);
+            public bool grabbByMe => grabbed && NetworkClient.IsOwn(m_grabberId);
 
             public void Update(int grabberId)
             {
@@ -51,7 +51,7 @@ namespace TLab.SFU.Interact
                 switch (action)
                 {
                     case Action.GRABB:
-                        m_grabberId = SyncClient.userId;
+                        m_grabberId = NetworkClient.userId;
                         break;
                     case Action.FREE:
                         m_grabberId = (int)GrabberId.FREE;
@@ -154,7 +154,7 @@ namespace TLab.SFU.Interact
 
             static MSG_DivideGrabber() => pktId = MD5From(nameof(MSG_DivideGrabber));
 
-            public Address64 networkedId;
+            public Address64 networkId;
             public int grabberId;
             public bool active;
         }
@@ -176,7 +176,7 @@ namespace TLab.SFU.Interact
 
             static MSG_GrabbLock() => pktId = MD5From(nameof(MSG_GrabbLock));
 
-            public Address64 networkedId;
+            public Address64 networkId;
             public int grabberId;
             public Action action;
         }
@@ -190,10 +190,10 @@ namespace TLab.SFU.Interact
             switch (action)
             {
                 case GrabState.Action.GRABB:
-                    EnableGravity(false);
+                    FreeRigidbody(false);
                     break;
                 case GrabState.Action.FREE:
-                    EnableGravity(true);
+                    FreeRigidbody(true);
                     break;
             }
 
@@ -201,34 +201,34 @@ namespace TLab.SFU.Interact
 
             var @object = new MSG_GrabbLock
             {
-                networkedId = m_networkedId.id,
+                networkId = m_networkId.id,
                 grabberId = m_grabState.grabberId,
                 action = MSG_GrabbLock.Action.GRAB_LOCK,
             };
 
-            SyncClient.instance.SendWS(@object.Marshall());
+            NetworkClient.instance.SendWS(@object.Marshall());
         }
 
-        public override void OnPhysicsUpdateTypeChange()
+        public override void OnPhysicsRoleChange()
         {
             if (m_grabState.grabbed)
                 return;
 
-            switch (SyncClient.physicsUpdateType)
+            switch (NetworkClient.physicsRole)
             {
-                case SyncClient.PhysicsUpdateType.SEND:
-                    EnableGravity(true);
+                case NetworkClient.PhysicsRole.SEND:
+                    FreeRigidbody(true);
                     break;
-                case SyncClient.PhysicsUpdateType.RECV:
-                    EnableGravity(false);
+                case NetworkClient.PhysicsRole.RECV:
+                    FreeRigidbody(false, true);
                     break;
             }
         }
 
-        public override void EnableGravity(bool active, bool force = false)
+        public override void FreeRigidbody(bool active, bool force = false)
         {
-            if (force || (SyncClient.physicsUpdateType == SyncClient.PhysicsUpdateType.SEND))
-                EnableGravity(active);
+            if (force || (NetworkClient.physicsRole == NetworkClient.PhysicsRole.SEND))
+                FreeRigidbody(active);
         }
 
         public void GrabbLock(int index)
@@ -243,13 +243,13 @@ namespace TLab.SFU.Interact
 
                 m_grabState.Update(index);
 
-                EnableGravity(false);
+                FreeRigidbody(false);
             }
             else
             {
                 m_grabState.Update(GrabState.Action.FREE);
 
-                EnableGravity(true);
+                FreeRigidbody(true);
             }
         }
 
@@ -261,19 +261,19 @@ namespace TLab.SFU.Interact
                 m_subHand = null;
                 m_grabState.Update(GrabState.Action.FREE);
 
-                EnableGravity(false);
+                FreeRigidbody(false);
             }
 
             if (self)
             {
                 var @object = new MSG_GrabbLock
                 {
-                    networkedId = m_networkedId.id,
+                    networkId = m_networkId.id,
                     grabberId = m_grabState.grabberId,
                     action = MSG_GrabbLock.Action.FORCE_RELEASE,
                 };
 
-                SyncClient.instance.SendWS(@object.Marshall());
+                NetworkClient.instance.SendWS(@object.Marshall());
             }
         }
 
@@ -348,13 +348,13 @@ namespace TLab.SFU.Interact
 
             int index = 0;
 
-            GetComponentsInTargets<Transform>(divideTargets).Foreach((childTransform) =>
+            GetComponentsInTargets<Transform>(divideTargets).Foreach((c) =>
             {
-                var cashTransform = m_cashTransforms[index++];
+                var cash = m_cashTransforms[index++];
 
-                childTransform.localPosition = cashTransform.LocalPosiiton;
-                childTransform.localRotation = cashTransform.LocalRotation;
-                childTransform.localScale = cashTransform.LocalScale;
+                c.localPosition = cash.LocalPosiiton;
+                c.localRotation = cash.LocalRotation;
+                c.localScale = cash.LocalScale;
             });
 
             gameObject.Foreach<GameObjectRotatable>((c) => c.Stop());
@@ -376,7 +376,7 @@ namespace TLab.SFU.Interact
             {
                 m_cashTransforms.Clear();
 
-                GetComponentsInTargets<Transform>(divideTargets).Foreach((childTransform) => m_cashTransforms.Add(new CashTransform(childTransform.localPosition, childTransform.localScale, childTransform.localRotation)));
+                GetComponentsInTargets<Transform>(divideTargets).Foreach((c) => m_cashTransforms.Add(new CashTransform(c.localPosition, c.localScale, c.localRotation)));
 
                 CreateCombinedMeshCollider();
             }
@@ -462,14 +462,14 @@ namespace TLab.SFU.Interact
         {
             base.Init(publicId);
 
-            Registry.Register(m_networkedId.id, this);
+            Registry.Register(m_networkId.id, this);
         }
 
         public override void Init()
         {
             base.Init();
 
-            Registry.Register(m_networkedId.id, this);
+            Registry.Register(m_networkId.id, this);
         }
 
         public override void Shutdown()
@@ -477,8 +477,8 @@ namespace TLab.SFU.Interact
             if (m_grabState.grabbByMe)
                 GrabbLock(GrabState.Action.FREE);
 
-            if (m_networkedId)
-                Registry.UnRegister(m_networkedId.id);
+            if (m_networkId)
+                Registry.UnRegister(m_networkId.id);
 
             base.Shutdown();
         }
@@ -489,7 +489,7 @@ namespace TLab.SFU.Interact
 
             if (!msgCallbackRegisted)
             {
-                SyncClient.RegisterOnMessage(MSG_GrabbLock.pktId, (from, to, bytes) =>
+                NetworkClient.RegisterOnMessage(MSG_GrabbLock.pktId, (from, to, bytes) =>
                 {
                     var @object = new MSG_GrabbLock();
                     @object.UnMarshall(bytes);
@@ -497,21 +497,21 @@ namespace TLab.SFU.Interact
                     switch (@object.action)
                     {
                         case MSG_GrabbLock.Action.GRAB_LOCK:
-                            Registry.GetById(@object.networkedId)?.GrabbLock(@object.grabberId);
+                            Registry.GetById(@object.networkId)?.GrabbLock(@object.grabberId);
                             break;
                         case MSG_GrabbLock.Action.FORCE_RELEASE:
-                            Registry.GetById(@object.networkedId)?.ForceRelease(false);
+                            Registry.GetById(@object.networkId)?.ForceRelease(false);
                             break;
                         default:
                             break;
                     }
                 });
 
-                SyncClient.RegisterOnMessage(MSG_DivideGrabber.pktId, (from, to, bytes) =>
+                NetworkClient.RegisterOnMessage(MSG_DivideGrabber.pktId, (from, to, bytes) =>
                 {
                     var @object = new MSG_DivideGrabber();
                     @object.UnMarshall(bytes);
-                    Registry.GetById(@object.networkedId)?.Divide(@object.active);
+                    Registry.GetById(@object.networkId)?.Divide(@object.active);
                 });
 
                 msgCallbackRegisted = true;
@@ -531,8 +531,6 @@ namespace TLab.SFU.Interact
 
         protected override void Update()
         {
-            base.Update();
-
             if (m_mainHand != null)
             {
                 if (m_subHand != null)
@@ -545,26 +543,23 @@ namespace TLab.SFU.Interact
                     m_position.UpdateOneHandLogic();
                     m_rotation.UpdateOneHandLogic();
                 }
+            }
+            else if (m_grabState.isFree)
+                m_scale.UpdateHandleLogic();
 
-                SyncViaWebRTC();
-            }
-            else
-            {
-                if (m_grabState.isFree && m_scale.UpdateHandleLogic())
-                    SyncViaWebRTC();
-            }
+            base.Update();
         }
 
         protected override void Register()
         {
             base.Register();
 
-            Registry.Register(m_networkedId.id, this);
+            Registry.Register(m_networkId.id, this);
         }
 
         protected override void UnRegister()
         {
-            Registry.UnRegister(m_networkedId.id);
+            Registry.UnRegister(m_networkId.id);
 
             base.UnRegister();
         }

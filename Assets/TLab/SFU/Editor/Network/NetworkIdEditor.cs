@@ -3,12 +3,12 @@ using UnityEditor;
 
 namespace TLab.SFU.Network.Editor
 {
-    [CustomEditor(typeof(NetworkedId))]
-    public class NetworkedIdEditor : UnityEditor.Editor
+    [CustomEditor(typeof(NetworkId))]
+    public class NetworkIdEditor : UnityEditor.Editor
     {
-        private NetworkedId m_instance;
+        private NetworkId m_instance;
 
-        private void OnEnable() => m_instance = target as NetworkedId;
+        private void OnEnable() => m_instance = target as NetworkId;
 
         public override void OnInspectorGUI()
         {
@@ -19,7 +19,7 @@ namespace TLab.SFU.Network.Editor
 
             if (GUILayout.Button("For All of Scene Object"))
             {
-                var ids = FindObjectsOfType<NetworkedId>();
+                var ids = FindObjectsOfType<NetworkId>();
                 foreach (var id in ids)
                     id.GenerateAddress();
             }

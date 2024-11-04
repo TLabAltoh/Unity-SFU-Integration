@@ -141,7 +141,7 @@ GameObject:
   - component: {fileID: 4027050243232845149}
   - component: {fileID: 8029181970398571207}
   - component: {fileID: 1392038071596255857}
-  - component: {fileID: 7503256562506508734}
+  - component: {fileID: 844796936507738449}
   m_Layer: 8
   m_Name: OVRControllerPrefab.RTouch
   m_TagString: Untagged
@@ -200,8 +200,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_type: 1
+  m_direction: 0
   m_id: Controller.R
+  m_scale: 1
 --- !u!114 &1392038071596255857
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -236,7 +237,7 @@ MonoBehaviour:
     m_a6: 0
     m_a7: 0
     m_hash: 0
---- !u!114 &7503256562506508734
+--- !u!114 &844796936507738449
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -245,10 +246,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 4027050243225435791}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7785ca2b8bacd0742afa415159cb6613, type: 3}
+  m_Script: {fileID: 11500000, guid: e72c56daa90ed4e489bde886cf2cee4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_enableSync: 1
+  m_direction: 2
+  positionThreshold: 0.001
+  rotAngleThreshold: 0.01
+  scaleThreshold: 0.01
 --- !u!1 &4027050243225435793
 GameObject:
   m_ObjectHideFlags: 0

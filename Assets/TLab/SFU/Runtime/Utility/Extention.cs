@@ -5,12 +5,11 @@ using UnityEngine.Events;
 
 namespace TLab.SFU
 {
-	public static class MathExtension
+	public static class QuaternionExtension
 	{
-		public static void InRange(this Vector2Int @obj, float i)
-		{
+		public static Vector4 ToVec(this Quaternion quaternion) => new Vector4(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
-		}
+		public static Quaternion ToQuaternion(this Vector4 vector4) => new Quaternion(vector4.x, vector4.y, vector4.z, vector4.w);
 	}
 
 	public static class ComponentExtension

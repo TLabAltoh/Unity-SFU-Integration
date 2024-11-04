@@ -594,7 +594,7 @@ GameObject:
   - component: {fileID: 6973114826670581583}
   - component: {fileID: 2373866776727493173}
   - component: {fileID: 1746604097514878627}
-  - component: {fileID: 5349789233021906097}
+  - component: {fileID: 4422602871895655704}
   m_Layer: 0
   m_Name: Head
   m_TagString: Untagged
@@ -748,6 +748,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: head
+  m_scale: 1
 --- !u!114 &1746604097514878627
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -782,7 +783,7 @@ MonoBehaviour:
     m_a6: 0
     m_a7: 0
     m_hash: 0
---- !u!114 &5349789233021906097
+--- !u!114 &4422602871895655704
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -791,7 +792,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8500060301043820108}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7785ca2b8bacd0742afa415159cb6613, type: 3}
+  m_Script: {fileID: 11500000, guid: e72c56daa90ed4e489bde886cf2cee4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_direction: 1
+  m_direction: 2
+  positionThreshold: 0.001
+  rotAngleThreshold: 0.01
+  scaleThreshold: 0.01

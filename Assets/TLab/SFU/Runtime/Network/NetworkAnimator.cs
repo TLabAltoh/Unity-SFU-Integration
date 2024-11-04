@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
-    using Registry = Registry<SyncAnimator>;
+    using Registry = Registry<NetworkAnimator>;
 
-    [AddComponentMenu("TLab/SFU/Sync Animator (TLab)")]
-    public class SyncAnimator : NetworkedObject
+    [AddComponentMenu("TLab/SFU/Network Animator (TLab)")]
+    public class NetworkAnimator : NetworkObject
     {
         #region STRUCT
 
@@ -52,7 +52,7 @@ namespace TLab.SFU.Network
 
             protected override int packetId => pktId;
 
-            public Address64 networkedId;
+            public Address64 networkId;
             public WebAnimState animState;
         }
 
@@ -70,7 +70,7 @@ namespace TLab.SFU.Network
         {
             var animState = new WebAnimState
             {
-                id = m_networkedId.id,
+                id = m_networkId.id,
                 parameter = parameter.name
             };
 
@@ -96,11 +96,11 @@ namespace TLab.SFU.Network
 
             var @object = new MSG_SyncAnim
             {
-                networkedId = m_networkedId.id,
+                networkId = m_networkId.id,
                 animState = animState,
             };
 
-            SyncClient.instance.SendWS(@object.Marshall());
+            NetworkClient.instance.SendWS(@object.Marshall());
 
             m_synchronised = false;
         }
@@ -190,8 +190,8 @@ namespace TLab.SFU.Network
             if (m_state == State.SHUTDOWNED)
                 return;
 
-            if (m_networkedId)
-                Registry.UnRegister(m_networkedId.id);
+            if (m_networkId)
+                Registry.UnRegister(m_networkId.id);
 
             base.Shutdown();
         }
@@ -234,7 +234,7 @@ namespace TLab.SFU.Network
 
             InitParameter();
 
-            Registry.Register(m_networkedId.id, this);
+            Registry.Register(m_networkId.id, this);
         }
 
         public override void Init()
@@ -243,18 +243,18 @@ namespace TLab.SFU.Network
 
             InitParameter();
 
-            Registry.Register(m_networkedId.id, this);
+            Registry.Register(m_networkId.id, this);
         }
 
         protected override void Awake()
         {
             if (!mchCallbackRegisted)
             {
-                SyncClient.RegisterOnMessage(MSG_SyncAnim.pktId, (from, to, bytes) =>
+                NetworkClient.RegisterOnMessage(MSG_SyncAnim.pktId, (from, to, bytes) =>
                 {
                     var @object = new MSG_SyncAnim();
                     @object.UnMarshall(bytes);
-                    Registry.GetById(@object.networkedId)?.SyncAnimFromOutside(@object.animState);
+                    Registry.GetById(@object.networkId)?.SyncAnimFromOutside(@object.animState);
                 });
                 mchCallbackRegisted = true;
             }
@@ -264,12 +264,12 @@ namespace TLab.SFU.Network
         {
             base.Register();
 
-            Registry.Register(m_networkedId.id, this);
+            Registry.Register(m_networkId.id, this);
         }
 
         protected override void UnRegister()
         {
-            Registry.UnRegister(m_networkedId.id);
+            Registry.UnRegister(m_networkId.id);
 
             base.UnRegister();
         }

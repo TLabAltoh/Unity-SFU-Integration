@@ -193,9 +193,9 @@ namespace TLab.SFU.Network
                 return false;
             }
 
-            instance = Instantiate(prefab, @transform.position.raw, @transform.rotation.rotation);
+            instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            instance.Foreach<NetworkedObject>((networkedObject) => networkedObject.Init(publicId));
+            instance.Foreach<NetworkObject>((t) => t.Init(publicId));
 
             Register(publicId, new History(userId, instance));
 
@@ -206,9 +206,9 @@ namespace TLab.SFU.Network
         {
             GetByElementName(elemName, userId, out var prefab);
 
-            instance = Instantiate(prefab, @transform.position.raw, @transform.rotation.rotation);
+            instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            instance.Foreach<NetworkedObject>((networkedObject) => networkedObject.Init(publicId));
+            instance.Foreach<NetworkObject>((t) => t.Init(publicId));
 
             Register(publicId, new History(userId, instance));
 
@@ -223,7 +223,7 @@ namespace TLab.SFU.Network
                 return false;
             }
 
-            if (SyncClient.IsOwn(userId))
+            if (NetworkClient.IsOwn(userId))
                 instance = m_store[elemId].prefab;
             else
                 instance = (m_store[elemId].distribute != null) ? m_store[(int)elemId].distribute : m_store[(int)elemId].prefab;
@@ -237,7 +237,7 @@ namespace TLab.SFU.Network
             {
                 if (elem.name == elemName)
                 {
-                    if (SyncClient.IsOwn(userId))
+                    if (NetworkClient.IsOwn(userId))
                         instance = elem.prefab;
                     else
                         instance = (elem.distribute != null) ? elem.distribute : elem.prefab;

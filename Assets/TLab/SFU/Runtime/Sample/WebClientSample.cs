@@ -6,7 +6,7 @@ using TLab.SFU.Network;
 namespace TLab.SFU.Sample
 {
     [RequireComponent(typeof(AudioSource))]
-    public class WebClientSample : ClientSample, INetworkEventHandler
+    public class WebClientSample : ClientSample, INetworkConnectionEventHandler
     {
         private SfuClient m_client;
 

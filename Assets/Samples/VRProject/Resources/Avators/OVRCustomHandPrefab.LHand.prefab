@@ -2002,7 +2002,7 @@ GameObject:
   - component: {fileID: 114674612155881938}
   - component: {fileID: 315180520259186388}
   - component: {fileID: 6383552243657263469}
-  - component: {fileID: 8347335838764753054}
+  - component: {fileID: 599936089695325046}
   m_Layer: 0
   m_Name: OVRCustomHandPrefab.LHand
   m_TagString: Untagged
@@ -2159,6 +2159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Hand.L
+  m_scale: 1
 --- !u!114 &6383552243657263469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2193,7 +2194,7 @@ MonoBehaviour:
     m_a6: 0
     m_a7: 0
     m_hash: 0
---- !u!114 &8347335838764753054
+--- !u!114 &599936089695325046
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2202,10 +2203,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1732268206786806}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7785ca2b8bacd0742afa415159cb6613, type: 3}
+  m_Script: {fileID: 11500000, guid: e72c56daa90ed4e489bde886cf2cee4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_direction: 1
+  m_direction: 2
+  positionThreshold: 0.001
+  rotAngleThreshold: 0.01
+  scaleThreshold: 0.01
 --- !u!1 &1738046394478382
 GameObject:
   m_ObjectHideFlags: 0

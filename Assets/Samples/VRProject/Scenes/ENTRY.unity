@@ -352,7 +352,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &384533783
 MonoBehaviour:
@@ -467,7 +467,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 512190811}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: TLab.VRClassroom.Entrance, Assembly-CSharp
         m_MethodName: Exit
         m_Mode: 1
@@ -551,7 +551,7 @@ Transform:
   - {fileID: 1170828935}
   - {fileID: 1129820337}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &491790986
 MonoBehaviour:
@@ -674,7 +674,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 512190811}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: TLab.VRClassroom.Entrance, Assembly-CSharp
         m_MethodName: Enter
         m_Mode: 1
@@ -724,55 +724,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 495276365}
   m_CullTransparentMesh: 1
---- !u!1 &512190810
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 512190812}
-  - component: {fileID: 512190811}
-  m_Layer: 0
-  m_Name: Entrance
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &512190811
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 512190810}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e36c2e3c5179cf46a3e109e3577947f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_roomConfig: {fileID: 11400000, guid: b8bc9622664eb9e4ea129a6c8e18f7aa, type: 2}
-  m_userConfig: {fileID: 0}
-  password: 
-  passwordHash: 
-  m_addrInput: {fileID: 0}
---- !u!4 &512190812
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 512190810}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.1000997, y: 1.1277364, z: 0.052235946}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &772146789
 GameObject:
   m_ObjectHideFlags: 0
@@ -857,7 +808,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 183181524888327470, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 183181524888327470, guid: d997ea1304c2a0147abe1f5e81b83dca, type: 3}
       propertyPath: m_LocalPosition.x

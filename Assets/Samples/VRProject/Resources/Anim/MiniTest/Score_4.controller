@@ -24,7 +24,7 @@ BlendTree:
     m_CycleOffset: 0
     m_DirectBlendParameter: Score
     m_Mirror: 0
-  m_BlendParameter: Ratio
+  m_BlendParameter: Score
   m_BlendParameterY: Score
   m_MinThreshold: 0
   m_MaxThreshold: 1

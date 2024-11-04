@@ -33,7 +33,7 @@ namespace TLab.SFU.Network
 
         public virtual void UnMarshall(byte[] bytes)
         {
-            var json = Encoding.UTF8.GetString(bytes, SyncClient.PAYLOAD_OFFSET, bytes.Length - SyncClient.PAYLOAD_OFFSET);
+            var json = Encoding.UTF8.GetString(bytes, NetworkClient.PAYLOAD_OFFSET, bytes.Length - NetworkClient.PAYLOAD_OFFSET);
             JsonUtility.FromJsonOverwrite(json, this);
         }
     }

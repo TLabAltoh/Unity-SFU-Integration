@@ -11,17 +11,16 @@ namespace TLab.VRProjct.Test.Editor
     {
         private TestCode instance;
 
-        private void OnEnable()
-        {
-            instance = target as TestCode;
-        }
+        private void OnEnable() => instance = target as TestCode;
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("Array Instantiate Test"))
-                instance.ArrayInstantiateTest();
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button("Json Utility Test"))
+                instance.JsonUtilityTest();
 
             if (GUILayout.Button("Collider Test"))
                 instance.MeshColliderClosestPoint();
@@ -35,7 +34,6 @@ namespace TLab.VRProjct.Test.Editor
                 foreach (var argment in argments)
                     Debug.Log($"Argments: {argment.Key}, {argment.Value}");
             }
-
         }
     }
 }

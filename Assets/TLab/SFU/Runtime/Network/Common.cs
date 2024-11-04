@@ -16,106 +16,31 @@ namespace TLab.SFU.Network
     }
 
     [System.Serializable]
-    public struct WebVector3
-    {
-        public float x;
-        public float y;
-        public float z;
-
-        public WebVector3(float x, float y, float z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public WebVector3(Vector3 src)
-        {
-            this.x = src.x;
-            this.y = src.y;
-            this.z = src.z;
-        }
-
-        public Vector3 raw => new Vector3(x, y, z);
-    }
-
-    [System.Serializable]
-    public struct WebVector4
-    {
-        public float x;
-        public float y;
-        public float z;
-        public float w;
-
-        public WebVector4(float x, float y, float z, float w)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        public WebVector4(Vector4 src)
-        {
-            this.x = src.x;
-            this.y = src.y;
-            this.z = src.z;
-            this.w = src.w;
-        }
-
-        public WebVector4(Quaternion src)
-        {
-            this.x = src.x;
-            this.y = src.y;
-            this.z = src.z;
-            this.w = src.w;
-        }
-
-        public Vector4 raw => new Vector4(x, y, z, w);
-
-        public Quaternion rotation => new Quaternion(x, y, z, w);
-    }
-
-    [System.Serializable]
     public struct WebTransform
     {
-        public WebVector3 position;
-        public WebVector4 rotation;
-        public WebVector3 scale;
+        public Vector3 position;
+        public Vector4 rotation;
+        public Vector3 localScale;
 
         public WebTransform(Transform transform)
         {
-            this.position = new WebVector3(transform.position);
-            this.rotation = new WebVector4(transform.rotation);
-            this.scale = new WebVector3(transform.localScale);
-        }
-
-        public WebTransform(WebVector3 position, WebVector4 rotation)
-        {
-            this.position = position;
-            this.rotation = rotation;
-            this.scale = new WebVector3(1, 1, 1);
-        }
-
-        public WebTransform(WebVector3 position, WebVector4 rotation, WebVector3 scale)
-        {
-            this.position = position;
-            this.rotation = rotation;
-            this.scale = scale;
+            this.position = transform.position;
+            this.rotation = transform.rotation.ToVec();
+            this.localScale = transform.localScale;
         }
 
         public WebTransform(Vector3 position, Quaternion rotation)
         {
-            this.position = new WebVector3(position.x, position.y, position.z);
-            this.rotation = new WebVector4(rotation.x, rotation.y, rotation.z, rotation.w);
-            this.scale = new WebVector3(1, 1, 1);
+            this.position = position;
+            this.rotation = rotation.ToVec();
+            this.localScale = Vector4.one;
         }
 
-        public WebTransform(Vector3 position, Quaternion rotation, Vector3 scale)
+        public WebTransform(Vector3 position, Quaternion rotation, Vector3 localScale)
         {
-            this.position = new WebVector3(position.x, position.y, position.z);
-            this.rotation = new WebVector4(rotation.x, rotation.y, rotation.z, rotation.w);
-            this.scale = new WebVector3(scale.x, scale.y, scale.z);
+            this.position = position;
+            this.rotation = rotation.ToVec();
+            this.localScale = localScale;
         }
     }
 

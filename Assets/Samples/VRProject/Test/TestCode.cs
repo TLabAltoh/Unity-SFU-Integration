@@ -7,12 +7,13 @@ using UnityEngine.EventSystems;
 namespace TLab.VRProjct.Test
 {
 #if UNITY_EDITOR
-    [AddComponentMenu("TLab/VRProject/Test (TLab VRProject)")]
+    [AddComponentMenu("TLab/VRProject/Test Code (VRProject)")]
     public class TestCode : MonoBehaviour
     {
-        [Header("Canvas UI Test")]
+        #region UI_AUTO_PRESS_TEST
+        [Header("UI Auto Press Test")]
 
-        [SerializeField] private GameObject[] m_uiElements;
+        [SerializeField] private GameObject[] m_elements;
 
         [SerializeField] private Canvas m_canvas;
 
@@ -26,11 +27,7 @@ namespace TLab.VRProjct.Test
 
         private List<RaycastResult> m_RaycastResultCache = new List<RaycastResult>();
 
-        [Header("Raycast Test")]
-
-        [SerializeField] private Collider m_collider;
-
-        private IEnumerator PressUIElement(GameObject uiElement, float wait)
+        private IEnumerator PressUIElementAsync(GameObject uiElement, float wait)
         {
             var pointerEvent = new PointerEventData(m_eventSystem);
 
@@ -116,31 +113,26 @@ namespace TLab.VRProjct.Test
             }
         }
 
-        public void OnPressed(int id)
-        {
-            Debug.Log("Ui element pressed !: " + id);
-        }
+        public void OnUIElementPressed(int id) => Debug.Log("UI element pressed: " + id);
 
-        public void PressUI()
+        public void AutoPressUIElement()
         {
-            const float WAIT = 2f;
+            const float DELAY = 2f;
 
             if (m_pointerEventData == null)
                 m_pointerEventData = new PointerEventData(m_eventSystem);
 
-            StartCoroutine(PressUIElement(m_uiElements[0], WAIT));
-            StartCoroutine(PressUIElement(m_uiElements[1], WAIT));
+            StartCoroutine(PressUIElementAsync(m_elements[0], DELAY));
+            StartCoroutine(PressUIElementAsync(m_elements[1], DELAY));
         }
 
-        public void ArrayInstantiateTest()
-        {
-            var array = new Queue<GameObject>[5];
+        #endregion UI_AUTO_PRESS_TEST
 
-            for (int i = 0; i < array.Length; i++)
-            {
-                Debug.Log($"array {i} is null ? :" + (array[i] == null));
-            }
-        }
+        #region RAYCAST_TEST
+
+        [Header("Raycast Test")]
+
+        [SerializeField] private Collider m_collider;
 
         public void MeshColliderClosestPoint()
         {
@@ -148,6 +140,34 @@ namespace TLab.VRProjct.Test
 
             Debug.Log("Closest Point: " + point);
         }
+
+        #endregion RAYCAST_TEST
+
+        #region JSON_UTILITY_TEST
+        public class Test
+        {
+            public Vector2 vector2;
+            public Vector3 vector3;
+            public Vector4 vector4;
+        }
+
+        public void JsonUtilityTest()
+        {
+            var @object = new Test();
+            @object.vector2 = Vector2.one;
+            @object.vector3 = Vector3.one;
+            @object.vector4 = Vector4.one;
+
+            var json = JsonUtility.ToJson(@object);
+
+            Debug.Log("Json: " + json);
+
+            var @unmarshal = JsonUtility.FromJson<Test>(json);
+            Debug.Log(@object.vector2.Equals(@unmarshal.vector2));
+            Debug.Log(@object.vector3.Equals(@unmarshal.vector3));
+            Debug.Log(@object.vector4.Equals(@unmarshal.vector4));
+        }
+        #endregion
     }
 #endif
 }

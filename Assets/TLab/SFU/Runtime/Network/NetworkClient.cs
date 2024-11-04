@@ -10,8 +10,8 @@ using static TLab.SFU.ComponentExtension;
 
 namespace TLab.SFU.Network
 {
-    [AddComponentMenu("TLab/SFU/Sync Client (TLab)")]
-    public class SyncClient : MonoBehaviour, INetworkEventHandler
+    [AddComponentMenu("TLab/SFU/Network Client (TLab)")]
+    public class NetworkClient : MonoBehaviour, INetworkConnectionEventHandler
     {
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -30,10 +30,10 @@ namespace TLab.SFU.Network
 
         private IEnumerator m_connectTask = null;
 
-        public static SyncClient instance;
+        public static NetworkClient instance;
 
-        private static PhysicsUpdateType m_physicsUpdateType = PhysicsUpdateType.NONE;
-        public static PhysicsUpdateType physicsUpdateType => m_physicsUpdateType;
+        private static PhysicsRole m_physicsRole = PhysicsRole.NONE;
+        public static PhysicsRole physicsRole => m_physicsRole;
 
         public delegate void OnMessageCallback(int from, int to, byte[] bytes);
         private static Hashtable m_messageCallbacks = new Hashtable();
@@ -91,7 +91,7 @@ namespace TLab.SFU.Network
         #region STRUCT
 
         [System.Serializable]
-        public enum PhysicsUpdateType
+        public enum PhysicsRole
         {
             NONE,
             SEND,
@@ -121,20 +121,20 @@ namespace TLab.SFU.Network
 
             // response only
             public Address32[] idAvails;
-            public PhysicsUpdateType physicsUpdateType;
+            public PhysicsRole physicsRole;
             public PrefabStore.StoreAction[] othersHistory;
         }
 
         [Serializable]
-        public class MSG_PhysicsUpdateType : Packetable
+        public class MSG_PhysicsRole : Packetable
         {
             public static new int pktId;
 
             protected override int packetId => pktId;
 
-            static MSG_PhysicsUpdateType() => pktId = MD5From(nameof(MSG_PhysicsUpdateType));
+            static MSG_PhysicsRole() => pktId = MD5From(nameof(MSG_PhysicsRole));
 
-            public PhysicsUpdateType physicsUpdateType;
+            public PhysicsRole physicsRole;
         }
 
         [Serializable]
@@ -167,19 +167,10 @@ namespace TLab.SFU.Network
 
         #endregion REFLESH
 
-        public void UpdatePhysicsUpdateType(PhysicsUpdateType physicsUpdateType)
+        public void SetPhysicsRole(PhysicsRole physicsRole)
         {
-            switch (physicsUpdateType)
-            {
-                case PhysicsUpdateType.SEND:
-                    Foreach<SyncTransformer>((transformer) => transformer.EnableGravity(true));
-                    break;
-                case PhysicsUpdateType.RECV:
-                    Foreach<SyncTransformer>((transformer) => transformer.EnableGravity(false, true));
-                    break;
-                default:
-                    break;
-            }
+            m_physicsRole = physicsRole;
+            Foreach<NetworkTransform>((t) => t.OnPhysicsRoleChange());
         }
 
         public static void RegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
@@ -297,7 +288,7 @@ namespace TLab.SFU.Network
                             // response
                             response.avatorAction.publicId = UniqueId.Generate();
                             response.idAvails = UniqueId.Generate(5);   // TODO
-                            response.physicsUpdateType = PhysicsUpdateType.RECV;
+                            response.physicsRole = PhysicsRole.RECV;
                             response.othersHistory = avatorHistorys;
 
                             SendWS(response.avatorAction.userId, response.Marshall());
@@ -305,12 +296,12 @@ namespace TLab.SFU.Network
                         break;
                     case 1: // response
                         {
-                            UpdatePhysicsUpdateType(@object.physicsUpdateType);
+                            SetPhysicsRole(@object.physicsRole);
 
                             foreach (var action in @object.othersHistory)
                                 UpdateState(action, out var avator);
 
-                            Foreach<NetworkedObject>((networkedObject) => networkedObject.Init());
+                            Foreach<NetworkObject>((t) => t.Init());
 
                             m_onJoin.ForEach((c) => c.Item1.Invoke());
                         }
@@ -320,7 +311,7 @@ namespace TLab.SFU.Network
                             UpdateState(@object.avatorAction, out var avator);
 
                             if (userId == 0)
-                                Foreach<NetworkedObject>((networkedObject) => networkedObject.SyncViaWebSocket());
+                                Foreach<NetworkObject>((t) => t.SyncViaWebSocket());
 
                             m_onJoin.ForEach((c) => c.Item2.Invoke(from));
                         }
@@ -328,12 +319,12 @@ namespace TLab.SFU.Network
                 }
             });
 
-            RegisterOnMessage(MSG_PhysicsUpdateType.pktId, (from, to, bytes) =>
+            RegisterOnMessage(MSG_PhysicsRole.pktId, (from, to, bytes) =>
             {
-                var @object = new MSG_PhysicsUpdateType();
+                var @object = new MSG_PhysicsRole();
                 @object.UnMarshall(bytes);
 
-                UpdatePhysicsUpdateType(@object.physicsUpdateType);
+                SetPhysicsRole(@object.physicsRole);
             });
 
             RegisterOnMessage(MSG_IdAvails.pktId, (from, to, bytes) =>
@@ -495,9 +486,9 @@ namespace TLab.SFU.Network
 
             if (userId == 0)
             {
-                UpdatePhysicsUpdateType(PhysicsUpdateType.SEND);
+                SetPhysicsRole(PhysicsRole.SEND);
 
-                Foreach<NetworkedObject>((networkedObject) => networkedObject.Init());
+                Foreach<NetworkObject>((t) => t.Init());
 
                 if (m_avatorShop.GetAnchor(0, out var anchor))
                 {

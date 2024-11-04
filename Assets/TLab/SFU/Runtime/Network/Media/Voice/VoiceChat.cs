@@ -79,7 +79,7 @@ namespace TLab.SFU.Network
             m_microphoneSource.loop = true;
             m_microphoneSource.Play();
 
-            WebRTCClient.Whip(this, SyncClient.adapter, "voice", null, null, microphoneSource);
+            WebRTCClient.Whip(this, NetworkClient.adapter, "voice", null, null, microphoneSource);
         }
 
         public void Pause(bool active) => m_rtcClient?.Pause(active);

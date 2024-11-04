@@ -3,7 +3,7 @@ using UnityEngine;
 namespace TLab.SFU.Test
 {
 #if UNITY_EDITOR
-    [AddComponentMenu("TLab/SFU/Test (TLab SFU)")]
+    [AddComponentMenu("TLab/SFU/Test Code (SFU)")]
     public class TestCode : MonoBehaviour
     {
     }

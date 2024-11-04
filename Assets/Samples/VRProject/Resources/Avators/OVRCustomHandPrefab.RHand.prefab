@@ -1742,7 +1742,7 @@ GameObject:
   - component: {fileID: 114460394679914766}
   - component: {fileID: 955823806259458316}
   - component: {fileID: 2773583570435426456}
-  - component: {fileID: 1927649301007283964}
+  - component: {fileID: 4330380705842995049}
   m_Layer: 0
   m_Name: OVRCustomHandPrefab.RHand
   m_TagString: Untagged
@@ -1899,6 +1899,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Hand.R
+  m_scale: 1
 --- !u!114 &2773583570435426456
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1933,7 +1934,7 @@ MonoBehaviour:
     m_a6: 0
     m_a7: 0
     m_hash: 0
---- !u!114 &1927649301007283964
+--- !u!114 &4330380705842995049
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1942,10 +1943,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1581749144712736}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7785ca2b8bacd0742afa415159cb6613, type: 3}
+  m_Script: {fileID: 11500000, guid: e72c56daa90ed4e489bde886cf2cee4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_direction: 1
+  m_direction: 2
+  positionThreshold: 0.001
+  rotAngleThreshold: 0.01
+  scaleThreshold: 0.01
 --- !u!1 &1583234602300474
 GameObject:
   m_ObjectHideFlags: 0

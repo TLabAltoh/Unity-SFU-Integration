@@ -5,11 +5,11 @@ using TLab.SFU.Network;
 
 namespace TLab.VRProjct
 {
-    [RequireComponent(typeof(SyncAnimator))]
+    [RequireComponent(typeof(NetworkAnimator))]
     public class MiniTest : MonoBehaviour
     {
-        [SerializeField] private SyncAnimator m_windowAnim;
-        [SerializeField] private SyncAnimator[] m_graphs;
+        [SerializeField] private NetworkAnimator m_windowAnim;
+        [SerializeField] private NetworkAnimator[] m_graphs;
 
         [SerializeField] private ToggleGroup m_toggleGroup;
         [SerializeField] private Toggle m_corrent;
@@ -17,25 +17,21 @@ namespace TLab.VRProjct
         [SerializeField] private Image m_maru;
         [SerializeField] private Image m_batu;
 
-        private const string SWITCH = "Switch";
+        private const string RESULT = "Result";
 
-        private const string RATIO = "Ratio";
-
-        private const int PERFECT_SCORE = 100;
-
-        private const int ZERO_SCORE = 0;
+        private const string SCORE = "Score";
 
         private IEnumerator Seikai()
         {
-            const float DURATION = 0.5f;
+            const float DUSCOREN = 0.5f;
             float remain = 0.0f;
             Color prev;
 
-            while (remain < DURATION)
+            while (remain < DUSCOREN)
             {
                 remain += Time.deltaTime;
                 prev = m_maru.color;
-                prev.a = remain / DURATION;
+                prev.a = remain / DUSCOREN;
                 m_maru.color = prev;
                 yield return null;
             }
@@ -47,15 +43,15 @@ namespace TLab.VRProjct
 
         private IEnumerator FuSeikai()
         {
-            const float DURATION = 0.5f;
+            const float DUSCOREN = 0.5f;
             float remain = 0.0f;
             Color prev;
 
-            while (remain < DURATION)
+            while (remain < DUSCOREN)
             {
                 remain += Time.deltaTime;
                 prev = m_batu.color;
-                prev.a = remain / DURATION;
+                prev.a = remain / DUSCOREN;
                 m_batu.color = prev;
                 yield return null;
             }
@@ -77,44 +73,33 @@ namespace TLab.VRProjct
             m_maru.color = prev;
 
             if (m_corrent.isOn)
-            {
                 StartCoroutine(Seikai());
-            }
             else
-            {
                 StartCoroutine(FuSeikai());
-            }
 
-            ScoreTabulation.instance.RegistScore(m_corrent.isOn ? PERFECT_SCORE : ZERO_SCORE);
+            ScoreTabulation.instance.RegistScore(m_corrent.isOn ? 100 : 0);
         }
 
         public void SwitchWindow(bool active)
         {
-            m_windowAnim.SetBool(SWITCH, active);
+            m_windowAnim.SetBool(RESULT, active);
 
             if (active)
-            {
                 return;
-            }
 
             for (int i = 0; i < m_graphs.Length; i++)
             {
                 var graph = m_graphs[i];
-                graph.SetFloat(RATIO, ScoreTabulation.instance.GetScore(i + 1) / (float)PERFECT_SCORE);
+                graph.SetFloat(SCORE, ScoreTabulation.instance.GetScore(i + 1) / (float)100);
             }
         }
 
         void Reset()
         {
             if (m_windowAnim == null)
-            {
-                m_windowAnim = GetComponent<SyncAnimator>();
-            }
+                m_windowAnim = GetComponent<NetworkAnimator>();
         }
 
-        private void Start()
-        {
-            m_windowAnim.SetBool(SWITCH, true);
-        }
+        private void Start() => m_windowAnim.SetBool(RESULT, true);
     }
 }

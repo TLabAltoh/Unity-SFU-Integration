@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
-    public class NetworkedId : MonoBehaviour
+    public class NetworkId : MonoBehaviour
     {
         [SerializeField, HideInInspector] protected Address32 m_privateId;
 
