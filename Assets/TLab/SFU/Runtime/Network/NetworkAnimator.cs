@@ -54,6 +54,10 @@ namespace TLab.SFU.Network
 
             public Address64 networkId;
             public WebAnimState animState;
+
+            public MSG_SyncAnim() : base() { }
+
+            public MSG_SyncAnim(byte[] bytes) : base(bytes) { }
         }
 
         #endregion MESSAGE
@@ -252,8 +256,7 @@ namespace TLab.SFU.Network
             {
                 NetworkClient.RegisterOnMessage(MSG_SyncAnim.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MSG_SyncAnim();
-                    @object.UnMarshall(bytes);
+                    var @object = new MSG_SyncAnim(bytes);
                     Registry.GetById(@object.networkId)?.SyncAnimFromOutside(@object.animState);
                 });
                 mchCallbackRegisted = true;

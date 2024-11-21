@@ -1,6 +1,12 @@
+#define TEST
+#undef TEST
+
 using UnityEngine;
 using UnityEditor;
+
+#if TEST
 using static TLab.SFU.UnsafeUtility;
+#endif
 
 namespace TLab.SFU.Network.Editor
 {
@@ -15,7 +21,7 @@ namespace TLab.SFU.Network.Editor
         {
             base.OnInspectorGUI();
 
-#if false
+#if TEST
             if (GUILayout.Button("Test"))
             {
                 {

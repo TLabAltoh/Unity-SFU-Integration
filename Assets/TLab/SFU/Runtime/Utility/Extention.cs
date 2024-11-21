@@ -46,12 +46,14 @@ namespace TLab.SFU
 			return componentList.ToArray();
 		}
 
-		public static T RequireComponent<T>(this GameObject self) where T : Component
+		public static T RequireComponent<T>(this GameObject self, UnityAction<T> callback = null) where T : Component
 		{
 			var result = self.GetComponent<T>();
 
 			if (result == null)
 				result = self.AddComponent<T>();
+
+			callback?.Invoke(result);
 
 			return result;
 		}

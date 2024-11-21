@@ -24,6 +24,10 @@ namespace TLab.SFU.Network
 
         protected virtual int packetId => pktId;
 
+        public Packetable() { }
+
+        public Packetable(byte[] bytes) => UnMarshall(bytes);
+
         public virtual byte[] Marshall()
         {
             var json = JsonUtility.ToJson(this);

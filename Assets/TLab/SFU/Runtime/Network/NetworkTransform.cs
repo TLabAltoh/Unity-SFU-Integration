@@ -6,6 +6,7 @@ namespace TLab.SFU.Network
     using Registry = Registry<NetworkTransform>;
 
     [AddComponentMenu("TLab/SFU/Network Transform (TLab)")]
+    [CanEditMultipleObjects]
     public class NetworkTransform : NetworkObject
     {
         #region STRUCT
@@ -79,6 +80,10 @@ namespace TLab.SFU.Network
             public const int HEADER_LEN = 8;
 
             public const int PAYLOAD_LEN = 2 + 10 * sizeof(float);  // rbState.used (1) + rbState.gravity (1) + transform ((3 + 4 + 3) * 4)
+
+            public MSG_SyncTransform() : base() { }
+
+            public MSG_SyncTransform(byte[] bytes) : base(bytes) { }
 
             public override byte[] Marshall()
             {
@@ -230,15 +235,15 @@ namespace TLab.SFU.Network
             switch (NetworkClient.physicsRole)
             {
                 case NetworkClient.PhysicsRole.SEND:
-                    FreeRigidbody(true);
+                    EnableRigidbody(true);
                     break;
                 case NetworkClient.PhysicsRole.RECV:
-                    FreeRigidbody(false, true);
+                    EnableRigidbody(false, true);
                     break;
             }
         }
 
-        public virtual void FreeRigidbody(bool active, bool force = false)
+        public virtual void EnableRigidbody(bool active, bool force = false)
         {
             if (m_rb == null)
                 return;
@@ -328,7 +333,7 @@ namespace TLab.SFU.Network
 
         public override void SyncViaWebRTC()
         {
-            if (!Const.SEND.HasFlag(m_direction) && (m_state == State.INITIALIZED))
+            if (!Const.SEND.HasFlag(m_direction) || (m_state != State.INITIALIZED))
                 return;
 
             if (ApplyCurrentTransform())
@@ -346,7 +351,7 @@ namespace TLab.SFU.Network
 
         public override void SyncViaWebSocket()
         {
-            if (!Const.SEND.HasFlag(m_direction) && (m_state == State.INITIALIZED))
+            if (!Const.SEND.HasFlag(m_direction) || (m_state != State.INITIALIZED))
                 return;
 
             if (ApplyCurrentTransform())
@@ -374,12 +379,11 @@ namespace TLab.SFU.Network
 
             if (m_rb != null)
             {
-                m_rb = this.gameObject.RequireComponent<Rigidbody>();
                 m_rbHistory.Enqueue((m_rb.position, m_rb.rotation));
 
                 m_rbState = new RigidbodyState(true, m_rb.useGravity);
 
-                FreeRigidbody(false);
+                EnableRigidbody(false, true);
             }
             else
                 m_rbState = new RigidbodyState(false, false);
@@ -418,8 +422,7 @@ namespace TLab.SFU.Network
             {
                 NetworkClient.RegisterOnMessage(MSG_SyncTransform.pktId, (from, to, bytes) =>
                 {
-                    var @object = new MSG_SyncTransform();
-                    @object.UnMarshall(bytes);
+                    var @object = new MSG_SyncTransform(bytes);
                     Registry.GetById(@object.transform.id)?.SyncFromOutside(@object.transform);
                 });
                 msgCallbackRegisted = true;

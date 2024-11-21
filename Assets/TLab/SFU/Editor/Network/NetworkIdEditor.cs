@@ -14,6 +14,10 @@ namespace TLab.SFU.Network.Editor
         {
             base.OnInspectorGUI();
 
+            EditorGUILayout.Space();
+            GUILayout.Label($"Hash: {m_instance.id.hash}", GUILayout.ExpandWidth(false));
+            EditorGUILayout.Space();
+
             if (GUILayout.Button("Generate Address"))
                 m_instance.GenerateAddress();
 

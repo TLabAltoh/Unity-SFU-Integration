@@ -57,5 +57,18 @@ namespace TLab.SFU.Interact
             if (!IsHovered())
                 m_material.SetFloat(OUTLINE_WIDTH, ZERO_WIDTH);
         }
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+
+            if (m_material != null)
+            {
+                m_material.SetFloat(OUTLINE_WIDTH, m_outlineWidth);
+                UnityEditor.EditorUtility.SetDirty(m_material);
+            }
+        }
+#endif
     }
 }

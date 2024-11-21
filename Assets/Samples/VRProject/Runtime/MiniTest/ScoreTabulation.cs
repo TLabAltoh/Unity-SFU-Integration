@@ -23,6 +23,10 @@ namespace TLab.VRProjct
 
             static MSG_MiniTest() => pktId = MD5From(nameof(MSG_MiniTest));
 
+            public MSG_MiniTest() : base() { }
+
+            public MSG_MiniTest(byte[] bytes) : base(bytes) { }
+
             public int score;
         }
 
@@ -59,8 +63,7 @@ namespace TLab.VRProjct
 
         public void OnMessage(int from, int to, byte[] bytes)
         {
-            var @object = new MSG_MiniTest();
-            @object.UnMarshall(bytes);
+            var @object = new MSG_MiniTest(bytes);
             m_scores[from] = @object.score;
         }
 

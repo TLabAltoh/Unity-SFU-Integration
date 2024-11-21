@@ -1,49 +1,55 @@
 using UnityEngine;
 using UnityEditor;
+using TLab.SFU.Network.Editor;
 
 namespace TLab.SFU.Interact.Editor
 {
-    [CustomEditor(typeof(GameObjectController))]
+    [CustomEditor(typeof(GameObjectController), true)]
     [CanEditMultipleObjects]
-    public class GameObjectControllerEditor : UnityEditor.Editor
+    public class GameObjectControllerEditor : NetworkTransformEditor
     {
         private GameObjectController m_controller;
 
-        private void OnEnable() => m_controller = target as GameObjectController;
+        protected override void Init()
+        {
+            base.Init();
 
-        private void InitializeForRotatable(GameObjectController controller)
+            m_controller = target as GameObjectController;
+        }
+
+        private void InitRotatable(GameObjectController controller)
         {
             controller.InitializeGameObjectRotatable();
             EditorUtility.SetDirty(controller);
         }
 
-        private void InitializeForDivibable(GameObject target, bool isRoot)
+        private void InitDivibable(GameObject target, bool isRoot)
         {
-            var meshFilter = target.RequireComponent<MeshFilter>();
+            target.RequireComponent<MeshFilter>((c) => EditorUtility.SetDirty(c));
 
-            var meshCollider = target.RequireComponent<MeshCollider>();
-            meshCollider.enabled = isRoot;
-            meshCollider.convex = true;     // meshCollider.ClosestPoint only works with convex = true
+            var meshCollider = target.RequireComponent<MeshCollider>((c) => {
+                c.enabled = isRoot;
+                c.convex = true;    // meshCollider.ClosestPoint only works with convex = true
+                EditorUtility.SetDirty(c);
+            });
 
-            var controller = target.RequireComponent<GameObjectController>();
-            controller.direction = Network.Direction.SENDRECV;
-            controller.UseRigidbody(false, false);  // Disable Rigidbody.useGrabity
+            target.RequireComponent<GameObjectController>((c) => {
+                c.direction = Network.Direction.SENDRECV;
+                c.UseRigidbody(false, false);
+                EditorUtility.SetDirty(c);
+            });
 
-            var goGrabbable = target.RequireComponent<GameObjectGrabbable>();
-            goGrabbable.enableCollision = true;
+            target.RequireComponent<GameObjectGrabbable>((c) => {
+                c.enableCollision = true;
+                EditorUtility.SetDirty(c);
+            });
 
-            var rotatable = target.RequireComponent<GameObjectRotatable>();
-            rotatable.enableCollision = true;
+            target.RequireComponent<GameObjectRotatable>((c) => {
+                c.enableCollision = true;
+                EditorUtility.SetDirty(c);
+            });
 
-            var rayInteractable = target.RequireComponent<RayInteractable>();
-
-            EditorUtility.SetDirty(meshFilter);
-            EditorUtility.SetDirty(meshCollider);
-            EditorUtility.SetDirty(controller);
-            EditorUtility.SetDirty(rotatable);
-            EditorUtility.SetDirty(goGrabbable);
-
-            EditorUtility.SetDirty(rayInteractable);
+            target.RequireComponent<RayInteractable>((c) => EditorUtility.SetDirty(c));
         }
 
         public override void OnInspectorGUI()
@@ -51,18 +57,18 @@ namespace TLab.SFU.Interact.Editor
             base.OnInspectorGUI();
 
             var rotatable = m_controller.gameObject.GetComponent<GameObjectRotatable>();
-            if (rotatable != null && GUILayout.Button("Initialize for GameObjectRotatable"))
-                InitializeForRotatable(m_controller);
+            if (rotatable != null && GUILayout.Button("Init Rotatable"))
+                InitRotatable(m_controller);
 
-            if (m_controller.enableDivide && GUILayout.Button("Initialize for Devibable"))
+            if (m_controller.enableDivide && GUILayout.Button("Init Devibable"))
             {
-                InitializeForDivibable(m_controller.gameObject, true);
+                InitDivibable(m_controller.gameObject, true);
 
                 foreach (var divideTarget in m_controller.divideTargets)
                 {
                     GameObjectUtility.RemoveMonoBehavioursWithMissingScript(divideTarget);
 
-                    InitializeForDivibable(divideTarget, false);
+                    InitDivibable(divideTarget, false);
 
                     EditorUtility.SetDirty(divideTarget);
                 }
@@ -74,8 +80,6 @@ namespace TLab.SFU.Interact.Editor
                 GUILayout.Label($"Current Grabber Id: {m_controller.grabState.grabberId}", GUILayout.ExpandWidth(false));
                 EditorGUILayout.Space();
             }
-
-            EditorGUILayout.Space();
         }
     }
 }

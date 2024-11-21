@@ -116,6 +116,10 @@ namespace TLab.SFU.Network
 
             static MSG_Join() => pktId = MD5From(nameof(MSG_Join));
 
+            public MSG_Join() : base() { }
+
+            public MSG_Join(byte[] bytes) : base(bytes) { }
+
             public int messageType; // 0: request, 1: response, 2: broadcast
             public PrefabStore.StoreAction avatorAction;
 
@@ -134,6 +138,10 @@ namespace TLab.SFU.Network
 
             static MSG_PhysicsRole() => pktId = MD5From(nameof(MSG_PhysicsRole));
 
+            public MSG_PhysicsRole() : base() { }
+
+            public MSG_PhysicsRole(byte[] bytes) : base(bytes) { }
+
             public PhysicsRole physicsRole;
         }
 
@@ -145,6 +153,10 @@ namespace TLab.SFU.Network
             protected override int packetId => pktId;
 
             static MSG_IdAvails() => pktId = MD5From(nameof(MSG_IdAvails));
+
+            public MSG_IdAvails() : base() { }
+
+            public MSG_IdAvails(byte[] bytes) : base(bytes) { }
 
             public int messageType; // 0: request, 1: response
             public int length;
@@ -274,8 +286,7 @@ namespace TLab.SFU.Network
 
             RegisterOnMessage(MSG_Join.pktId, (from, to, bytes) =>
             {
-                var @object = new MSG_Join();
-                @object.UnMarshall(bytes);
+                var @object = new MSG_Join(bytes);
 
                 switch (@object.messageType)
                 {
@@ -321,16 +332,14 @@ namespace TLab.SFU.Network
 
             RegisterOnMessage(MSG_PhysicsRole.pktId, (from, to, bytes) =>
             {
-                var @object = new MSG_PhysicsRole();
-                @object.UnMarshall(bytes);
+                var @object = new MSG_PhysicsRole(bytes);
 
                 SetPhysicsRole(@object.physicsRole);
             });
 
             RegisterOnMessage(MSG_IdAvails.pktId, (from, to, bytes) =>
             {
-                var @object = new MSG_IdAvails();
-                @object.UnMarshall(bytes);
+                var @object = new MSG_IdAvails(bytes);
 
                 switch (@object.messageType)
                 {

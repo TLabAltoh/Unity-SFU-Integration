@@ -17,6 +17,8 @@ namespace TLab.SFU
         public byte a2 => m_a2;
         public byte a3 => m_a3;
 
+        public int hash => m_hash;
+
         public Address32(byte a0, byte a1, byte a2, byte a3)
         {
             m_a0 = a0;
@@ -43,20 +45,11 @@ namespace TLab.SFU
             ptr[3] = m_a3;
         }
 
-        public void Copy(in Address32 from)
-        {
-            Update(from.a0, from.a1, from.a2, from.a3);
-        }
+        public void Copy(in Address32 from) => Update(from.a0, from.a1, from.a2, from.a3);
 
-        public unsafe void Copy(byte* from)
-        {
-            Update(from[0], from[1], from[2], from[3]);
-        }
+        public unsafe void Copy(byte* from) => Update(from[0], from[1], from[2], from[3]);
 
-        public override int GetHashCode()
-        {
-            return m_hash;
-        }
+        public override int GetHashCode() => m_hash;
 
         public bool Equals(Address32 address)
         {
@@ -92,6 +85,8 @@ namespace TLab.SFU
         public byte a5 => m_a5;
         public byte a6 => m_a6;
         public byte a7 => m_a7;
+
+        public int hash => m_hash;
 
         public Address64(byte a0, byte a1, byte a2, byte a3, byte a4, byte a5, byte a6, byte a7)
         {
@@ -153,30 +148,15 @@ namespace TLab.SFU
             ptr[7] = m_a7;
         }
 
-        public void Copy(in Address64 from)
-        {
-            Update(from.a0, from.a1, from.a2, from.a3, from.a4, from.a5, from.a6, from.a7);
-        }
+        public void Copy(in Address64 from) => Update(from.a0, from.a1, from.a2, from.a3, from.a4, from.a5, from.a6, from.a7);
 
-        public unsafe void Copy(byte* from)
-        {
-            Update(from[0], from[1], from[2], from[3], from[4], from[5], from[6], from[7]);
-        }
+        public unsafe void Copy(byte* from) => Update(from[0], from[1], from[2], from[3], from[4], from[5], from[6], from[7]);
 
-        public void CopyUpper32(in Address32 from)
-        {
-            UpdateUpper32(from.a0, from.a1, from.a2, from.a3);
-        }
+        public void CopyUpper32(in Address32 from) => UpdateUpper32(from.a0, from.a1, from.a2, from.a3);
 
-        public void CopyLower32(in Address32 from)
-        {
-            UpdateLower32(from.a0, from.a1, from.a2, from.a3);
-        }
+        public void CopyLower32(in Address32 from) => UpdateLower32(from.a0, from.a1, from.a2, from.a3);
 
-        public override int GetHashCode()
-        {
-            return m_hash;
-        }
+        public override int GetHashCode() => m_hash;
 
         public bool Equals(Address64 address)
         {
@@ -190,5 +170,5 @@ namespace TLab.SFU
                 (address.m_a6 == m_a6) &&
                 (address.m_a7 == m_a7);
         }
-    };
+    }
 }

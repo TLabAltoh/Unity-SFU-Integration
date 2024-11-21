@@ -77,7 +77,7 @@ namespace TLab.SFU.Sample
 
             Gizmos.color = m_gizmoColor;
 
-            m_curves.Foreach((c) =>
+            m_curves?.Foreach((c) =>
             {
                 var start = transform.rotation * Quaternion.AngleAxis(2 * Mathf.PI * Mathf.Rad2Deg * (c.angle + c.range.x - 0.5f), Vector3.up);
                 var angle = 2 * Mathf.PI * Mathf.Rad2Deg * (c.range.y - c.range.x);
