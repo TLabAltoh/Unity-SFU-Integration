@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
+using static System.BitConverter;
 using static TLab.SFU.ComponentExtension;
 
 namespace TLab.SFU.Network
@@ -90,7 +91,7 @@ namespace TLab.SFU.Network
 
         #region STRUCT
 
-        [System.Serializable]
+        [Serializable]
         public enum PhysicsRole
         {
             NONE,
@@ -116,11 +117,29 @@ namespace TLab.SFU.Network
 
             static MSG_Join() => pktId = MD5From(nameof(MSG_Join));
 
-            public MSG_Join() : base() { }
+            public enum MessageType
+            {
+                REQUEST = 0,
+                RESPONSE = 1,
+                BROADCAST = 2,
+            };
+
+            public MSG_Join(MessageType messageType, PrefabStore.StoreAction avatorAction) : base()
+            {
+                this.messageType = messageType;
+                this.avatorAction = avatorAction;
+            }
+
+            public MSG_Join(MessageType messageType, PrefabStore.StoreAction avatorAction, Address32[] idAvails, PhysicsRole physicsRole, PrefabStore.StoreAction[] othersHistory) : this(messageType, avatorAction)
+            {
+                this.idAvails = idAvails;
+                this.physicsRole = physicsRole;
+                this.othersHistory = othersHistory;
+            }
 
             public MSG_Join(byte[] bytes) : base(bytes) { }
 
-            public int messageType; // 0: request, 1: response, 2: broadcast
+            public MessageType messageType;
             public PrefabStore.StoreAction avatorAction;
 
             // response only
@@ -138,7 +157,10 @@ namespace TLab.SFU.Network
 
             static MSG_PhysicsRole() => pktId = MD5From(nameof(MSG_PhysicsRole));
 
-            public MSG_PhysicsRole() : base() { }
+            public MSG_PhysicsRole(PhysicsRole physicsRole) : base()
+            {
+                this.physicsRole = physicsRole;
+            }
 
             public MSG_PhysicsRole(byte[] bytes) : base(bytes) { }
 
@@ -154,11 +176,22 @@ namespace TLab.SFU.Network
 
             static MSG_IdAvails() => pktId = MD5From(nameof(MSG_IdAvails));
 
-            public MSG_IdAvails() : base() { }
+            public MSG_IdAvails(MessageType messageType, int length, Address32[] idAvails) : base()
+            {
+                this.messageType = messageType;
+                this.length = length;
+                this.idAvails = idAvails;
+            }
 
             public MSG_IdAvails(byte[] bytes) : base(bytes) { }
 
-            public int messageType; // 0: request, 1: response
+            public enum MessageType
+            {
+                REQUEST = 0,
+                RESPONSE = 1,
+            };
+
+            public MessageType messageType;
             public int length;
             public Address32[] idAvails;
         }
@@ -241,7 +274,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public bool UpdateState(PrefabStore.StoreAction info, out GameObject avator)
+        private bool UpdateAvatorState(PrefabStore.StoreAction info, out GameObject avator)
         {
             avator = null;
 
@@ -256,7 +289,6 @@ namespace TLab.SFU.Network
 
                         return true;
                     }
-
                     return false;
                 case PrefabStore.StoreAction.Action.DELETE:
                     if (m_avatorHistory.ContainsKey(info.userId))
@@ -267,10 +299,8 @@ namespace TLab.SFU.Network
 
                         return true;
                     }
-
                     return false;
             }
-
             return false;
         }
 
@@ -290,39 +320,29 @@ namespace TLab.SFU.Network
 
                 switch (@object.messageType)
                 {
-                    case 0: // request
+                    case MSG_Join.MessageType.REQUEST:
                         {
-                            var response = new MSG_Join();
-                            response.messageType = 1;
-                            response.avatorAction = @object.avatorAction;
-
-                            // response
-                            response.avatorAction.publicId = UniqueId.Generate();
-                            response.idAvails = UniqueId.Generate(5);   // TODO
-                            response.physicsRole = PhysicsRole.RECV;
-                            response.othersHistory = avatorHistorys;
-
-                            SendWS(response.avatorAction.userId, response.Marshall());
+                            SendWS(from, new MSG_Join(MSG_Join.MessageType.RESPONSE, @object.avatorAction.UpdatePublicId(UniqueId.Generate()), UniqueId.Generate(5), PhysicsRole.RECV, avatorHistorys).Marshall());
                         }
                         break;
-                    case 1: // response
+                    case MSG_Join.MessageType.RESPONSE:
                         {
                             SetPhysicsRole(@object.physicsRole);
 
                             foreach (var action in @object.othersHistory)
-                                UpdateState(action, out var avator);
+                                UpdateAvatorState(action, out var avator);
 
                             Foreach<NetworkObject>((t) => t.Init());
 
                             m_onJoin.ForEach((c) => c.Item1.Invoke());
                         }
                         break;
-                    case 2: // broadcast
+                    case MSG_Join.MessageType.BROADCAST:
                         {
-                            UpdateState(@object.avatorAction, out var avator);
+                            UpdateAvatorState(@object.avatorAction, out var avator);
 
                             if (userId == 0)
-                                Foreach<NetworkObject>((t) => t.SyncViaWebSocket());
+                                Foreach<NetworkObject>((t) => t.SyncViaWebSocket(true, userId));
 
                             m_onJoin.ForEach((c) => c.Item2.Invoke(from));
                         }
@@ -332,9 +352,7 @@ namespace TLab.SFU.Network
 
             RegisterOnMessage(MSG_PhysicsRole.pktId, (from, to, bytes) =>
             {
-                var @object = new MSG_PhysicsRole(bytes);
-
-                SetPhysicsRole(@object.physicsRole);
+                SetPhysicsRole(new MSG_PhysicsRole(bytes).physicsRole);
             });
 
             RegisterOnMessage(MSG_IdAvails.pktId, (from, to, bytes) =>
@@ -343,11 +361,11 @@ namespace TLab.SFU.Network
 
                 switch (@object.messageType)
                 {
-                    case 0: // request
+                    case MSG_IdAvails.MessageType.REQUEST:
                         @object.idAvails = UniqueId.Generate(@object.length);
                         SendWS(@object.Marshall());
                         break;
-                    case 1: // response
+                    case MSG_IdAvails.MessageType.RESPONSE:
                         break;
                 }
             });
@@ -480,18 +498,17 @@ namespace TLab.SFU.Network
 
         public void OnMessage(int from, int to, byte[] bytes)
         {
-            var msgTyp = bytes[0];
+            var msgTyp = ToInt32(bytes, sizeof(int));
+
+            Debug.Log(THIS_NAME + $"OnMessage: {msgTyp}, Lenght: {bytes.Length}");
 
             if (m_messageCallbacks.ContainsKey(msgTyp))
-            {
-                var callback = m_messageCallbacks[msgTyp] as OnMessageCallback;
-                callback.Invoke(from, to, bytes);
-            }
+                (m_messageCallbacks[msgTyp] as OnMessageCallback).Invoke(from, to, bytes);
         }
 
         public void OnOpen()
         {
-            m_rtcClient = WebRTCClient.Whep(this, m_adapter, "stream", (from, to, bytes) => Debug.Log("OnMessage: "), (() => Debug.Log("OnOpen !"), (_) => { }), (() => Debug.Log("OnClose !"), (_) => { }), () => Debug.LogError("[RTCClient] Error !"), new Unity.WebRTC.RTCDataChannelInit(), false, false, null);
+            m_rtcClient = WebRTCClient.Whep(this, m_adapter, "stream", OnMessage, (() => Debug.Log("OnOpen !"), (from) => Foreach<NetworkObject>((t) => t.SyncViaWebRTC(true, from))), (() => Debug.Log("OnClose !"), (_) => { }), () => Debug.LogError("[RTCClient] Error !"), new Unity.WebRTC.RTCDataChannelInit(), false, false, null);
 
             if (userId == 0)
             {
@@ -500,39 +517,12 @@ namespace TLab.SFU.Network
                 Foreach<NetworkObject>((t) => t.Init());
 
                 if (m_avatorShop.GetAnchor(0, out var anchor))
-                {
-                    var action = new PrefabStore.StoreAction()
-                    {
-                        action = PrefabStore.StoreAction.Action.INSTANTIATE,
-                        elemId = 0,
-                        userId = 0,
-                        publicId = UniqueId.Generate(),
-                        transform = anchor,
-                    };
-
-                    UpdateState(action, out var avator);
-                }
+                    UpdateAvatorState(new PrefabStore.StoreAction(PrefabStore.StoreAction.Action.INSTANTIATE, 0, 0, UniqueId.Generate(), anchor), out var avator);
             }
             else
             {
                 if (m_avatorShop.GetAnchor(userId, out var anchor))
-                {
-                    var action = new PrefabStore.StoreAction()
-                    {
-                        action = PrefabStore.StoreAction.Action.INSTANTIATE,
-                        elemId = 0,
-                        userId = userId,
-                        transform = anchor,
-                    };
-
-                    var @object = new MSG_Join()
-                    {
-                        messageType = 0,
-                        avatorAction = action,
-                    };
-
-                    SendWS(0, @object.Marshall());
-                }
+                    SendWS(0, new MSG_Join(MSG_Join.MessageType.REQUEST, new PrefabStore.StoreAction(PrefabStore.StoreAction.Action.INSTANTIATE, 0, userId, new Address32(), anchor)).Marshall());
             }
         }
 
@@ -543,7 +533,12 @@ namespace TLab.SFU.Network
             throw new NotImplementedException();
         }
 
-        public void OnClose(int from) => m_onExit.ForEach((c) => c.Item2.Invoke(from));
+        public void OnClose(int from)
+        {
+            m_onLog.Invoke($"{nameof(OnClose)}: " + from);
+
+            m_onExit.ForEach((c) => c.Item2.Invoke(from));
+        }
 
         public void OnError()
         {

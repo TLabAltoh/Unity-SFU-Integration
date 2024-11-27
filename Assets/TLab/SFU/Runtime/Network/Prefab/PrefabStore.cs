@@ -30,6 +30,21 @@ namespace TLab.SFU.Network
                 NONE
             }
 
+            public StoreAction(Action action, int elemId, int userId, Address32 publicId, WebTransform transform)
+            {
+                this.action = action;
+                this.elemId = elemId;
+                this.userId = userId;
+                this.publicId = publicId;
+                this.transform = transform;
+            }
+
+            public StoreAction UpdatePublicId(Address32 publicId)
+            {
+                this.publicId = publicId;
+                return this;
+            }
+
             public Action action;
             public int elemId;
             public int userId;
@@ -119,17 +134,6 @@ namespace TLab.SFU.Network
 
             prefab = null;
             return StoreAction.Action.NONE;
-        }
-
-        public StoreAction GenerateAction(StoreAction.Action action, int elemId, int userId, Address32 publicId, WebTransform @transform)
-        {
-            return new StoreAction
-            {
-                action = action,
-                elemId = elemId,
-                publicId = publicId,
-                transform = @transform,
-            };
         }
 
         public bool RPCInstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)

@@ -55,7 +55,11 @@ namespace TLab.SFU.Network
             public Address64 networkId;
             public WebAnimState animState;
 
-            public MSG_SyncAnim() : base() { }
+            public MSG_SyncAnim(Address64 networkId, WebAnimState animState) : base()
+            {
+                this.networkId = networkId;
+                this.animState = animState;
+            }
 
             public MSG_SyncAnim(byte[] bytes) : base(bytes) { }
         }
@@ -70,7 +74,7 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
-        protected virtual void SyncAnim(AnimParameter parameter)
+        protected virtual void SyncAnim(AnimParameter parameter, int to)
         {
             var animState = new WebAnimState
             {
@@ -98,18 +102,14 @@ namespace TLab.SFU.Network
                     break;
             }
 
-            var @object = new MSG_SyncAnim
-            {
-                networkId = m_networkId.id,
-                animState = animState,
-            };
+            var @object = new MSG_SyncAnim(m_networkId.id, animState);
 
-            NetworkClient.instance.SendWS(@object.Marshall());
+            NetworkClient.instance.SendWS(to, @object.Marshall());
 
             m_synchronised = false;
         }
 
-        protected virtual void SyncAnim()
+        protected virtual void SyncAnim(bool force, int to)
         {
             foreach (AnimParameter parameter in m_parameters.Values)
             {
@@ -136,8 +136,8 @@ namespace TLab.SFU.Network
                         break;
                 }
 
-                if (prevValueHash != currentValueHash)
-                    SyncAnim(parameter);
+                if (force || (prevValueHash != currentValueHash))
+                    SyncAnim(parameter, to);
             }
         }
 
@@ -166,7 +166,7 @@ namespace TLab.SFU.Network
             m_synchronised = true;
         }
 
-        public override void SyncViaWebRTC() => SyncAnim();
+        public override void SyncViaWebRTC(bool force, int to) => SyncAnim(force, to);
 
         protected virtual void OnChangeParameter(string paramName, int hashCode)
         {
@@ -288,7 +288,7 @@ namespace TLab.SFU.Network
         {
             base.Update();
 
-            SyncViaWebRTC();
+            SyncViaWebRTC(false, NetworkClient.userId);
         }
     }
 }

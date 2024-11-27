@@ -150,9 +150,14 @@ namespace TLab.SFU.Interact
             public int grabberId;
             public bool active;
 
-            public MSG_DivideGrabber() : base() { }
+            public MSG_DivideGrabber(Address64 networkId, int grabberId, bool active) : base()
+            {
+                this.networkId = networkId;
+                this.grabberId = grabberId;
+                this.active = active;
+            }
 
-            public MSG_DivideGrabber(byte[] bytes) : base() { }
+            public MSG_DivideGrabber(byte[] bytes) : base(bytes) { }
         }
 
         [System.Serializable]
@@ -176,7 +181,12 @@ namespace TLab.SFU.Interact
             public int grabberId;
             public Action action;
 
-            public MSG_GrabbLock() : base() { }
+            public MSG_GrabbLock(Address64 networkId, int grabberId, Action action) : base()
+            {
+                this.networkId = networkId;
+                this.grabberId = grabberId;
+                this.action = action;
+            }
 
             public MSG_GrabbLock(byte[] bytes) : base(bytes) { }
         }
@@ -197,16 +207,9 @@ namespace TLab.SFU.Interact
                     break;
             }
 
-            SyncViaWebSocket();
+            SyncViaWebSocket(false, NetworkClient.userId);
 
-            var @object = new MSG_GrabbLock
-            {
-                networkId = m_networkId.id,
-                grabberId = m_grabState.grabberId,
-                action = MSG_GrabbLock.Action.GRAB_LOCK,
-            };
-
-            NetworkClient.instance.SendWS(@object.Marshall());
+            NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GRAB_LOCK).Marshall());
         }
 
         public override void OnPhysicsRoleChange()
@@ -265,16 +268,7 @@ namespace TLab.SFU.Interact
             }
 
             if (self)
-            {
-                var @object = new MSG_GrabbLock
-                {
-                    networkId = m_networkId.id,
-                    grabberId = m_grabState.grabberId,
-                    action = MSG_GrabbLock.Action.FORCE_RELEASE,
-                };
-
-                NetworkClient.instance.SendWS(@object.Marshall());
-            }
+                NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.FORCE_RELEASE).Marshall());
         }
 
         private void CreateCombinedMeshCollider()

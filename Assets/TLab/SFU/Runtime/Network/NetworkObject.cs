@@ -84,9 +84,9 @@ namespace TLab.SFU.Network
             m_state = State.INITIALIZED;
         }
 
-        public virtual void SyncViaWebRTC() { }
+        public virtual void SyncViaWebRTC(bool force, int to) { }
 
-        public virtual void SyncViaWebSocket() { }
+        public virtual void SyncViaWebSocket(bool force, int to) { }
 
         protected virtual void Register() => Registry.Register(m_networkId.id, this);
 

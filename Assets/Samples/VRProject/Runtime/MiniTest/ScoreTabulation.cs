@@ -23,7 +23,10 @@ namespace TLab.VRProjct
 
             static MSG_MiniTest() => pktId = MD5From(nameof(MSG_MiniTest));
 
-            public MSG_MiniTest() : base() { }
+            public MSG_MiniTest(int score) : base()
+            {
+                this.score = score;
+            }
 
             public MSG_MiniTest(byte[] bytes) : base(bytes) { }
 
@@ -46,12 +49,7 @@ namespace TLab.VRProjct
         {
             m_scores[NetworkClient.userId] = score;
 
-            var @object = new MSG_MiniTest
-            {
-                score = score,
-            };
-
-            NetworkClient.instance.SendWS(@object.Marshall());
+            NetworkClient.instance.SendWS(new MSG_MiniTest(score).Marshall());
         }
 
         void Awake()

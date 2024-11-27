@@ -30,6 +30,19 @@ namespace TLab.SFU.Sample
 
         [SerializeField] private Color m_gizmoColor = Color.green;
 
+        private void OnEnable()
+        {
+            {
+                var tmp = m_gizmo;
+                m_gizmo = tmp;
+            }
+
+            {
+                var tmp = m_gizmoColor;
+                m_gizmoColor = tmp;
+            }
+        }
+
         public override bool Get(int userId, out WebTransform anchor)
         {
             if (userId == 0)

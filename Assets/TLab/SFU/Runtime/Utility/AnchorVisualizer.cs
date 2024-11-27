@@ -10,8 +10,26 @@ namespace TLab.SFU
 
         [SerializeField] bool m_gizmo = true;
 
+        private void OnEnable()
+        {
+            {
+                var tmp = m_gizmo;
+                m_gizmo = tmp;
+            }
+
+            {
+                var tmp = m_size;
+                m_size = tmp;
+            }
+
+            {
+                var tmp = m_length;
+                m_length = tmp;
+            }
+        }
+
 #if UNITY_EDITOR
-        void OnDrawGizmos()
+        private void OnDrawGizmos()
         {
             if (!m_gizmo)
                 return;

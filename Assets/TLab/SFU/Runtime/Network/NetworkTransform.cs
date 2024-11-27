@@ -1,12 +1,16 @@
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
+
+using static System.BitConverter;
 
 namespace TLab.SFU.Network
 {
     using Registry = Registry<NetworkTransform>;
 
     [AddComponentMenu("TLab/SFU/Network Transform (TLab)")]
-    [CanEditMultipleObjects]
     public class NetworkTransform : NetworkObject
     {
         #region STRUCT
@@ -73,7 +77,12 @@ namespace TLab.SFU.Network
 
             protected override int packetId => pktId;
 
-            static MSG_SyncTransform() => pktId = MD5From(nameof(MSG_SyncTransform));
+            static MSG_SyncTransform()
+            {
+                pktId = MD5From(nameof(MSG_SyncTransform));
+
+                Debug.Log(pktId);
+            }
 
             public WebTransform transform;
 
@@ -81,7 +90,10 @@ namespace TLab.SFU.Network
 
             public const int PAYLOAD_LEN = 2 + 10 * sizeof(float);  // rbState.used (1) + rbState.gravity (1) + transform ((3 + 4 + 3) * 4)
 
-            public MSG_SyncTransform() : base() { }
+            public MSG_SyncTransform(WebTransform transform) : base()
+            {
+                this.transform = transform;
+            }
 
             public MSG_SyncTransform(byte[] bytes) : base(bytes) { }
 
@@ -117,6 +129,10 @@ namespace TLab.SFU.Network
 
                         fixed (float* transformPtr = &(rtcTransform[0]))
                             UnsafeUtility.LongCopy((byte*)transformPtr, packetPtr + HEADER_LEN + 2, PAYLOAD_LEN - 2);
+
+                        var pktIdBuf = GetBytes(pktId);
+                        fixed (byte* pktIdBufPtr = pktIdBuf)
+                            UnsafeUtility.LongCopy(pktIdBufPtr, (packetPtr + sizeof(int)), pktIdBuf.Length);
                     }
                 }
 
@@ -331,37 +347,27 @@ namespace TLab.SFU.Network
             return isDirty;
         }
 
-        public override void SyncViaWebRTC()
+        public override void SyncViaWebRTC(bool force, int to)
         {
             if (!Const.SEND.HasFlag(m_direction) || (m_state != State.INITIALIZED))
                 return;
 
-            if (ApplyCurrentTransform())
+            if (force || ApplyCurrentTransform())
             {
-                var @object = new MSG_SyncTransform
-                {
-                    transform = m_networkState,
-                };
-
-                NetworkClient.instance.SendRTC(@object.Marshall());
+                NetworkClient.instance.SendRTC(to, new MSG_SyncTransform(m_networkState).Marshall());
 
                 m_synchronised = false;
             }
         }
 
-        public override void SyncViaWebSocket()
+        public override void SyncViaWebSocket(bool force, int to)
         {
             if (!Const.SEND.HasFlag(m_direction) || (m_state != State.INITIALIZED))
                 return;
 
-            if (ApplyCurrentTransform())
+            if (force || ApplyCurrentTransform())
             {
-                var @object = new MSG_SyncTransform
-                {
-                    transform = m_networkState,
-                };
-
-                NetworkClient.instance.SendWS(@object.Marshall());
+                NetworkClient.instance.SendWS(to, new MSG_SyncTransform(m_networkState).Marshall());
 
                 m_synchronised = false;
             }
@@ -440,7 +446,7 @@ namespace TLab.SFU.Network
         {
             UpdateRbHistory();
 
-            SyncViaWebRTC();
+            SyncViaWebRTC(false, NetworkClient.userId);
         }
 
         protected override void Register()

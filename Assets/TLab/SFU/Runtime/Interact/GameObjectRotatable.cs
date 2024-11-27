@@ -1,4 +1,5 @@
 using UnityEngine;
+using TLab.SFU.Network;
 
 namespace TLab.SFU.Interact
 {
@@ -80,7 +81,7 @@ namespace TLab.SFU.Interact
                 transform.rotation = Quaternion.AngleAxis(m_angle, m_axis) * transform.rotation;
                 m_angle = Mathf.Clamp(m_angle - DURATION * Time.deltaTime, ZERO_ANGLE, float.MaxValue);
 
-                m_controller?.SyncViaWebRTC();
+                m_controller?.SyncViaWebRTC(false, NetworkClient.userId);
             }
             else
                 m_angle = ZERO_ANGLE;

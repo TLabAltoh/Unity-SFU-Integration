@@ -19,6 +19,10 @@ namespace TLab.SFU.Test.Editor
 
             static TestPacket() => pktId = MD5From(nameof(TestPacket));
 
+            public TestPacket() : base() { }
+
+            public TestPacket(byte[] bytes) : base(bytes) { }
+
             public Address32[] address;
         }
 
@@ -54,8 +58,7 @@ namespace TLab.SFU.Test.Editor
                 bytes = UnsafeUtility.Padding(1 + sizeof(int), bytes);
                 Debug.Log($"After: {bytes}, Length: {bytes.Length}");
 
-                var receive = new TestPacket();
-                receive.UnMarshall(bytes);
+                var receive = new TestPacket(bytes);
 
                 Debug.Log(receive);
 
