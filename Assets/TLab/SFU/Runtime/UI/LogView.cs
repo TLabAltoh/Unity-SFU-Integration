@@ -8,8 +8,6 @@ namespace TLab.SFU.UI
     {
         [SerializeField] private ScrollRect m_scrollRect;
 
-        private Transform m_scrollViewContent;
-
         private bool m_scrollViewAvailable = false;
         private bool m_forceScrollToTail = true;
 
@@ -18,12 +16,7 @@ namespace TLab.SFU.UI
         public void Append(string message)
         {
             if (m_scrollViewAvailable)
-            {
-                var messageChunk = Instantiate(Resources.Load<GameObject>("UI/LogChunk"));
-
-                messageChunk.transform.SetParent(m_scrollViewContent);
-                messageChunk.GetComponent<LogChunk>()?.Init(message);
-            }
+                Instantiate(Resources.Load<GameObject>("UI/LogChunk"), m_scrollRect.content).GetComponent<LogChunk>()?.Init(message);
             else
                 Debug.Log(THIS_NAME + message);
         }
@@ -32,8 +25,6 @@ namespace TLab.SFU.UI
         {
             if (m_scrollRect == null)
                 return;
-
-            m_scrollViewContent = m_scrollRect.transform.Find("Viewport/Content");
 
             m_scrollRect.onValueChanged.AddListener((value) =>
             {

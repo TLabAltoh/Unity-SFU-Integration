@@ -28,10 +28,7 @@ namespace TLab.SFU.Network
 
         public Packetable(byte[] bytes) => UnMarshall(bytes);
 
-        public virtual byte[] Marshall()
-        {
-            return Combine(SfuClient.SEND_PACKET_HEADER_SIZE, packetId, Encoding.UTF8.GetBytes(JsonUtility.ToJson(this)));
-        }
+        public virtual byte[] Marshall() => Combine(SfuClient.SEND_PACKET_HEADER_SIZE, packetId, Encoding.UTF8.GetBytes(JsonUtility.ToJson(this)));
 
         public virtual void UnMarshall(byte[] bytes)
         {

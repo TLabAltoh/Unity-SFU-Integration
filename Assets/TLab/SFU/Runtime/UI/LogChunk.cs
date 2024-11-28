@@ -7,13 +7,13 @@ namespace TLab.SFU.UI
     public class LogChunk : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI m_message;
-        [SerializeField] private RectTransform m_rect;
 
         public void Init(string message)
         {
             m_message.text = message;
 
-            m_rect.sizeDelta = new Vector2((m_rect.parent as RectTransform).rect.width, m_message.preferredHeight);
+            var rect = transform as RectTransform;
+            rect.sizeDelta = new Vector2((rect.parent as RectTransform).rect.size.x, m_message.preferredHeight);
         }
     }
 }

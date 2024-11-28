@@ -77,12 +77,7 @@ namespace TLab.SFU.Network
 
             protected override int packetId => pktId;
 
-            static MSG_SyncTransform()
-            {
-                pktId = MD5From(nameof(MSG_SyncTransform));
-
-                Debug.Log(pktId);
-            }
+            static MSG_SyncTransform() => pktId = MD5From(nameof(MSG_SyncTransform));
 
             public WebTransform transform;
 

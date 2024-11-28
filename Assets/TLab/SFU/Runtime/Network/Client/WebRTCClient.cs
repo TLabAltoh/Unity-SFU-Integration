@@ -193,15 +193,9 @@ namespace TLab.SFU.Network
 
         }
 
-        public void SetCallback(UnityAction<int, int, byte[]> callback)
-        {
-            m_onMessage.AddListener(callback);
-        }
+        public void SetCallback(UnityAction<int, int, byte[]> callback) => m_onMessage.AddListener(callback);
 
-        private void OnIceCandidate(RTCIceCandidate candidate)
-        {
-            m_candidates.Enqueue(candidate);
-        }
+        private void OnIceCandidate(RTCIceCandidate candidate) => m_candidates.Enqueue(candidate);
 
         private void CancelSignalingTask()
         {
@@ -491,7 +485,7 @@ namespace TLab.SFU.Network
             m_signalingSocket.OnClose += (e) =>
             {
                 CancelSignalingTask();
-                Debug.Log("[Signaling] Closed!");
+                Debug.Log("[Signaling] Closed !");
             };
             m_signalingSocket.OnMessage += (bytes) =>
             {

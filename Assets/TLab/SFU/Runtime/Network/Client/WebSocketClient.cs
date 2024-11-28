@@ -41,7 +41,7 @@ namespace TLab.SFU.Network
             m_socket = new WebSocket(url);
             m_socket.OnOpen += () =>
             {
-                Debug.Log(THIS_NAME + "Open!");
+                Debug.Log(THIS_NAME + "Open !");
                 MainThreadUtil.synchronizationContext.Post((__) =>
                 {
                     RestartReceiveTask();
@@ -50,7 +50,7 @@ namespace TLab.SFU.Network
             };
             m_socket.OnError += (e) =>
             {
-                Debug.LogError(THIS_NAME + "Error! " + e);
+                Debug.LogError(THIS_NAME + "Error ! " + e);
                 MainThreadUtil.synchronizationContext.Post((__) =>
                 {
                     OnError();
@@ -58,14 +58,18 @@ namespace TLab.SFU.Network
             };
             m_socket.OnClose += (e) =>
             {
-                Debug.Log(THIS_NAME + "Close!");
+                Debug.Log(THIS_NAME + "Close !");
                 MainThreadUtil.synchronizationContext.Post((__) =>
                 {
                     StopCurrentReceiveTask();
                     OnClose1();
                 }, null);
             };
-            m_socket.OnMessage += (bytes) => OnPacket(bytes);
+            m_socket.OnMessage += (bytes) =>
+            {
+                Debug.Log(THIS_NAME + "Message !");
+                OnPacket(bytes);
+            };
             _ = m_socket.Connect();
         }
 

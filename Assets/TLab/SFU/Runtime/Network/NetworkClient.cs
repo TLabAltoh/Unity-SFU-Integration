@@ -335,6 +335,8 @@ namespace TLab.SFU.Network
                             Foreach<NetworkObject>((t) => t.Init());
 
                             m_onJoin.ForEach((c) => c.Item1.Invoke());
+
+                            SendWS(userId, new MSG_Join(MSG_Join.MessageType.BROADCAST, @object.avatorAction, null, PhysicsRole.NONE, null).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.BROADCAST:
@@ -406,6 +408,7 @@ namespace TLab.SFU.Network
         {
             m_onLog.Invoke(@string);
             var @object = JsonUtility.FromJson<Answer.Infos>(@string);
+
             if (@object.room_infos.Length == 0)
             {
                 m_adapter.Create(this, (@string) =>
@@ -419,8 +422,7 @@ namespace TLab.SFU.Network
             }
             else
             {
-                var roomId = @object.room_infos[0].room_id;
-                m_adapter.Init(m_adapter.config, roomId, m_adapter.key, m_adapter.masterKey);
+                m_adapter.Init(m_adapter.config, @object.room_infos[0].room_id, m_adapter.key, m_adapter.masterKey);
 
                 m_adapter.Join(this, (@string) => {
                     m_onLog.Invoke(@string);
@@ -498,7 +500,7 @@ namespace TLab.SFU.Network
 
         public void OnMessage(int from, int to, byte[] bytes)
         {
-            var msgTyp = ToInt32(bytes, sizeof(int));
+            var msgTyp = ToInt32(bytes, Packetable.HEADER_SIZE);
 
             Debug.Log(THIS_NAME + $"OnMessage: {msgTyp}, Lenght: {bytes.Length}");
 
@@ -508,7 +510,9 @@ namespace TLab.SFU.Network
 
         public void OnOpen()
         {
-            m_rtcClient = WebRTCClient.Whep(this, m_adapter, "stream", OnMessage, (() => Debug.Log("OnOpen !"), (from) => Foreach<NetworkObject>((t) => t.SyncViaWebRTC(true, from))), (() => Debug.Log("OnClose !"), (_) => { }), () => Debug.LogError("[RTCClient] Error !"), new Unity.WebRTC.RTCDataChannelInit(), false, false, null);
+            const string THIS_NAME = "[RTCClient] ";
+
+            m_rtcClient = WebRTCClient.Whep(this, m_adapter, "stream", OnMessage, (() => Debug.Log(THIS_NAME + "OnOpen !"), (_) => { }), (() => Debug.Log(THIS_NAME + "OnClose !"), (_) => { }), () => Debug.LogError(THIS_NAME + "Error !"), new Unity.WebRTC.RTCDataChannelInit(), false, false, null);
 
             if (userId == 0)
             {
@@ -528,10 +532,7 @@ namespace TLab.SFU.Network
 
         public void OnClose() => m_onExit.ForEach((c) => c.Item1.Invoke());
 
-        public void OnOpen(int from)
-        {
-            throw new NotImplementedException();
-        }
+        public void OnOpen(int from) => m_onLog.Invoke($"{nameof(OnOpen)}: " + from);
 
         public void OnClose(int from)
         {
