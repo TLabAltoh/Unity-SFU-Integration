@@ -25,9 +25,25 @@ namespace TLab.SFU.Network
             [System.Serializable]
             public enum Action
             {
+                NONE,
                 INSTANTIATE,
-                DELETE,
-                NONE
+                DELETE_BY_USER_ID,
+                DELETE_BY_PUBLIC_ID,
+            }
+
+            public static StoreAction GetInstantiateAction(int elemId, int userId, Address32 publicId, WebTransform transform)
+            {
+                return new StoreAction(Action.INSTANTIATE, elemId, userId, publicId, transform);
+            }
+
+            public static StoreAction GetDeleteAction(int userId)
+            {
+                return new StoreAction(Action.DELETE_BY_USER_ID, -1, userId, new Address32(), new WebTransform());
+            }
+
+            public static StoreAction GetDeleteAction(Address32 publicId)
+            {
+                return new StoreAction(Action.DELETE_BY_PUBLIC_ID, -1, -1, publicId, new WebTransform());
             }
 
             public StoreAction(Action action, int elemId, int userId, Address32 publicId, WebTransform transform)
@@ -124,12 +140,18 @@ namespace TLab.SFU.Network
                 case StoreAction.Action.INSTANTIATE:
                     InstantiateByElementId(action.elemId, action.userId, action.publicId, action.transform, out prefab);
                     return StoreAction.Action.INSTANTIATE;
-                case StoreAction.Action.DELETE:
+                case StoreAction.Action.DELETE_BY_USER_ID:
                     {
                         prefab = null;
-                        // TODO: DELETE PREFAB
+                        DeleteByUserId(action.userId);
                     }
-                    return StoreAction.Action.DELETE;
+                    return StoreAction.Action.DELETE_BY_USER_ID;
+                case StoreAction.Action.DELETE_BY_PUBLIC_ID:
+                    {
+                        prefab = null;
+                        DeleteByPublicId(action.publicId);
+                    }
+                    return StoreAction.Action.DELETE_BY_PUBLIC_ID;
             }
 
             prefab = null;

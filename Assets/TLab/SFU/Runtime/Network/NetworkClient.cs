@@ -290,7 +290,7 @@ namespace TLab.SFU.Network
                         return true;
                     }
                     return false;
-                case PrefabStore.StoreAction.Action.DELETE:
+                case PrefabStore.StoreAction.Action.DELETE_BY_USER_ID:
                     if (m_avatorHistory.ContainsKey(info.userId))
                     {
                         m_avatorHistory.Remove(info.userId);
@@ -322,11 +322,15 @@ namespace TLab.SFU.Network
                 {
                     case MSG_Join.MessageType.REQUEST:
                         {
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.REQUEST));
+
                             SendWS(from, new MSG_Join(MSG_Join.MessageType.RESPONSE, @object.avatorAction.UpdatePublicId(UniqueId.Generate()), UniqueId.Generate(5), PhysicsRole.RECV, avatorHistorys).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.RESPONSE:
                         {
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.RESPONSE));
+
                             SetPhysicsRole(@object.physicsRole);
 
                             foreach (var action in @object.othersHistory)
@@ -336,15 +340,17 @@ namespace TLab.SFU.Network
 
                             m_onJoin.ForEach((c) => c.Item1.Invoke());
 
-                            SendWS(userId, new MSG_Join(MSG_Join.MessageType.BROADCAST, @object.avatorAction, null, PhysicsRole.NONE, null).Marshall());
+                            SendWS(new MSG_Join(MSG_Join.MessageType.BROADCAST, @object.avatorAction, null, PhysicsRole.NONE, null).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.BROADCAST:
                         {
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.BROADCAST));
+
                             UpdateAvatorState(@object.avatorAction, out var avator);
 
                             if (userId == 0)
-                                Foreach<NetworkObject>((t) => t.SyncViaWebSocket(true, userId));
+                                Foreach<NetworkObject>((t) => t.SyncViaWebSocket(true, from));
 
                             m_onJoin.ForEach((c) => c.Item2.Invoke(from));
                         }
@@ -521,12 +527,12 @@ namespace TLab.SFU.Network
                 Foreach<NetworkObject>((t) => t.Init());
 
                 if (m_avatorShop.GetAnchor(0, out var anchor))
-                    UpdateAvatorState(new PrefabStore.StoreAction(PrefabStore.StoreAction.Action.INSTANTIATE, 0, 0, UniqueId.Generate(), anchor), out var avator);
+                    UpdateAvatorState(PrefabStore.StoreAction.GetInstantiateAction(0, 0, UniqueId.Generate(), anchor), out var avator);
             }
             else
             {
                 if (m_avatorShop.GetAnchor(userId, out var anchor))
-                    SendWS(0, new MSG_Join(MSG_Join.MessageType.REQUEST, new PrefabStore.StoreAction(PrefabStore.StoreAction.Action.INSTANTIATE, 0, userId, new Address32(), anchor)).Marshall());
+                    SendWS(0, new MSG_Join(MSG_Join.MessageType.REQUEST, PrefabStore.StoreAction.GetInstantiateAction(0, userId, new Address32(), anchor)).Marshall());
             }
         }
 
@@ -537,6 +543,8 @@ namespace TLab.SFU.Network
         public void OnClose(int from)
         {
             m_onLog.Invoke($"{nameof(OnClose)}: " + from);
+
+            UpdateAvatorState(PrefabStore.StoreAction.GetDeleteAction(userId), out var avator);
 
             m_onExit.ForEach((c) => c.Item2.Invoke(from));
         }

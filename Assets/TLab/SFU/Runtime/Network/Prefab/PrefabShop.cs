@@ -8,6 +8,8 @@ namespace TLab.SFU.Network
         [SerializeField] private PrefabStore m_store;
         [SerializeField] private BaseAnchorProvider m_anchorProvider;
 
+        private string THIS_NAME => "[" + this.GetType() + "] ";
+
         private int m_pktId;
 
         public string storeName => m_storeName;
@@ -54,19 +56,19 @@ namespace TLab.SFU.Network
 
         public void OnJoin()
         {
-            throw new System.NotImplementedException();
+            Debug.Log(THIS_NAME + $"{nameof(OnJoin)}");
         }
 
         public void OnExit()
         {
-            throw new System.NotImplementedException();
+            Debug.Log(THIS_NAME + $"{nameof(OnExit)}");
         }
 
         public void OnJoin(int userId)
         {
-            throw new System.NotImplementedException();
+            Debug.Log(THIS_NAME + $"{nameof(OnJoin)}");
         }
 
-        public void OnExit(int userId) => m_store.DeleteByUserId(userId);
+        public void OnExit(int userId) => m_store?.DeleteByUserId(userId);
     }
 }

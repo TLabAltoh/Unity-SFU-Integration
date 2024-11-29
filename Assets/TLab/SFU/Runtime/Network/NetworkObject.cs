@@ -41,7 +41,7 @@ namespace TLab.SFU.Network
             m_direction = Direction.RECVONLY;
 
             if (m_networkId)
-                Registry.UnRegister(m_networkId.id);
+                UnRegister();
 
             m_state = State.SHUTDOWNED;
         }
@@ -61,7 +61,7 @@ namespace TLab.SFU.Network
 
             m_networkId.SetPublicId(publicId);
 
-            Registry.Register(m_networkId.id, this);
+            Register();
 
             m_state = State.INITIALIZED;
         }
@@ -79,7 +79,7 @@ namespace TLab.SFU.Network
                 return;
             }
 
-            Registry.Register(m_networkId.id, this);
+            Register();
 
             m_state = State.INITIALIZED;
         }
