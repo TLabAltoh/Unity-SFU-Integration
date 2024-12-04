@@ -17,7 +17,7 @@ namespace TLab.SFU.Test.Editor
 
             protected override int packetId => pktId;
 
-            static TestPacket() => pktId = MD5From(nameof(TestPacket));
+            static TestPacket() => pktId = Cryptography.MD5From(nameof(TestPacket));
 
             public TestPacket() : base() { }
 

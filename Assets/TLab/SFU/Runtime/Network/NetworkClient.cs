@@ -115,7 +115,7 @@ namespace TLab.SFU.Network
 
             protected override int packetId => pktId;
 
-            static MSG_Join() => pktId = MD5From(nameof(MSG_Join));
+            static MSG_Join() => pktId = Cryptography.MD5From(nameof(MSG_Join));
 
             public enum MessageType
             {
@@ -155,7 +155,7 @@ namespace TLab.SFU.Network
 
             protected override int packetId => pktId;
 
-            static MSG_PhysicsRole() => pktId = MD5From(nameof(MSG_PhysicsRole));
+            static MSG_PhysicsRole() => pktId = Cryptography.MD5From(nameof(MSG_PhysicsRole));
 
             public MSG_PhysicsRole(PhysicsRole physicsRole) : base()
             {
@@ -174,7 +174,7 @@ namespace TLab.SFU.Network
 
             protected override int packetId => pktId;
 
-            static MSG_IdAvails() => pktId = MD5From(nameof(MSG_IdAvails));
+            static MSG_IdAvails() => pktId = Cryptography.MD5From(nameof(MSG_IdAvails));
 
             public MSG_IdAvails(MessageType messageType, int length, Address32[] idAvails) : base()
             {
@@ -221,29 +221,25 @@ namespace TLab.SFU.Network
         public static void RegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
         {
             var @object = (callback0, callback1);
-            if (!m_onJoin.Contains(@object))
-                m_onJoin.Add(@object);
+            if (!m_onJoin.Contains(@object)) m_onJoin.Add(@object);
         }
 
         public static void UnRegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
         {
             var @object = (callback0, callback1);
-            if (m_onJoin.Contains(@object))
-                m_onJoin.Remove(@object);
+            if (m_onJoin.Contains(@object)) m_onJoin.Remove(@object);
         }
 
         public static void RegisterOnExit(UnityAction callback0, UnityAction<int> callback1)
         {
             var @object = (callback0, callback1);
-            if (!m_onExit.Contains(@object))
-                m_onExit.Add(@object);
+            if (!m_onExit.Contains(@object)) m_onExit.Add(@object);
         }
 
         public static void UnRegisterOnExit(UnityAction callback0, UnityAction<int> callback1)
         {
             var @object = (callback0, callback1);
-            if (m_onExit.Contains(@object))
-                m_onExit.Remove(@object);
+            if (m_onExit.Contains(@object)) m_onExit.Remove(@object);
         }
 
         public static void RegisterOnMessage(int msgId, OnMessageCallback callback)
@@ -410,6 +406,12 @@ namespace TLab.SFU.Network
             yield break;
         }
 
+        private void OnJoin(string @string)
+        {
+            m_onLog.Invoke(@string);
+            m_connectTask = ConnectTask();
+        }
+
         public void Join() => m_adapter.GetInfo(this, (@string) =>
         {
             m_onLog.Invoke(@string);
@@ -420,30 +422,26 @@ namespace TLab.SFU.Network
                 m_adapter.Create(this, (@string) =>
                 {
                     m_onLog.Invoke(@string);
-                    m_adapter.Join(this, (@string) => {
-                        m_onLog.Invoke(@string);
-                        m_connectTask = ConnectTask();
-                    });
+                    m_adapter.Join(this, OnJoin);
                 });
             }
             else
             {
                 m_adapter.Init(m_adapter.config, @object.room_infos[0].room_id, m_adapter.key, m_adapter.masterKey);
-
-                m_adapter.Join(this, (@string) => {
-                    m_onLog.Invoke(@string);
-                    m_connectTask = ConnectTask();
-                });
+                m_adapter.Join(this, OnJoin);
             }
         });
+
+        private void OnExit(string @string)
+        {
+            m_onLog.Invoke(@string);
+            m_onExit.ForEach((c) => c.Item1.Invoke());
+        }
 
         public void Exit()
         {
             m_rtcClient?.HangUp();
-            m_adapter.Exit(this, (@string) => {
-                m_onLog.Invoke(@string);
-                m_onExit.ForEach((c) => c.Item1.Invoke());
-            });
+            m_adapter.Exit(this, OnExit);
         }
 
         #region WS
@@ -507,8 +505,6 @@ namespace TLab.SFU.Network
         public void OnMessage(int from, int to, byte[] bytes)
         {
             var msgTyp = ToInt32(bytes, Packetable.HEADER_SIZE);
-
-            Debug.Log(THIS_NAME + $"OnMessage: {msgTyp}, Lenght: {bytes.Length}");
 
             if (m_messageCallbacks.ContainsKey(msgTyp))
                 (m_messageCallbacks[msgTyp] as OnMessageCallback).Invoke(from, to, bytes);

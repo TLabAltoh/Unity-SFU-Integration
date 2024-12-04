@@ -77,13 +77,17 @@ namespace TLab.SFU.Network
 
             protected override int packetId => pktId;
 
-            static MSG_SyncTransform() => pktId = MD5From(nameof(MSG_SyncTransform));
+            static MSG_SyncTransform() => pktId = Cryptography.MD5From(nameof(MSG_SyncTransform));
 
             public WebTransform transform;
 
-            public const int HEADER_LEN = 8;
+            public const int RB_STATE_LEN = 2;  // rbState.used (1) + rbState.gravity (1)
 
-            public const int PAYLOAD_LEN = 2 + 10 * sizeof(float);  // rbState.used (1) + rbState.gravity (1) + transform ((3 + 4 + 3) * 4)
+            public const int NETWORK_ID_LEN = 8;
+
+            public const int RTC_TRANSFORM_LEN = 10;    // transform ((3 + 4 + 3) * 4)
+
+            public const int PAYLOAD_LEN = NETWORK_ID_LEN + RB_STATE_LEN + RTC_TRANSFORM_LEN * sizeof(float);
 
             public MSG_SyncTransform(WebTransform transform) : base()
             {
@@ -94,7 +98,9 @@ namespace TLab.SFU.Network
 
             public override byte[] Marshall()
             {
-                var rtcTransform = new float[10];
+                const int HEADER_LEN = 8;    // to (4) + msgTyp (4)
+
+                var rtcTransform = new float[RTC_TRANSFORM_LEN];
 
                 rtcTransform[0] = transform.position.x;
                 rtcTransform[1] = transform.position.y;
@@ -115,15 +121,15 @@ namespace TLab.SFU.Network
                 {
                     fixed (byte* packetPtr = packet)
                     {
-                        transform.id.CopyTo(packetPtr);
-
                         bool rbUsed = transform.rb.used, rbGravity = transform.rb.gravity;
 
-                        packetPtr[HEADER_LEN + 0] = (byte)(&rbUsed);
-                        packetPtr[HEADER_LEN + 1] = (byte)(&rbGravity);
+                        packetPtr[HEADER_LEN + NETWORK_ID_LEN + 0] = (byte)(&rbUsed);
+                        packetPtr[HEADER_LEN + NETWORK_ID_LEN + 1] = (byte)(&rbGravity);
+
+                        transform.id.CopyTo(packetPtr + HEADER_LEN);
 
                         fixed (float* transformPtr = &(rtcTransform[0]))
-                            UnsafeUtility.LongCopy((byte*)transformPtr, packetPtr + HEADER_LEN + 2, PAYLOAD_LEN - 2);
+                            UnsafeUtility.LongCopy((byte*)transformPtr, packetPtr + HEADER_LEN + (NETWORK_ID_LEN + RB_STATE_LEN), RTC_TRANSFORM_LEN * sizeof(float));
 
                         var pktIdBuf = GetBytes(pktId);
                         fixed (byte* pktIdBufPtr = pktIdBuf)
@@ -136,17 +142,20 @@ namespace TLab.SFU.Network
 
             public override void UnMarshall(byte[] bytes)
             {
-                float[] rtcTransform = new float[10];
+                const int HEADER_LEN = 13;    // typ (1) + from (4) + to (4) + msgTyp (4)
+
+                var rtcTransform = new float[10];
 
                 unsafe
                 {
                     fixed (byte* bytesPtr = bytes)
                     fixed (float* rtcTransformPtr = &(rtcTransform[0]))
                     {
-                        UnsafeUtility.LongCopy(bytesPtr + HEADER_LEN + 2, (byte*)rtcTransformPtr, PAYLOAD_LEN - 2);
+                        UnsafeUtility.LongCopy(bytesPtr + HEADER_LEN + (NETWORK_ID_LEN + RB_STATE_LEN), (byte*)rtcTransformPtr, RTC_TRANSFORM_LEN * sizeof(float));
 
-                        transform.id.Copy(bytesPtr);
-                        transform.rb.Update(*((bool*)&(bytesPtr[HEADER_LEN + 0])), *((bool*)&(bytesPtr[HEADER_LEN + 1])));
+                        transform.id.Copy(bytesPtr + HEADER_LEN);
+
+                        transform.rb.Update(*((bool*)&(bytesPtr[HEADER_LEN + NETWORK_ID_LEN + 0])), *((bool*)&(bytesPtr[HEADER_LEN + NETWORK_ID_LEN + 1])));
 
                         transform.position.x = rtcTransform[0];
                         transform.position.y = rtcTransform[1];
@@ -399,20 +408,6 @@ namespace TLab.SFU.Network
                 Registry.UnRegister(m_networkId.id);
 
             base.Shutdown();
-        }
-
-        public override void Init(Address32 publicId)
-        {
-            base.Init(publicId);
-
-            Registry.Register(m_networkId.id, this);
-        }
-
-        public override void Init()
-        {
-            base.Init();
-
-            Registry.Register(m_networkId.id, this);
         }
 
         protected override void Awake()

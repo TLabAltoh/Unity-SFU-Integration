@@ -25,7 +25,7 @@ namespace TLab.SFU
             m_a1 = a1;
             m_a2 = a2;
             m_a3 = a3;
-            m_hash = System.HashCode.Combine(m_a0, m_a1, m_a2, m_a3);
+            m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3);
         }
 
         public void Update(byte a0, byte a1, byte a2, byte a3)
@@ -34,7 +34,7 @@ namespace TLab.SFU
             m_a1 = a1;
             m_a2 = a2;
             m_a3 = a3;
-            m_hash = System.HashCode.Combine(m_a0, m_a1, m_a2, m_a3);
+            m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3);
         }
 
         public unsafe void CopyTo(byte* ptr)
@@ -100,7 +100,7 @@ namespace TLab.SFU
             m_a6 = a6;
             m_a7 = a7;
 
-            m_hash = System.HashCode.Combine(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
+            m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
         }
 
         public void Update(byte a0, byte a1, byte a2, byte a3, byte a4, byte a5, byte a6, byte a7)
@@ -115,7 +115,7 @@ namespace TLab.SFU
             m_a6 = a6;
             m_a7 = a7;
 
-            m_hash = System.HashCode.Combine(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
+            m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
         }
 
         public void UpdateUpper32(byte a0, byte a1, byte a2, byte a3)
@@ -124,7 +124,7 @@ namespace TLab.SFU
             m_a1 = a1;
             m_a2 = a2;
             m_a3 = a3;
-            m_hash = System.HashCode.Combine(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
+            m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
         }
 
         public void UpdateLower32(byte a4, byte a5, byte a6, byte a7)
@@ -133,7 +133,7 @@ namespace TLab.SFU
             m_a5 = a5;
             m_a6 = a6;
             m_a7 = a7;
-            m_hash = System.HashCode.Combine(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
+            m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
         }
 
         public unsafe void CopyTo(byte* ptr)

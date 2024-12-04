@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TLab.SFU;
 using TLab.SFU.Network;
 
 namespace TLab.VRProjct
@@ -21,7 +22,7 @@ namespace TLab.VRProjct
 
             protected override int packetId => pktId;
 
-            static MSG_MiniTest() => pktId = MD5From(nameof(MSG_MiniTest));
+            static MSG_MiniTest() => pktId = Cryptography.MD5From(nameof(MSG_MiniTest));
 
             public MSG_MiniTest(int score) : base()
             {

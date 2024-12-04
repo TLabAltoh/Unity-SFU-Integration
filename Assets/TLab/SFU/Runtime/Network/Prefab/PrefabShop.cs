@@ -26,7 +26,7 @@ namespace TLab.SFU.Network
         {
             if (m_callOnce)
             {
-                m_pktId = Packetable.MD5From(nameof(PrefabShop) + m_storeName);
+                m_pktId = Cryptography.MD5From(nameof(PrefabShop) + m_storeName);
                 m_callOnce = false;
             }
 

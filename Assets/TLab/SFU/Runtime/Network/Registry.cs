@@ -8,16 +8,16 @@ namespace TLab.SFU.Network
     {
         private static Hashtable m_registry = new Hashtable();
 
+        private static string THIS_NAME => "[" + nameof(Registry<T>) + "] ";
+
         public static void Register(Address64 id, T @object)
         {
-            if (!m_registry.ContainsKey(id))
-                m_registry[id] = @object;
+            if (!m_registry.ContainsKey(id)) m_registry[id] = @object;
         }
 
         public static void UnRegister(Address64 id)
         {
-            if (m_registry.ContainsKey(id))
-                m_registry.Remove(id);
+            if (m_registry.ContainsKey(id)) m_registry.Remove(id);
         }
 
         public static void ClearRegistry()

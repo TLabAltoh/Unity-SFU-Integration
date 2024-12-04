@@ -48,7 +48,7 @@ namespace TLab.SFU.Network
         {
             public static new int pktId;
 
-            static MSG_SyncAnim() => pktId = MD5From(nameof(MSG_SyncAnim));
+            static MSG_SyncAnim() => pktId = Cryptography.MD5From(nameof(MSG_SyncAnim));
 
             protected override int packetId => pktId;
 
@@ -200,7 +200,7 @@ namespace TLab.SFU.Network
             base.Shutdown();
         }
 
-        protected virtual void InitParameter()
+        protected virtual void InitAnimationParameter()
         {
             int parameterLength = m_animator.parameters.Length;
             for (int i = 0; i < parameterLength; i++)
@@ -236,18 +236,14 @@ namespace TLab.SFU.Network
         {
             base.Init(id);
 
-            InitParameter();
-
-            Registry.Register(m_networkId.id, this);
+            InitAnimationParameter();
         }
 
         public override void Init()
         {
             base.Init();
 
-            InitParameter();
-
-            Registry.Register(m_networkId.id, this);
+            InitAnimationParameter();
         }
 
         protected override void Awake()

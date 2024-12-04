@@ -144,7 +144,7 @@ namespace TLab.SFU.Interact
 
             protected override int packetId => pktId;
 
-            static MSG_DivideGrabber() => pktId = MD5From(nameof(MSG_DivideGrabber));
+            static MSG_DivideGrabber() => pktId = Cryptography.MD5From(nameof(MSG_DivideGrabber));
 
             public Address64 networkId;
             public int grabberId;
@@ -175,7 +175,7 @@ namespace TLab.SFU.Interact
 
             protected override int packetId => pktId;
 
-            static MSG_GrabbLock() => pktId = MD5From(nameof(MSG_GrabbLock));
+            static MSG_GrabbLock() => pktId = Cryptography.MD5From(nameof(MSG_GrabbLock));
 
             public Address64 networkId;
             public int grabberId;
@@ -448,20 +448,6 @@ namespace TLab.SFU.Interact
             }
 
             return false;
-        }
-
-        public override void Init(Address32 publicId)
-        {
-            base.Init(publicId);
-
-            Registry.Register(m_networkId.id, this);
-        }
-
-        public override void Init()
-        {
-            base.Init();
-
-            Registry.Register(m_networkId.id, this);
         }
 
         public override void Shutdown()

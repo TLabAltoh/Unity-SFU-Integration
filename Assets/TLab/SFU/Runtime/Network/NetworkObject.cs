@@ -64,6 +64,8 @@ namespace TLab.SFU.Network
             Register();
 
             m_state = State.INITIALIZED;
+
+            Debug.Log(THIS_NAME + $"{nameof(Init)}:{gameObject.name}");
         }
 
         public virtual void Init()
@@ -82,6 +84,8 @@ namespace TLab.SFU.Network
             Register();
 
             m_state = State.INITIALIZED;
+
+            Debug.Log(THIS_NAME + $"{nameof(Init)}:{gameObject.name}");
         }
 
         public virtual void SyncViaWebRTC(bool force, int to) { }

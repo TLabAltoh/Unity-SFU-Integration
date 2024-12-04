@@ -23,6 +23,12 @@ namespace TLab.SFU.Sample
 
         public virtual void Send(byte[] bytes) { }
 
+        private void OnJoin(string response)
+        {
+            m_logView?.Append("Response: " + response);
+            Open();
+        }
+
         public void Join()
         {
             if (AdapterSample.local && (m_adapter == null))
@@ -33,11 +39,7 @@ namespace TLab.SFU.Sample
 
             m_adapter = AdapterSample.instance.GetClone();
 
-            m_adapter.Join(this, (response) =>
-            {
-                m_logView?.Append("Response: " + response);
-                Open();
-            });
+            m_adapter.Join(this, OnJoin);
         }
 
         public void Exit()
