@@ -450,15 +450,12 @@ namespace TLab.SFU.Interact
             return false;
         }
 
-        public override void Shutdown()
+        protected override void BeforeShutdown()
         {
             if (m_grabState.grabbByMe)
                 GrabbLock(GrabState.Action.FREE);
 
-            if (m_networkId)
-                Registry.UnRegister(m_networkId.id);
-
-            base.Shutdown();
+            base.BeforeShutdown();
         }
 
         protected override void Awake()

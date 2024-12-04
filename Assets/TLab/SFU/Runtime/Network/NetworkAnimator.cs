@@ -189,17 +189,6 @@ namespace TLab.SFU.Network
 
         public virtual void SetTrigger(string paramName) => m_animator.SetTrigger(paramName);
 
-        public override void Shutdown()
-        {
-            if (m_state == State.SHUTDOWNED)
-                return;
-
-            if (m_networkId)
-                Registry.UnRegister(m_networkId.id);
-
-            base.Shutdown();
-        }
-
         protected virtual void InitAnimationParameter()
         {
             int parameterLength = m_animator.parameters.Length;

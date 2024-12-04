@@ -33,10 +33,16 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
+        protected virtual void BeforeShutdown() { }
+
+        protected virtual void AfterShutdown() { }
+
         public virtual void Shutdown()
         {
             if (m_state == State.SHUTDOWNED)
                 return;
+
+            BeforeShutdown();
 
             m_direction = Direction.RECVONLY;
 
@@ -44,6 +50,8 @@ namespace TLab.SFU.Network
                 UnRegister();
 
             m_state = State.SHUTDOWNED;
+
+            AfterShutdown();
         }
 
         public virtual void Init(Address32 publicId)

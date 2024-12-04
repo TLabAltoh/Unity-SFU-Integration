@@ -304,6 +304,8 @@ namespace TLab.SFU.Network
                 this.transform.rotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
             }
 
+            m_rbState.Update(transform.rb.used, transform.rb.gravity);
+
             UpdateRbHistory();
 
             ApplyCurrentTransform();
@@ -391,23 +393,12 @@ namespace TLab.SFU.Network
             {
                 m_rbHistory.Enqueue((m_rb.position, m_rb.rotation));
 
-                m_rbState = new RigidbodyState(true, m_rb.useGravity);
+                m_rbState.Update(true, m_rb.useGravity);
 
                 EnableRigidbody(false, true);
             }
             else
-                m_rbState = new RigidbodyState(false, false);
-        }
-
-        public override void Shutdown()
-        {
-            if (m_state == State.SHUTDOWNED)
-                return;
-
-            if (m_networkId)
-                Registry.UnRegister(m_networkId.id);
-
-            base.Shutdown();
+                m_rbState.Update(false, false);
         }
 
         protected override void Awake()
