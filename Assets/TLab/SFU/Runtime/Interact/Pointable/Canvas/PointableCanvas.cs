@@ -9,9 +9,9 @@ namespace TLab.SFU.Interact
     {
         public enum Surface
         {
-            BACKWARD,
-            FORWARD,
-            BOTH
+            Backward,
+            Forward,
+            Both,
         };
 
         [Header("Target Canvas")]

@@ -1,46 +1,127 @@
+using System.Collections.Generic;
+using System;
+using System.Linq;
 using UnityEngine;
 
 namespace TLab.SFU.Network
 {
-    public class PrefabShop : MonoBehaviour, INetworkSyncEventHandler
+    using Registry = Registry<string, PrefabShop>;
+
+    public class PrefabShop : MonoBehaviour, INetworkRoomEventHandler
     {
-        [SerializeField] private string m_storeName = "default";
+        [SerializeField] private const string m_shopId = "default";
         [SerializeField] private PrefabStore m_store;
-        [SerializeField] private BaseAnchorProvider m_anchorProvider;
+        [SerializeField] private BaseAnchorProvider m_anchor;
+
+        private Dictionary<int, PrefabStore.StoreAction> m_latestActions = new Dictionary<int, PrefabStore.StoreAction>();
+        public PrefabStore.StoreAction[] latestActions => m_latestActions.Values.ToArray();
+
+        [Serializable]
+        public struct State
+        {
+            public string storeId;
+            public PrefabStore.StoreAction[] latestActions;
+
+            public State(string storeId, PrefabStore.StoreAction[] latestActions)
+            {
+                this.storeId = storeId;
+                this.latestActions = latestActions;
+            }
+        }
+
+        [Serializable, Message(typeof(MSG_PrefabShop), m_shopId)]
+        public class MSG_PrefabShop : Message
+        {
+            public PrefabStore.StoreAction action;
+        }
 
         private string THIS_NAME => "[" + this.GetType() + "] ";
 
-        private int m_pktId;
-
-        public string storeName => m_storeName;
+        public string shopId => m_shopId;
 
         public PrefabStore store => m_store;
 
-        public int pktId => m_pktId;
+        public BaseAnchorProvider anchor => m_anchor;
 
-        public bool GetAnchor(int id, out WebTransform anchor) => m_anchorProvider.Get(id, out anchor);
+        private MSG_PrefabShop m_tmp = new MSG_PrefabShop();
 
-        private bool m_callOnce = true;
+        public State GetState() => new State(m_shopId, latestActions);
+
+        //public bool RPCInstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
+        //{
+        //    var result = InstantiateByElementId(elemId, userId, publicId, @transform, out instance);
+
+        //    if (result)
+        //    {
+        //        // RPC
+        //    }
+
+        //    return result;
+        //}
+
+        //public bool RPCInstantiateByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
+        //{
+        //    var result = InstantiateByElementName(elemName, userId, publicId, @transform, out instance);
+
+        //    if (result)
+        //    {
+        //        // RPC
+        //    }
+
+        //    return result;
+        //}
+
+        private bool ProcessStoreAction(PrefabStore.StoreAction avatorAction, out PrefabStore.Result result)
+        {
+            result = new PrefabStore.Result();
+
+            switch (avatorAction.action)
+            {
+                case PrefabStore.StoreAction.Action.Spawn:
+                    if (!m_latestActions.ContainsKey(avatorAction.userId))
+                    {
+                        m_latestActions.Add(avatorAction.userId, avatorAction);
+
+                        m_store.ProcessStoreAction(avatorAction, out result);
+
+                        return true;
+                    }
+                    return false;
+                case PrefabStore.StoreAction.Action.DeleteByUserId:
+                    if (m_latestActions.ContainsKey(avatorAction.userId))
+                    {
+                        m_latestActions.Remove(avatorAction.userId);
+
+                        m_store.ProcessStoreAction(avatorAction, out result);
+
+                        return true;
+                    }
+                    return false;
+            }
+            return false;
+        }
+
+        public void SyncState(State state)
+        {
+            foreach (var action in state.latestActions)
+                ProcessStoreAction(action, out var result);
+        }
 
         private void OnEnable()
         {
-            if (m_callOnce)
-            {
-                m_pktId = Cryptography.MD5From(nameof(PrefabShop) + m_storeName);
-                m_callOnce = false;
-            }
+            Registry.Register(m_shopId, this);
 
-            NetworkClient.RegisterOnMessage(m_pktId, (from, to, bytes) =>
+            NetworkClient.RegisterOnMessage(m_tmp.msgId, (from, to, bytes) =>
             {
                 // TODO:
 
-                // Instantiate by id
+                // Spawn by elementId
 
-                // networked init
+                // NetworkObject.Init()
 
-                // cache prefab to registory
+                // Cache instance to registory
 
-                // boradcast
+                // Boradcast
             });
 
             NetworkClient.RegisterOnJoin(OnJoin, OnJoin);
@@ -51,7 +132,9 @@ namespace TLab.SFU.Network
         {
             NetworkClient.UnRegisterOnJoin(OnJoin, OnJoin);
             NetworkClient.UnRegisterOnExit(OnExit, OnExit);
-            NetworkClient.UnRegisterOnMessage(m_pktId);
+            NetworkClient.UnRegisterOnMessage(m_tmp.msgId);
+
+            Registry.UnRegister(m_shopId);
         }
 
         public void OnJoin()

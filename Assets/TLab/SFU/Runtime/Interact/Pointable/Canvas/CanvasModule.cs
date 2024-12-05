@@ -146,33 +146,33 @@ namespace TLab.SFU
 
             switch (evt.type)
             {
-                case PointerEventType.HOVER:
+                case PointerEventType.Hover:
                     pointer = new Pointer(canvas);
                     pointer.pointerEventData = new PointerEventData(eventSystem);
                     pointer.SetPosition(evt.pointer.position);
                     m_pointerMap.Add(evt.identifier, pointer);
                     break;
-                case PointerEventType.UNHOVER:
+                case PointerEventType.UnHover:
                     pointer = m_pointerMap[evt.identifier];
                     m_pointerMap.Remove(evt.identifier);
                     pointer.MarkForDeletion();
                     m_pointersForDeletion.Add(pointer);
                     break;
-                case PointerEventType.SELECT:
+                case PointerEventType.Select:
                     pointer = m_pointerMap[evt.identifier];
                     pointer.SetPosition(evt.pointer.position);
                     pointer.Press();
                     break;
-                case PointerEventType.UNSELECT:
+                case PointerEventType.UnSelect:
                     pointer = m_pointerMap[evt.identifier];
                     pointer.SetPosition(evt.pointer.position);
                     pointer.Release();
                     break;
-                case PointerEventType.MOVE:
+                case PointerEventType.Move:
                     pointer = m_pointerMap[evt.identifier];
                     pointer.SetPosition(evt.pointer.position);
                     break;
-                case PointerEventType.CANCEL:
+                case PointerEventType.Cancel:
                     pointer = m_pointerMap[evt.identifier];
                     m_pointerMap.Remove(evt.identifier);
                     ClearPointerSelection(pointer.pointerEventData);

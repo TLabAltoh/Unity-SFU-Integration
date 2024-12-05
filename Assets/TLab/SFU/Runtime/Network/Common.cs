@@ -4,15 +4,15 @@ namespace TLab.SFU.Network
 {
     public enum Direction
     {
-        SENDONLY,
-        RECVONLY,
-        SENDRECV,
+        SendOnly,
+        RecvOnly,
+        SendRecv,
     };
 
     public static class Const
     {
-        public const Direction SEND = Direction.SENDRECV | Direction.SENDONLY;
-        public const Direction RECV = Direction.SENDONLY | Direction.RECVONLY;
+        public const Direction Send = Direction.SendRecv | Direction.SendOnly;
+        public const Direction Recv = Direction.SendOnly | Direction.RecvOnly;
     }
 
     [System.Serializable]
@@ -44,18 +44,18 @@ namespace TLab.SFU.Network
         }
     }
 
-    public enum WebAction
-    {
-        REGIST,
-        REGECT,
-        ACEPT,
-        EXIT,
-        GUEST_DISCONNECT,
-        GUEST_PARTICIPATION,
-        REFLESH,
-        UNI_REFLESH_TRANSFORM,
-        UNI_REFLESH_ANIM,
-    }
+    //public enum WebAction
+    //{
+    //    REGIST,
+    //    REGECT,
+    //    ACEPT,
+    //    EXIT,
+    //    GUEST_DISCONNECT,
+    //    GUEST_PARTICIPATION,
+    //    REFLESH,
+    //    UNI_REFLESH_TRANSFORM,
+    //    UNI_REFLESH_ANIM,
+    //}
 
     [System.Serializable]
     public class RequestAuth

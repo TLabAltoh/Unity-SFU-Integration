@@ -7,12 +7,12 @@ namespace TLab.SFU.Interact
 
     public enum PointerEventType
     {
-        HOVER,
-        UNHOVER,
-        SELECT,
-        UNSELECT,
-        MOVE,
-        CANCEL
+        Hover,
+        UnHover,
+        Select,
+        UnSelect,
+        Move,
+        Cancel,
     }
 
     public struct PointerEvent
@@ -39,7 +39,7 @@ namespace TLab.SFU.Interact
             base.Hovered(interactor);
 
             whenPointerEventRaised?.Invoke(
-                new PointerEvent(interactor.identifier, PointerEventType.HOVER, interactor.pointer));
+                new PointerEvent(interactor.identifier, PointerEventType.Hover, interactor.pointer));
         }
 
         public override void WhileHovered(Interactor interactor)
@@ -52,7 +52,7 @@ namespace TLab.SFU.Interact
             base.UnHovered(interactor);
 
             whenPointerEventRaised?.Invoke(
-                new PointerEvent(interactor.identifier, PointerEventType.UNHOVER, interactor.pointer));
+                new PointerEvent(interactor.identifier, PointerEventType.UnHover, interactor.pointer));
         }
 
         public override void Selected(Interactor interactor)
@@ -60,7 +60,7 @@ namespace TLab.SFU.Interact
             base.Selected(interactor);
 
             whenPointerEventRaised?.Invoke(
-                new PointerEvent(interactor.identifier, PointerEventType.SELECT, interactor.pointer));
+                new PointerEvent(interactor.identifier, PointerEventType.Select, interactor.pointer));
         }
 
         public override void WhileSelected(Interactor interactor)
@@ -68,7 +68,7 @@ namespace TLab.SFU.Interact
             base.WhileSelected(interactor);
 
             whenPointerEventRaised?.Invoke(
-                new PointerEvent(interactor.identifier, PointerEventType.MOVE, interactor.pointer));
+                new PointerEvent(interactor.identifier, PointerEventType.Move, interactor.pointer));
         }
 
         public override void UnSelected(Interactor interactor)
@@ -76,7 +76,7 @@ namespace TLab.SFU.Interact
             base.UnSelected(interactor);
 
             whenPointerEventRaised?.Invoke(
-                new PointerEvent(interactor.identifier, PointerEventType.UNSELECT, interactor.pointer));
+                new PointerEvent(interactor.identifier, PointerEventType.UnSelect, interactor.pointer));
         }
 
         protected override void OnEnable()

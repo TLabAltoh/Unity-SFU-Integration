@@ -50,19 +50,19 @@ namespace TLab.SFU
 
         private void Awake()
         {
-            if (Const.SEND.HasFlag(m_direction))
+            if (Const.Send.HasFlag(m_direction))
                 Register(m_id, this);
         }
 
         private void Start()
         {
-            if (Const.RECV.HasFlag(m_direction))
+            if (Const.Recv.HasFlag(m_direction))
                 m_parent = GetById(m_id);
         }
 
         private void Update()
         {
-            if (Const.SEND.HasFlag(m_direction) && (m_parent != null))
+            if (Const.Send.HasFlag(m_direction) && (m_parent != null))
             {
                 // TODO:
             }
@@ -70,7 +70,7 @@ namespace TLab.SFU
 
         private void OnDestroy()
         {
-            if (Const.SEND.HasFlag(m_direction))
+            if (Const.Send.HasFlag(m_direction))
                 UnRegister(m_id);
         }
     }

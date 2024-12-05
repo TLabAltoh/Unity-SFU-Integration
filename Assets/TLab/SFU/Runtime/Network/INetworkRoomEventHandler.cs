@@ -1,6 +1,6 @@
 namespace TLab.SFU.Network
 {
-    public interface INetworkSyncEventHandler
+    public interface INetworkRoomEventHandler
     {
         void OnJoin();
 

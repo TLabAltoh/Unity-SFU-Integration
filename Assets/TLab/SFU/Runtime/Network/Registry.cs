@@ -1,28 +1,32 @@
+using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
 
-namespace TLab.SFU.Network
+namespace TLab.SFU
 {
-    public class Registry<T> where T : Component
+    public class Registry<K, V> where V : Component
     {
         private static Hashtable m_registry = new Hashtable();
 
-        private static string THIS_NAME => "[" + nameof(Registry<T>) + "] ";
+        public static K[] keys => m_registry.Keys.Cast<K>().ToArray();
+        public static V[] values => m_registry.Values.Cast<V>().ToArray();
 
-        public static void Register(Address64 id, T @object)
+        private static string THIS_NAME => "[" + nameof(Registry<K, V>) + "] ";
+
+        public static void Register(K id, V @object)
         {
             if (!m_registry.ContainsKey(id)) m_registry[id] = @object;
         }
 
-        public static void UnRegister(Address64 id)
+        public static void UnRegister(K id)
         {
             if (m_registry.ContainsKey(id)) m_registry.Remove(id);
         }
 
         public static void ClearRegistry()
         {
-            var gameObjects = m_registry.Values.Cast<T>().Select((t) => t.gameObject);
+            var gameObjects = m_registry.Values.Cast<V>().Select((t) => t.gameObject);
 
             foreach (var gameObject in gameObjects)
                 Destroy(gameObject);
@@ -32,17 +36,36 @@ namespace TLab.SFU.Network
 
         public static void Destroy(GameObject go)
         {
-            if (go.GetComponent<T>() != null)
+            if (go.GetComponent<V>() != null)
                 Destroy(go);
         }
 
-        public static void Destroy(Address64 id)
+        public static void Destroy(K id)
         {
-            var go = GetById(id).gameObject;
+            var go = GetByKey(id).gameObject;
             if (go != null)
                 Destroy(go);
         }
 
-        public static T GetById(Address64 id) => m_registry[id] as T;
+        public static V GetByKey(K id) => m_registry[id] as V;
+    }
+
+    public class Registry<T> where T : Component
+    {
+        private static List<T> m_registry = new List<T>();
+
+        public static List<T> registry => m_registry;
+
+        public static string THIS_NAME = $"[{nameof(Registry<T>)}] ";
+
+        public static void Register(T value)
+        {
+            if (!m_registry.Contains(value)) m_registry.Add(value);
+        }
+
+        public static void UnRegister(T value)
+        {
+            if (m_registry.Contains(value)) m_registry.Remove(value);
+        }
     }
 }

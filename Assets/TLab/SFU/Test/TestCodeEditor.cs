@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+using System;
 using UnityEngine;
 using TLab.SFU.Network;
 
@@ -10,42 +11,30 @@ namespace TLab.SFU.Test.Editor
     [CustomEditor(typeof(TestCode))]
     public class TestCodeEditor : UnityEditor.Editor
     {
-        [System.Serializable]
-        public class TestPacket : Packetable
+        [Serializable, Message(typeof(TestMessage))]
+        public class TestMessage : Message
         {
-            public static new int pktId;
+            public TestMessage() : base() { }
 
-            protected override int packetId => pktId;
-
-            static TestPacket() => pktId = Cryptography.MD5From(nameof(TestPacket));
-
-            public TestPacket() : base() { }
-
-            public TestPacket(byte[] bytes) : base(bytes) { }
+            public TestMessage(byte[] bytes) : base(bytes) { }
 
             public Address32[] address;
         }
 
         private TestCode instance;
 
-        private void OnEnable()
-        {
-            instance = target as TestCode;
-        }
+        private void OnEnable() => instance = target as TestCode;
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("PacketId Test"))
-            {
-                Debug.Log($"Packetable: {Packetable.pktId}");
-                Debug.Log($"TestPacket: {TestPacket.pktId}");
-            }
+            if (GUILayout.Button("MsgId Test"))
+                Debug.Log($"Message.GetMsgId<TestMessage>(): {Message.GetMsgId<TestMessage>()}");
 
             if (GUILayout.Button("Address Test"))
             {
-                var send = new TestPacket();
+                var send = new TestMessage();
                 send.address = new Address32[]
                 {
                     new Address32(0, 0, 0, 0),
@@ -58,7 +47,8 @@ namespace TLab.SFU.Test.Editor
                 bytes = UnsafeUtility.Padding(1 + sizeof(int), bytes);
                 Debug.Log($"After: {bytes}, Length: {bytes.Length}");
 
-                var receive = new TestPacket(bytes);
+                var receive = new TestMessage(bytes);
+                //receive.UnMarshall(bytes);    // <-- Test for a call to Message.Cache() or not in JsonUtility.FromJsonOverwrite()
 
                 Debug.Log(receive);
 

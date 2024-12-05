@@ -1,11 +1,11 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
-using TLab.SFU;
 using TLab.SFU.Network;
 
 namespace TLab.VRProjct
 {
-    public class ScoreTabulation : MonoBehaviour, INetworkConnectionEventHandler, INetworkSyncEventHandler
+    public class ScoreTabulation : MonoBehaviour, INetworkConnectionEventHandler, INetworkRoomEventHandler
     {
         private Dictionary<int, int> m_scores = new Dictionary<int, int>();
 
@@ -15,15 +15,9 @@ namespace TLab.VRProjct
 
         #region MESSAGE
 
-        [System.Serializable]
-        public class MSG_MiniTest : Packetable
+        [Serializable, Message(typeof(MSG_MiniTest))]
+        public class MSG_MiniTest : Message
         {
-            public static new int pktId;
-
-            protected override int packetId => pktId;
-
-            static MSG_MiniTest() => pktId = Cryptography.MD5From(nameof(MSG_MiniTest));
-
             public MSG_MiniTest(int score) : base()
             {
                 this.score = score;
@@ -57,7 +51,7 @@ namespace TLab.VRProjct
         {
             instance = this;
 
-            NetworkClient.RegisterOnMessage(MSG_MiniTest.pktId, OnMessage);
+            NetworkClient.RegisterOnMessage<MSG_MiniTest>(OnMessage);
         }
 
         public void OnMessage(int from, int to, byte[] bytes)
@@ -68,47 +62,47 @@ namespace TLab.VRProjct
 
         public void OnOpen()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnClose()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnOpen(int from)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnClose(int from)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnError()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnJoin()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnExit()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnJoin(int userId)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnExit(int userId)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

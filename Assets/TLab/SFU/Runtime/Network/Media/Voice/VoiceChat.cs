@@ -8,7 +8,7 @@ namespace TLab.SFU.Network
     {
         public static VoiceChat instance;
 
-        [SerializeField] private WebRTCClient.ClientType m_type = WebRTCClient.ClientType.WHIP;
+        [SerializeField] private WebRTCClient.ClientType m_type = WebRTCClient.ClientType.Whip;
 
         private AudioSource m_microphoneSource;
         private AudioClip m_microphoneClip;

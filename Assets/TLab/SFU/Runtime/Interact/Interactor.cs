@@ -8,16 +8,16 @@ namespace TLab.SFU.Interact
     {
         public enum ActivateOption
         {
-            NONE,
-            HOVER,
-            SELECT
+            None,
+            Hover,
+            Select,
         };
 
         [SerializeField] protected InteractDataSource m_interactDataSource;
 
         [SerializeField] protected Transform m_pointer;
 
-        [SerializeField] protected ActivateOption m_activateOption = ActivateOption.NONE;
+        [SerializeField] protected ActivateOption m_activateOption = ActivateOption.None;
 
         [SerializeField, Interface(typeof(IActiveState))]
         private Object m_parentState;
@@ -154,10 +154,10 @@ namespace TLab.SFU.Interact
 
             switch (m_activateOption)
             {
-                case ActivateOption.HOVER:
+                case ActivateOption.Hover:
                     m_getActiveState = () => (m_interactable != null);
                     break;
-                case ActivateOption.SELECT:
+                case ActivateOption.Select:
                     m_getActiveState = () =>
                     {
                         if (m_interactable == null)

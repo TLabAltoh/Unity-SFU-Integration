@@ -11,7 +11,7 @@ namespace TLab.SFU.Interact
         {
             public enum HandleAxis
             {
-                NONE,
+                None,
                 X,
                 Y,
                 Z
@@ -412,7 +412,7 @@ namespace TLab.SFU.Interact
                                 continue;
                             }
 
-                            var handleAxis = LinkPair.HandleAxis.NONE;
+                            var handleAxis = LinkPair.HandleAxis.None;
                             var localScale = m_linkHandleIniScale;
                             if (dirX == 0)
                             {

@@ -112,7 +112,7 @@ namespace TLab.SFU.Interact
         {
             base.Update();
 
-            if (!Const.SEND.HasFlag(m_direction))
+            if (!Const.Send.HasFlag(m_direction))
                 return;
 
             var mainCamera = Camera.main.transform;

@@ -34,7 +34,7 @@ namespace TLab.SFU.Interact.Editor
             });
 
             target.RequireComponent<GameObjectController>((c) => {
-                c.direction = Network.Direction.SENDRECV;
+                c.direction = Network.Direction.SendRecv;
                 c.UseRigidbody(false, false);
                 EditorUtility.SetDirty(c);
             });

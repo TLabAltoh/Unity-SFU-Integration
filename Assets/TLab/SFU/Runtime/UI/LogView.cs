@@ -16,7 +16,7 @@ namespace TLab.SFU.UI
         public void Append(string message)
         {
             if (m_scrollViewAvailable)
-                Instantiate(Resources.Load<GameObject>("UI/LogChunk"), m_scrollRect.content).GetComponent<LogChunk>()?.Init(message);
+                Instantiate(Resources.Load<GameObject>("TLab/SFU/UI/LogChunk"), m_scrollRect.content).GetComponent<LogChunk>()?.Init(message);
             else
                 Debug.Log(THIS_NAME + message);
         }

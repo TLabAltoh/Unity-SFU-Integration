@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEditor;
 using TLab.SFU.Network;
@@ -6,16 +7,16 @@ using static TLab.SFU.ComponentExtension;
 
 namespace TLab.SFU.Interact
 {
-    using Registry = Network.Registry<GameObjectController>;
+    using Registry = Registry<Address64, GameObjectController>;
 
     [AddComponentMenu("TLab/SFU/Game Object Controller (TLab)")]
     public class GameObjectController : NetworkTransform
     {
         public enum HandType
         {
-            MAIN_HAND,
-            SUB_HAND,
-            NONE
+            None,
+            First,
+            Second,
         };
 
         public class GrabState
@@ -24,8 +25,8 @@ namespace TLab.SFU.Interact
 
             public enum Action
             {
-                GRAB,
-                FREE
+                Grab,
+                Free,
             };
 
             private int m_grabberId = FREE;
@@ -44,10 +45,10 @@ namespace TLab.SFU.Interact
             {
                 switch (action)
                 {
-                    case Action.GRAB:
+                    case Action.Grab:
                         m_grabberId = NetworkClient.userId;
                         break;
-                    case Action.FREE:
+                    case Action.Free:
                         m_grabberId = FREE;
                         break;
                 }
@@ -73,18 +74,16 @@ namespace TLab.SFU.Interact
 
         private GrabState m_grabState = new GrabState();
 
-        private Interactor m_mainHand;
-        private Interactor m_subHand;
-
-        public static new bool msgCallbackRegisted = false;
+        private Interactor m_firstHand;
+        private Interactor m_secondHand;
 
         public GrabState grabState => m_grabState;
 
         public bool locked => m_locked;
 
-        public Interactor mainHand => m_mainHand;
+        public Interactor mainHand => m_firstHand;
 
-        public Interactor subHand => m_subHand;
+        public Interactor subHand => m_secondHand;
 
         public PositionLogic position => m_position;
 
@@ -109,43 +108,37 @@ namespace TLab.SFU.Interact
 
         private void MainHandGrabbStart()
         {
-            m_position.OnMainHandGrabbed(m_mainHand);
-            m_rotation.OnMainHandGrabbed(m_mainHand);
-            m_scale.OnMainHandGrabbed(m_mainHand);
+            m_position.OnMainHandGrabbed(m_firstHand);
+            m_rotation.OnMainHandGrabbed(m_firstHand);
+            m_scale.OnMainHandGrabbed(m_firstHand);
         }
 
         private void SubHandGrabbStart()
         {
-            m_position.OnSubHandGrabbed(m_subHand);
-            m_rotation.OnSubHandGrabbed(m_subHand);
-            m_scale.OnSubHandGrabbed(m_subHand);
+            m_position.OnSubHandGrabbed(m_secondHand);
+            m_rotation.OnSubHandGrabbed(m_secondHand);
+            m_scale.OnSubHandGrabbed(m_secondHand);
         }
 
         private void MainHandGrabbEnd()
         {
-            m_position.OnMainHandReleased(m_mainHand);
-            m_rotation.OnMainHandReleased(m_mainHand);
-            m_scale.OnMainHandReleased(m_mainHand);
+            m_position.OnMainHandReleased(m_firstHand);
+            m_rotation.OnMainHandReleased(m_firstHand);
+            m_scale.OnMainHandReleased(m_firstHand);
         }
 
         private void SubHandGrabbEnd()
         {
-            m_position.OnSubHandReleased(m_subHand);
-            m_rotation.OnSubHandReleased(m_subHand);
-            m_scale.OnSubHandReleased(m_subHand);
+            m_position.OnSubHandReleased(m_secondHand);
+            m_rotation.OnSubHandReleased(m_secondHand);
+            m_scale.OnSubHandReleased(m_secondHand);
         }
 
         #region MESSAGE
 
-        [System.Serializable]
-        public class MSG_DivideGrabber : Packetable
+        [Serializable, Message(typeof(MSG_DivideGrabber))]
+        public class MSG_DivideGrabber : Message
         {
-            public static new int pktId;
-
-            protected override int packetId => pktId;
-
-            static MSG_DivideGrabber() => pktId = Cryptography.MD5From(nameof(MSG_DivideGrabber));
-
             public Address64 networkId;
             public int grabberId;
             public bool active;
@@ -160,22 +153,16 @@ namespace TLab.SFU.Interact
             public MSG_DivideGrabber(byte[] bytes) : base(bytes) { }
         }
 
-        [System.Serializable]
-        public class MSG_GrabbLock : Packetable
+        [Serializable, Message(typeof(MSG_GrabbLock))]
+        public class MSG_GrabbLock : Message
         {
             [System.Serializable]
             public enum Action
             {
-                FORCE_RELEASE,
-                GRAB_LOCK,
-                NONE
+                None,
+                GrabLock,
+                ForceRelease,
             };
-
-            public static new int pktId;
-
-            protected override int packetId => pktId;
-
-            static MSG_GrabbLock() => pktId = Cryptography.MD5From(nameof(MSG_GrabbLock));
 
             public Address64 networkId;
             public int grabberId;
@@ -199,17 +186,17 @@ namespace TLab.SFU.Interact
 
             switch (action)
             {
-                case GrabState.Action.GRAB:
+                case GrabState.Action.Grab:
                     EnableRigidbody(false);
                     break;
-                case GrabState.Action.FREE:
+                case GrabState.Action.Free:
                     EnableRigidbody(true);
                     break;
             }
 
             SyncViaWebSocket(false, NetworkClient.userId);
 
-            NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GRAB_LOCK).Marshall());
+            NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GrabLock).Marshall());
         }
 
         public override void OnPhysicsRoleChange()
@@ -219,10 +206,10 @@ namespace TLab.SFU.Interact
 
             switch (NetworkClient.physicsRole)
             {
-                case NetworkClient.PhysicsRole.SEND:
+                case NetworkClient.PhysicsRole.Send:
                     EnableRigidbody(true);
                     break;
-                case NetworkClient.PhysicsRole.RECV:
+                case NetworkClient.PhysicsRole.Recv:
                     EnableRigidbody(false, true);
                     break;
             }
@@ -230,7 +217,7 @@ namespace TLab.SFU.Interact
 
         public override void EnableRigidbody(bool active, bool force = false)
         {
-            if (force || (NetworkClient.physicsRole == NetworkClient.PhysicsRole.SEND))
+            if (force || (NetworkClient.physicsRole == NetworkClient.PhysicsRole.Send))
                 base.EnableRigidbody(active);
         }
 
@@ -238,10 +225,10 @@ namespace TLab.SFU.Interact
         {
             if (index != GrabState.FREE)
             {
-                if (m_mainHand != null)
+                if (m_firstHand != null)
                 {
-                    m_mainHand = null;
-                    m_subHand = null;
+                    m_firstHand = null;
+                    m_secondHand = null;
                 }
 
                 m_grabState.Update(index);
@@ -250,7 +237,7 @@ namespace TLab.SFU.Interact
             }
             else
             {
-                m_grabState.Update(GrabState.Action.FREE);
+                m_grabState.Update(GrabState.Action.Free);
 
                 EnableRigidbody(true);
             }
@@ -258,17 +245,17 @@ namespace TLab.SFU.Interact
 
         public void ForceRelease(bool self)
         {
-            if (m_mainHand != null)
+            if (m_firstHand != null)
             {
-                m_mainHand = null;
-                m_subHand = null;
-                m_grabState.Update(GrabState.Action.FREE);
+                m_firstHand = null;
+                m_secondHand = null;
+                m_grabState.Update(GrabState.Action.Free);
 
                 EnableRigidbody(false);
             }
 
             if (self)
-                NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.FORCE_RELEASE).Marshall());
+                NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.ForceRelease).Marshall());
         }
 
         private void CreateCombinedMeshCollider()
@@ -376,52 +363,52 @@ namespace TLab.SFU.Interact
 
         public HandType GetHandType(Interactor interactor)
         {
-            if (m_mainHand == interactor)
-                return HandType.MAIN_HAND;
+            if (m_firstHand == interactor)
+                return HandType.First;
 
-            if (m_subHand == interactor)
-                return HandType.SUB_HAND;
+            if (m_secondHand == interactor)
+                return HandType.Second;
 
-            return HandType.NONE;
+            return HandType.None;
         }
 
         public HandType OnGrab(Interactor interactor)
         {
             if (m_locked || (!m_grabState.isFree && !m_grabState.grabbByMe))
-                return HandType.NONE;
+                return HandType.None;
 
-            if (m_mainHand == null)
+            if (m_firstHand == null)
             {
-                GrabbLock(GrabState.Action.GRAB);
+                GrabbLock(GrabState.Action.Grab);
 
-                m_mainHand = interactor;
+                m_firstHand = interactor;
 
                 MainHandGrabbStart();
 
-                return HandType.MAIN_HAND;
+                return HandType.First;
             }
-            else if (m_subHand == null)
+            else if (m_secondHand == null)
             {
-                m_subHand = interactor;
+                m_secondHand = interactor;
 
                 SubHandGrabbStart();
 
-                return HandType.SUB_HAND;
+                return HandType.Second;
             }
 
-            return HandType.NONE;
+            return HandType.None;
         }
 
         public bool OnRelease(Interactor interactor)
         {
-            if (m_mainHand == interactor)
+            if (m_firstHand == interactor)
             {
                 MainHandGrabbEnd();
 
-                if (m_subHand != null)
+                if (m_secondHand != null)
                 {
-                    m_mainHand = m_subHand;
-                    m_subHand = null;
+                    m_firstHand = m_secondHand;
+                    m_secondHand = null;
 
                     MainHandGrabbStart();
 
@@ -429,18 +416,18 @@ namespace TLab.SFU.Interact
                 }
                 else
                 {
-                    GrabbLock(GrabState.Action.FREE);
+                    GrabbLock(GrabState.Action.Free);
 
-                    m_mainHand = null;
+                    m_firstHand = null;
 
                     return false;
                 }
             }
-            else if (m_subHand == interactor)
+            else if (m_secondHand == interactor)
             {
                 SubHandGrabbEnd();
 
-                m_subHand = null;
+                m_secondHand = null;
 
                 MainHandGrabbStart();
 
@@ -453,42 +440,37 @@ namespace TLab.SFU.Interact
         protected override void BeforeShutdown()
         {
             if (m_grabState.grabbByMe)
-                GrabbLock(GrabState.Action.FREE);
+                GrabbLock(GrabState.Action.Free);
 
             base.BeforeShutdown();
         }
 
-        protected override void Awake()
+        protected override void RegisterOnMessage()
         {
-            base.Awake();
+            base.RegisterOnMessage();
 
-            if (!msgCallbackRegisted)
+            NetworkClient.RegisterOnMessage<MSG_GrabbLock>((from, to, bytes) =>
             {
-                NetworkClient.RegisterOnMessage(MSG_GrabbLock.pktId, (from, to, bytes) =>
+                var @object = new MSG_GrabbLock(bytes);
+
+                switch (@object.action)
                 {
-                    var @object = new MSG_GrabbLock(bytes);
+                    case MSG_GrabbLock.Action.GrabLock:
+                        Registry.GetByKey(@object.networkId)?.GrabbLock(@object.grabberId);
+                        break;
+                    case MSG_GrabbLock.Action.ForceRelease:
+                        Registry.GetByKey(@object.networkId)?.ForceRelease(false);
+                        break;
+                    default:
+                        break;
+                }
+            });
 
-                    switch (@object.action)
-                    {
-                        case MSG_GrabbLock.Action.GRAB_LOCK:
-                            Registry.GetById(@object.networkId)?.GrabbLock(@object.grabberId);
-                            break;
-                        case MSG_GrabbLock.Action.FORCE_RELEASE:
-                            Registry.GetById(@object.networkId)?.ForceRelease(false);
-                            break;
-                        default:
-                            break;
-                    }
-                });
-
-                NetworkClient.RegisterOnMessage(MSG_DivideGrabber.pktId, (from, to, bytes) =>
-                {
-                    var @object = new MSG_DivideGrabber(bytes);
-                    Registry.GetById(@object.networkId)?.Divide(@object.active);
-                });
-
-                msgCallbackRegisted = true;
-            }
+            NetworkClient.RegisterOnMessage<MSG_DivideGrabber>((from, to, bytes) =>
+            {
+                var @object = new MSG_DivideGrabber(bytes);
+                Registry.GetByKey(@object.networkId)?.Divide(@object.active);
+            });
         }
 
         protected override void Start()
@@ -504,9 +486,9 @@ namespace TLab.SFU.Interact
 
         protected override void Update()
         {
-            if (m_mainHand != null)
+            if (m_firstHand != null)
             {
-                if (m_subHand != null)
+                if (m_secondHand != null)
                 {
                     m_position.UpdateTwoHandLogic();
                     m_scale.UpdateTwoHandLogic();

@@ -6,7 +6,7 @@ namespace TLab.SFU.Network
 {
     public enum Protocol
     {
-        WEBSOCKET,
+        WebSocket,
         HTTP,
         HTTPS
     }
@@ -39,7 +39,7 @@ namespace TLab.SFU.Network
 
         public static Dictionary<Protocol, string> PROTOCOL = new Dictionary<Protocol, string>
         {
-            { Protocol.WEBSOCKET, "ws" },
+            { Protocol.WebSocket, "ws" },
             { Protocol.HTTP, "http" },
             { Protocol.HTTPS, "https" }
         };

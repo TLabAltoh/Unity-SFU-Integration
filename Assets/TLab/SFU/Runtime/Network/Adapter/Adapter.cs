@@ -31,9 +31,9 @@ namespace TLab.SFU.Network
 
         public Config config => m_config;
 
-        public enum UserId
+        public static class UserId
         {
-            NOT_REGISTED = -1,
+            public const int NOT_REGISTED = -1;
         }
 
         public bool regested => m_userId != (int)UserId.NOT_REGISTED;

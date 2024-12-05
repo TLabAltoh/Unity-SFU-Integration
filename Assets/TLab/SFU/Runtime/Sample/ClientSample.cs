@@ -57,7 +57,7 @@ namespace TLab.SFU.Sample
 
         private IEnumerator CloneAdapter()
         {
-            while (AdapterSample.state != AdapterSample.State.CREATED)
+            while (AdapterSample.state != AdapterSample.State.Created)
                 yield return null;
 
             m_adapter = AdapterSample.instance.GetClone();

@@ -25,25 +25,25 @@ namespace TLab.SFU.Network
             [System.Serializable]
             public enum Action
             {
-                NONE,
-                INSTANTIATE,
-                DELETE_BY_USER_ID,
-                DELETE_BY_PUBLIC_ID,
+                None,
+                Spawn,
+                DeleteByUserId,
+                DeleteByPublicId,
             }
 
-            public static StoreAction GetInstantiateAction(int elemId, int userId, Address32 publicId, WebTransform transform)
+            public static StoreAction GetSpawnAction(int elemId, int userId, Address32 publicId, WebTransform transform)
             {
-                return new StoreAction(Action.INSTANTIATE, elemId, userId, publicId, transform);
+                return new StoreAction(Action.Spawn, elemId, userId, publicId, transform);
             }
 
             public static StoreAction GetDeleteAction(int userId)
             {
-                return new StoreAction(Action.DELETE_BY_USER_ID, -1, userId, new Address32(), new WebTransform());
+                return new StoreAction(Action.DeleteByUserId, -1, userId, new Address32(), new WebTransform());
             }
 
             public static StoreAction GetDeleteAction(Address32 publicId)
             {
-                return new StoreAction(Action.DELETE_BY_PUBLIC_ID, -1, -1, publicId, new WebTransform());
+                return new StoreAction(Action.DeleteByPublicId, -1, -1, publicId, new WebTransform());
             }
 
             public StoreAction(Action action, int elemId, int userId, Address32 publicId, WebTransform transform)
@@ -53,12 +53,6 @@ namespace TLab.SFU.Network
                 this.userId = userId;
                 this.publicId = publicId;
                 this.transform = transform;
-            }
-
-            public StoreAction UpdatePublicId(Address32 publicId)
-            {
-                this.publicId = publicId;
-                return this;
             }
 
             public Action action;
@@ -133,53 +127,37 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType() + $"] ";
 
-        public StoreAction.Action UpdateByInstantiateInfo(StoreAction action, out GameObject prefab)
+        public class Result
         {
-            switch (action.action)
+            public StoreAction.Action action;
+            public GameObject instance;
+
+            public Result(StoreAction.Action action, GameObject instance)
             {
-                case StoreAction.Action.INSTANTIATE:
-                    InstantiateByElementId(action.elemId, action.userId, action.publicId, action.transform, out prefab);
-                    return StoreAction.Action.INSTANTIATE;
-                case StoreAction.Action.DELETE_BY_USER_ID:
-                    {
-                        prefab = null;
-                        DeleteByUserId(action.userId);
-                    }
-                    return StoreAction.Action.DELETE_BY_USER_ID;
-                case StoreAction.Action.DELETE_BY_PUBLIC_ID:
-                    {
-                        prefab = null;
-                        DeleteByPublicId(action.publicId);
-                    }
-                    return StoreAction.Action.DELETE_BY_PUBLIC_ID;
+                this.action = action;
+                this.instance = instance;
             }
 
-            prefab = null;
-            return StoreAction.Action.NONE;
+            public Result() { }
         }
 
-        public bool RPCInstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
+        public void ProcessStoreAction(StoreAction storeAction, out Result result)
         {
-            var result = InstantiateByElementId(elemId, userId, publicId, @transform, out instance);
+            result = new Result();
+            result.action = storeAction.action;
 
-            if (result)
+            switch (storeAction.action)
             {
-                // RPC
+                case StoreAction.Action.Spawn:
+                    SpawnByElementId(storeAction.elemId, storeAction.userId, storeAction.publicId, storeAction.transform, out result.instance);
+                    return;
+                case StoreAction.Action.DeleteByUserId:
+                    DeleteByUserId(storeAction.userId);
+                    return;
+                case StoreAction.Action.DeleteByPublicId:
+                    DeleteByPublicId(storeAction.publicId);
+                    return;
             }
-
-            return result;
-        }
-
-        public bool RPCInstantiateByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
-        {
-            var result = InstantiateByElementName(elemName, userId, publicId, @transform, out instance);
-
-            if (result)
-            {
-                // RPC
-            }
-
-            return result;
         }
 
         public bool DeleteByPublicId(Address32 publicId)
@@ -210,7 +188,7 @@ namespace TLab.SFU.Network
             return true;
         }
 
-        public bool InstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
+        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         {
             if (!GetByElementId(elemId, userId, out var prefab))
             {
@@ -221,20 +199,20 @@ namespace TLab.SFU.Network
 
             instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            instance.Foreach<NetworkObject>((t) => t.Init(publicId));
+            instance.Foreach<NetworkObject>((t) => t.Init(publicId, userId == NetworkClient.userId));
 
             Register(publicId, new History(userId, instance));
 
             return true;
         }
 
-        public bool InstantiateByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
+        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         {
             GetByElementName(elemName, userId, out var prefab);
 
             instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            instance.Foreach<NetworkObject>((t) => t.Init(publicId));
+            instance.Foreach<NetworkObject>((t) => t.Init(publicId, userId == NetworkClient.userId));
 
             Register(publicId, new History(userId, instance));
 

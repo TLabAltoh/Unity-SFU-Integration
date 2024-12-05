@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -8,14 +9,14 @@ using static System.BitConverter;
 
 namespace TLab.SFU.Network
 {
-    using Registry = Registry<NetworkTransform>;
+    using Registry = Registry<Address64, NetworkTransform>;
 
     [AddComponentMenu("TLab/SFU/Network Transform (TLab)")]
     public class NetworkTransform : NetworkObject
     {
         #region STRUCT
 
-        [System.Serializable]
+        [Serializable]
         public struct RigidbodyState
         {
             public static bool operator ==(RigidbodyState a, RigidbodyState b) => (a.used == b.used) && (a.gravity == b.gravity);
@@ -56,7 +57,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        [System.Serializable]
+        [Serializable]
         public struct WebTransform
         {
             public Address64 id;
@@ -70,24 +71,20 @@ namespace TLab.SFU.Network
 
         #region MESSAGE
 
-        [System.Serializable]
-        public class MSG_SyncTransform : Packetable
+        [Serializable, Message(typeof(MSG_SyncTransform))]
+        public class MSG_SyncTransform : Message
         {
-            public static new int pktId;
-
-            protected override int packetId => pktId;
-
-            static MSG_SyncTransform() => pktId = Cryptography.MD5From(nameof(MSG_SyncTransform));
-
             public WebTransform transform;
 
-            public const int RB_STATE_LEN = 2;  // rbState.used (1) + rbState.gravity (1)
+            public bool requested = false;
+
+            public const int BOOL_FIELD_LEN = 2;  // requested (1) + rbState.used (1) + rbState.gravity (1)
 
             public const int NETWORK_ID_LEN = 8;
 
             public const int RTC_TRANSFORM_LEN = 10;    // transform ((3 + 4 + 3) * 4)
 
-            public const int PAYLOAD_LEN = NETWORK_ID_LEN + RB_STATE_LEN + RTC_TRANSFORM_LEN * sizeof(float);
+            public const int PAYLOAD_LEN = NETWORK_ID_LEN + BOOL_FIELD_LEN + RTC_TRANSFORM_LEN * sizeof(float);
 
             public MSG_SyncTransform(WebTransform transform) : base()
             {
@@ -100,75 +97,78 @@ namespace TLab.SFU.Network
             {
                 const int HEADER_LEN = 8;    // to (4) + msgTyp (4)
 
-                var rtcTransform = new float[RTC_TRANSFORM_LEN];
+                var transformBuf = new float[RTC_TRANSFORM_LEN];
 
-                rtcTransform[0] = transform.position.x;
-                rtcTransform[1] = transform.position.y;
-                rtcTransform[2] = transform.position.z;
+                transformBuf[0] = transform.position.x;
+                transformBuf[1] = transform.position.y;
+                transformBuf[2] = transform.position.z;
 
-                rtcTransform[3] = transform.rotation.x;
-                rtcTransform[4] = transform.rotation.y;
-                rtcTransform[5] = transform.rotation.z;
-                rtcTransform[6] = transform.rotation.w;
+                transformBuf[3] = transform.rotation.x;
+                transformBuf[4] = transform.rotation.y;
+                transformBuf[5] = transform.rotation.z;
+                transformBuf[6] = transform.rotation.w;
 
-                rtcTransform[7] = transform.localScale.x;
-                rtcTransform[8] = transform.localScale.y;
-                rtcTransform[9] = transform.localScale.z;
+                transformBuf[7] = transform.localScale.x;
+                transformBuf[8] = transform.localScale.y;
+                transformBuf[9] = transform.localScale.z;
 
-                var packet = new byte[HEADER_LEN + PAYLOAD_LEN];
+                var packetBuf = new byte[HEADER_LEN + PAYLOAD_LEN];
 
                 unsafe
                 {
-                    fixed (byte* packetPtr = packet)
+                    fixed (byte* packetBufPtr = packetBuf)
                     {
-                        bool rbUsed = transform.rb.used, rbGravity = transform.rb.gravity;
+                        bool rbUsed = transform.rb.used, rbGravity = transform.rb.gravity, requested = this.requested;
 
-                        packetPtr[HEADER_LEN + NETWORK_ID_LEN + 0] = (byte)(&rbUsed);
-                        packetPtr[HEADER_LEN + NETWORK_ID_LEN + 1] = (byte)(&rbGravity);
+                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 0] = (byte)(&requested);
+                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 1] = (byte)(&rbUsed);
+                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 2] = (byte)(&rbGravity);
 
-                        transform.id.CopyTo(packetPtr + HEADER_LEN);
+                        transform.id.CopyTo(packetBufPtr + HEADER_LEN);
 
-                        fixed (float* transformPtr = &(rtcTransform[0]))
-                            UnsafeUtility.LongCopy((byte*)transformPtr, packetPtr + HEADER_LEN + (NETWORK_ID_LEN + RB_STATE_LEN), RTC_TRANSFORM_LEN * sizeof(float));
+                        fixed (float* transformBufPtr = &(transformBuf[0]))
+                            UnsafeUtility.LongCopy((byte*)transformBufPtr, packetBufPtr + HEADER_LEN + (NETWORK_ID_LEN + BOOL_FIELD_LEN), RTC_TRANSFORM_LEN * sizeof(float));
 
-                        var pktIdBuf = GetBytes(pktId);
-                        fixed (byte* pktIdBufPtr = pktIdBuf)
-                            UnsafeUtility.LongCopy(pktIdBufPtr, (packetPtr + sizeof(int)), pktIdBuf.Length);
+                        var msgIdBuf = GetBytes(msgId);
+                        fixed (byte* msgIdBufPtr = msgIdBuf)
+                            UnsafeUtility.LongCopy(msgIdBufPtr, (packetBufPtr + sizeof(int)), msgIdBuf.Length);
                     }
                 }
 
-                return packet;
+                return packetBuf;
             }
 
             public override void UnMarshall(byte[] bytes)
             {
                 const int HEADER_LEN = 13;    // typ (1) + from (4) + to (4) + msgTyp (4)
 
-                var rtcTransform = new float[10];
+                var transformBuf = new float[10];
 
                 unsafe
                 {
                     fixed (byte* bytesPtr = bytes)
-                    fixed (float* rtcTransformPtr = &(rtcTransform[0]))
+                    fixed (float* transformBufPtr = &(transformBuf[0]))
                     {
-                        UnsafeUtility.LongCopy(bytesPtr + HEADER_LEN + (NETWORK_ID_LEN + RB_STATE_LEN), (byte*)rtcTransformPtr, RTC_TRANSFORM_LEN * sizeof(float));
+                        UnsafeUtility.LongCopy(bytesPtr + HEADER_LEN + (NETWORK_ID_LEN + BOOL_FIELD_LEN), (byte*)transformBufPtr, RTC_TRANSFORM_LEN * sizeof(float));
 
                         transform.id.Copy(bytesPtr + HEADER_LEN);
 
-                        transform.rb.Update(*((bool*)&(bytesPtr[HEADER_LEN + NETWORK_ID_LEN + 0])), *((bool*)&(bytesPtr[HEADER_LEN + NETWORK_ID_LEN + 1])));
+                        requested = *((bool*)&(bytesPtr[HEADER_LEN + NETWORK_ID_LEN + 0]));
 
-                        transform.position.x = rtcTransform[0];
-                        transform.position.y = rtcTransform[1];
-                        transform.position.z = rtcTransform[2];
+                        transform.rb.Update(*((bool*)&(bytesPtr[HEADER_LEN + NETWORK_ID_LEN + 1])), *((bool*)&(bytesPtr[HEADER_LEN + NETWORK_ID_LEN + 2])));
 
-                        transform.rotation.x = rtcTransform[3];
-                        transform.rotation.y = rtcTransform[4];
-                        transform.rotation.z = rtcTransform[5];
-                        transform.rotation.w = rtcTransform[6];
+                        transform.position.x = transformBuf[0];
+                        transform.position.y = transformBuf[1];
+                        transform.position.z = transformBuf[2];
 
-                        transform.localScale.x = rtcTransform[7];
-                        transform.localScale.y = rtcTransform[8];
-                        transform.localScale.z = rtcTransform[9];
+                        transform.rotation.x = transformBuf[3];
+                        transform.rotation.y = transformBuf[4];
+                        transform.rotation.z = transformBuf[5];
+                        transform.rotation.w = transformBuf[6];
+
+                        transform.localScale.x = transformBuf[7];
+                        transform.localScale.y = transformBuf[8];
+                        transform.localScale.z = transformBuf[9];
                     }
                 }
             }
@@ -203,9 +203,9 @@ namespace TLab.SFU.Network
 
         public RigidbodyState rbState => m_rbState;
 
-        public bool enableGravity => (m_rb == null) ? false : m_rb.useGravity;
+        private MSG_SyncTransform m_tmp = new MSG_SyncTransform(new WebTransform());
 
-        public static bool msgCallbackRegisted = false;
+        public bool enableGravity => (m_rb == null) ? false : m_rb.useGravity;
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -254,10 +254,10 @@ namespace TLab.SFU.Network
         {
             switch (NetworkClient.physicsRole)
             {
-                case NetworkClient.PhysicsRole.SEND:
+                case NetworkClient.PhysicsRole.Send:
                     EnableRigidbody(true);
                     break;
-                case NetworkClient.PhysicsRole.RECV:
+                case NetworkClient.PhysicsRole.Recv:
                     EnableRigidbody(false, true);
                     break;
             }
@@ -285,7 +285,14 @@ namespace TLab.SFU.Network
             }
         }
 
-        public void SyncFromOutside(WebTransform transform)
+        public override void OnSyncRequested(int from)
+        {
+            base.OnSyncRequested(from);
+
+            SyncViaWebRTC(true, from);
+        }
+
+        public void SyncFrom(int from, WebTransform transform)
         {
             var position = transform.position;
             var rotation = transform.rotation;
@@ -353,27 +360,31 @@ namespace TLab.SFU.Network
             return isDirty;
         }
 
-        public override void SyncViaWebRTC(bool force, int to)
+        public override void SyncViaWebRTC(bool force, int to, bool reqested = false)
         {
-            if (!Const.SEND.HasFlag(m_direction) || (m_state != State.INITIALIZED))
+            if (!Const.Send.HasFlag(m_direction) || (m_state != State.Initialized))
                 return;
 
             if (force || ApplyCurrentTransform())
             {
-                NetworkClient.instance.SendRTC(to, new MSG_SyncTransform(m_networkState).Marshall());
+                m_tmp.transform = m_networkState;
+                m_tmp.requested = reqested;
+                NetworkClient.instance.SendRTC(to, m_tmp.Marshall());
 
                 m_synchronised = false;
             }
         }
 
-        public override void SyncViaWebSocket(bool force, int to)
+        public override void SyncViaWebSocket(bool force, int to, bool reqested = false)
         {
-            if (!Const.SEND.HasFlag(m_direction) || (m_state != State.INITIALIZED))
+            if (!Const.Send.HasFlag(m_direction) || (m_state != State.Initialized))
                 return;
 
             if (force || ApplyCurrentTransform())
             {
-                NetworkClient.instance.SendWS(to, new MSG_SyncTransform(m_networkState).Marshall());
+                m_tmp.transform = m_networkState;
+                m_tmp.requested = reqested;
+                NetworkClient.instance.SendWS(to, m_tmp.Marshall());
 
                 m_synchronised = false;
             }
@@ -401,19 +412,22 @@ namespace TLab.SFU.Network
                 m_rbState.Update(false, false);
         }
 
-        protected override void Awake()
+        protected override void RegisterOnMessage()
         {
-            base.Awake();
+            base.RegisterOnMessage();
 
-            if (!msgCallbackRegisted)
+            NetworkClient.RegisterOnMessage<MSG_SyncTransform>((from, to, bytes) =>
             {
-                NetworkClient.RegisterOnMessage(MSG_SyncTransform.pktId, (from, to, bytes) =>
+                m_tmp.UnMarshall(bytes);
+
+                var transform = Registry.GetByKey(m_tmp.transform.id);
+                if (transform)
                 {
-                    var @object = new MSG_SyncTransform(bytes);
-                    Registry.GetById(@object.transform.id)?.SyncFromOutside(@object.transform);
-                });
-                msgCallbackRegisted = true;
-            }
+                    transform.SyncFrom(from, m_tmp.transform);
+                    if (m_tmp.requested)
+                        OnSyncRequestCompleted(from);
+                }
+            });
         }
 
         protected override void Start()

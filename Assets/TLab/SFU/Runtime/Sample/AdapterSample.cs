@@ -13,9 +13,9 @@ namespace TLab.SFU.Sample
 
         public enum State
         {
-            NONE,
-            CREATED,
-            DELETED,
+            None,
+            Created,
+            Deleted,
         };
 
         private static State m_state;
@@ -41,14 +41,20 @@ namespace TLab.SFU.Sample
             m_logView?.Append(response);
         });
 
-        public void Create() => adapter.Create(this, (response) => {
-            m_state = State.CREATED;
+        private void OnCreate(string response)
+        {
+            m_state = State.Created;
             m_logView?.Append(response);
-        });
+        }
 
-        public void Delete() => adapter.Delete(this, (response) => {
-            m_state = State.DELETED;
+        public void Create() => adapter.Create(this, OnCreate);
+
+        private void OnDelete(string response)
+        {
+            m_state = State.Deleted;
             m_logView?.Append(response);
-        });
+        }
+
+        public void Delete() => adapter.Delete(this, OnDelete);
     }
 }

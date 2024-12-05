@@ -23,13 +23,13 @@ namespace TLab.SFU.Interact
         {
             switch (m_controller.OnGrab(interactor))
             {
-                case GameObjectController.HandType.MAIN_HAND:
+                case GameObjectController.HandType.First:
                     IgnoreCollision(interactor, true);
                     break;
-                case GameObjectController.HandType.SUB_HAND:
+                case GameObjectController.HandType.Second:
                     IgnoreCollision(interactor, true);
                     break;
-                case GameObjectController.HandType.NONE:
+                case GameObjectController.HandType.None:
                     break;
             }
 
@@ -40,15 +40,15 @@ namespace TLab.SFU.Interact
         {
             switch (m_controller.GetHandType(interactor))
             {
-                case GameObjectController.HandType.MAIN_HAND:
+                case GameObjectController.HandType.First:
                     IgnoreCollision(interactor, false);
                     m_controller.OnRelease(interactor);
                     break;
-                case GameObjectController.HandType.SUB_HAND:
+                case GameObjectController.HandType.Second:
                     IgnoreCollision(interactor, false);
                     m_controller.OnRelease(interactor);
                     break;
-                case GameObjectController.HandType.NONE:
+                case GameObjectController.HandType.None:
                     break;
             }
 
