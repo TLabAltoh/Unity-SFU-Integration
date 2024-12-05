@@ -289,7 +289,7 @@ namespace TLab.SFU.Network
         {
             base.OnSyncRequested(from);
 
-            SyncViaWebRTC(true, from);
+            SyncViaWebRTC(true, from, true);
         }
 
         public void SyncFrom(int from, WebTransform transform)
