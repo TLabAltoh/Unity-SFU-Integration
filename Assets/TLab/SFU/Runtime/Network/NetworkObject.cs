@@ -22,7 +22,8 @@ namespace TLab.SFU.Network
         public enum State
         {
             None,
-            Waiting,
+            Waiting0,   // Wait for first synchronization
+            Waiting1,   // Wait for initialize complete
             Shutdowned,
             Initialized,
         }
@@ -70,11 +71,25 @@ namespace TLab.SFU.Network
             AfterShutdown();
         }
 
-        protected virtual void OnSyncRequestCompleted(int from) => m_state = (m_state == State.Waiting) ? State.Initialized : m_state;
+        protected virtual void OnSyncRequestCompleted(int from) => m_state = (m_state == State.Waiting0) ? State.Waiting1 : m_state;
+
+        public bool started => m_state != State.None;
+
+        protected virtual void OnInitComplete() { }
+
+        public virtual void NoticeInitComplete()
+        {
+            if (m_state == State.Initialized)
+                return;
+
+            m_state = State.Initialized;
+
+            OnInitComplete();
+        }
 
         public virtual void Init(Address32 publicId, bool self)
         {
-            if ((m_state == State.Initialized) || (m_state == State.Waiting))
+            if (started)
                 return;
 
             m_networkId = GetComponent<NetworkId>();
@@ -90,10 +105,11 @@ namespace TLab.SFU.Network
             Register();
 
             if (self)
-                m_state = State.Initialized;
+                NoticeInitComplete();
             else
             {
-                m_state = State.Waiting;
+                // Request synchronization
+                m_state = State.Waiting0;
                 m_tmp.networkId = networkId.id;
                 NetworkClient.instance.SendWS(m_tmp.Marshall());
             }
@@ -103,7 +119,7 @@ namespace TLab.SFU.Network
 
         public virtual void Init(bool self)
         {
-            if ((m_state == State.Initialized) || (m_state == State.Waiting))
+            if (started)
                 return;
 
             m_networkId = GetComponent<NetworkId>();
@@ -117,10 +133,11 @@ namespace TLab.SFU.Network
             Register();
 
             if (self)
-                m_state = State.Initialized;
+                NoticeInitComplete();
             else
             {
-                m_state = State.Waiting;
+                // Request synchronization
+                m_state = State.Waiting0;
                 m_tmp.networkId = networkId.id;
                 NetworkClient.instance.SendWS(m_tmp.Marshall());
             }

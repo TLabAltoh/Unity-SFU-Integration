@@ -3,10 +3,10 @@ using UnityEditor;
 
 namespace TLab.SFU.Network.Editor
 {
-    [CustomEditor(typeof(PrefabStore))]
-    public class PrefabStoreEditor : UnityEditor.Editor
+    [CustomEditor(typeof(SpawnableStore))]
+    public class SpawnableStoreEditor : UnityEditor.Editor
     {
-        private PrefabStore m_instance;
+        private SpawnableStore m_instance;
 
         private int m_prefabIndex = 0;
 
@@ -19,10 +19,7 @@ namespace TLab.SFU.Network.Editor
             new GUIContent("2"),
         };
 
-        private void OnEnable()
-        {
-            m_instance = target as PrefabStore;
-        }
+        private void OnEnable() => m_instance = target as SpawnableStore;
 
         public override void OnInspectorGUI()
         {

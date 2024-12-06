@@ -5,45 +5,45 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
-    using Registry = Registry<string, PrefabShop>;
+    using Registry = Registry<string, SpawnableShop>;
 
-    public class PrefabShop : MonoBehaviour, INetworkRoomEventHandler
+    public class SpawnableShop : MonoBehaviour, INetworkRoomEventHandler
     {
         [SerializeField] private const string m_shopId = "default";
-        [SerializeField] private PrefabStore m_store;
+        [SerializeField] private SpawnableStore m_store;
         [SerializeField] private BaseAnchorProvider m_anchor;
 
-        private Dictionary<int, PrefabStore.StoreAction> m_latestActions = new Dictionary<int, PrefabStore.StoreAction>();
-        public PrefabStore.StoreAction[] latestActions => m_latestActions.Values.ToArray();
+        private Dictionary<int, SpawnableStore.StoreAction> m_latestActions = new Dictionary<int, SpawnableStore.StoreAction>();
+        public SpawnableStore.StoreAction[] latestActions => m_latestActions.Values.ToArray();
 
         [Serializable]
         public struct State
         {
             public string storeId;
-            public PrefabStore.StoreAction[] latestActions;
+            public SpawnableStore.StoreAction[] latestActions;
 
-            public State(string storeId, PrefabStore.StoreAction[] latestActions)
+            public State(string storeId, SpawnableStore.StoreAction[] latestActions)
             {
                 this.storeId = storeId;
                 this.latestActions = latestActions;
             }
         }
 
-        [Serializable, Message(typeof(MSG_PrefabShop), m_shopId)]
-        public class MSG_PrefabShop : Message
+        [Serializable, Message(typeof(MSG_SpawnableShop), m_shopId)]
+        public class MSG_SpawnableShop : Message
         {
-            public PrefabStore.StoreAction action;
+            public SpawnableStore.StoreAction action;
         }
 
         private string THIS_NAME => "[" + this.GetType() + "] ";
 
         public string shopId => m_shopId;
 
-        public PrefabStore store => m_store;
+        public SpawnableStore store => m_store;
 
         public BaseAnchorProvider anchor => m_anchor;
 
-        private MSG_PrefabShop m_tmp = new MSG_PrefabShop();
+        private MSG_SpawnableShop m_tmp = new MSG_SpawnableShop();
 
         public State GetState() => new State(m_shopId, latestActions);
 
@@ -71,13 +71,13 @@ namespace TLab.SFU.Network
         //    return result;
         //}
 
-        private bool ProcessStoreAction(PrefabStore.StoreAction avatorAction, out PrefabStore.Result result)
+        private bool ProcessStoreAction(SpawnableStore.StoreAction avatorAction, out SpawnableStore.Result result)
         {
-            result = new PrefabStore.Result();
+            result = new SpawnableStore.Result();
 
             switch (avatorAction.action)
             {
-                case PrefabStore.StoreAction.Action.Spawn:
+                case SpawnableStore.StoreAction.Action.Spawn:
                     if (!m_latestActions.ContainsKey(avatorAction.userId))
                     {
                         m_latestActions.Add(avatorAction.userId, avatorAction);
@@ -87,7 +87,7 @@ namespace TLab.SFU.Network
                         return true;
                     }
                     return false;
-                case PrefabStore.StoreAction.Action.DeleteByUserId:
+                case SpawnableStore.StoreAction.Action.DeleteByUserId:
                     if (m_latestActions.ContainsKey(avatorAction.userId))
                     {
                         m_latestActions.Remove(avatorAction.userId);

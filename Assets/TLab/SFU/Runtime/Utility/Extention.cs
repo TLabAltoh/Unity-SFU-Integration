@@ -30,12 +30,18 @@ namespace TLab.SFU
 
 		public static void Foreach<T>(this T[] @objects, UnityAction<T> action)
 		{
+			if (objects == null)
+				return;
+
 			foreach (var @object in @objects)
 				action.Invoke(@object);
 		}
 
 		public static T[] GetComponentsInTargets<T>(GameObject[] targets) where T : Component
 		{
+			if (targets == null)
+				return new T[0];
+
 			var componentList = new List<T>();
 			foreach (GameObject target in targets)
 			{

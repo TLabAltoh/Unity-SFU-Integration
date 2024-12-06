@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
-    [CreateAssetMenu(fileName = "Prefab Store", menuName = "TLab/SFU/Prefab Store")]
-    public class PrefabStore : ScriptableObject
+    [CreateAssetMenu(fileName = "Spawnable Store", menuName = "TLab/SFU/Spawnable Store")]
+    public class SpawnableStore : ScriptableObject
     {
         #region STRUCT
 
@@ -65,11 +65,13 @@ namespace TLab.SFU.Network
         public class History
         {
             public int userId;
+            public NetworkObjectGroup group;
             public GameObject instance;
 
-            public History(int userId, GameObject instance)
+            public History(int userId, NetworkObjectGroup group, GameObject instance)
             {
                 this.userId = userId;
+                this.group = group;
                 this.instance = instance;
             }
         }
@@ -130,11 +132,13 @@ namespace TLab.SFU.Network
         public class Result
         {
             public StoreAction.Action action;
+            public NetworkObjectGroup objectGroup;
             public GameObject instance;
 
-            public Result(StoreAction.Action action, GameObject instance)
+            public Result(StoreAction.Action action, NetworkObjectGroup objectGroup, GameObject instance)
             {
                 this.action = action;
+                this.objectGroup = objectGroup;
                 this.instance = instance;
             }
 
@@ -149,7 +153,7 @@ namespace TLab.SFU.Network
             switch (storeAction.action)
             {
                 case StoreAction.Action.Spawn:
-                    SpawnByElementId(storeAction.elemId, storeAction.userId, storeAction.publicId, storeAction.transform, out result.instance);
+                    SpawnByElementId(storeAction.elemId, storeAction.userId, storeAction.publicId, storeAction.transform, out result.objectGroup, out result.instance);
                     return;
                 case StoreAction.Action.DeleteByUserId:
                     DeleteByUserId(storeAction.userId);
@@ -188,33 +192,34 @@ namespace TLab.SFU.Network
             return true;
         }
 
-        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
+        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out NetworkObjectGroup group, out GameObject instance)
         {
             if (!GetByElementId(elemId, userId, out var prefab))
             {
                 Debug.LogWarning(THIS_NAME + "element is null !");
                 instance = null;
+                group = null;
                 return false;
             }
 
             instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            instance.Foreach<NetworkObject>((t) => t.Init(publicId, userId == NetworkClient.userId));
+            group = instance.GetComponent<NetworkObjectGroup>();
+            group.InitAllObjects(publicId, userId == NetworkClient.userId);
 
-            Register(publicId, new History(userId, instance));
+            Register(publicId, new History(userId, group, instance));
 
             return true;
         }
 
-        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
+        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out NetworkObjectGroup group, out GameObject instance)
         {
             GetByElementName(elemName, userId, out var prefab);
 
             instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            instance.Foreach<NetworkObject>((t) => t.Init(publicId, userId == NetworkClient.userId));
-
-            Register(publicId, new History(userId, instance));
+            group = instance.GetComponent<NetworkObjectGroup>();
+            group.InitAllObjects(publicId, userId == NetworkClient.userId);
 
             return true;
         }

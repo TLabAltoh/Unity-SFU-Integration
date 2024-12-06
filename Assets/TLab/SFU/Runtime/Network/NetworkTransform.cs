@@ -250,14 +250,14 @@ namespace TLab.SFU.Network
             angularVelocity = rotationDiff / (history.Length - 1) / Time.deltaTime;
         }
 
-        public virtual void OnPhysicsRoleChange()
+        public virtual void OnPhysicsBehaviourChange()
         {
-            switch (NetworkClient.physicsRole)
+            switch (NetworkClient.physicsBehaviour)
             {
-                case NetworkClient.PhysicsRole.Send:
+                case NetworkClient.PhysicsBehaviour.Send:
                     EnableRigidbody(true);
                     break;
-                case NetworkClient.PhysicsRole.Recv:
+                case NetworkClient.PhysicsBehaviour.Recv:
                     EnableRigidbody(false, true);
                     break;
             }
@@ -289,7 +289,7 @@ namespace TLab.SFU.Network
         {
             base.OnSyncRequested(from);
 
-            SyncViaWebRTC(true, from, true);
+            SyncViaWebSocket(true, from, true);
         }
 
         public void SyncFrom(int from, WebTransform transform)

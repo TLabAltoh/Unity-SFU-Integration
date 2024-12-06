@@ -199,17 +199,17 @@ namespace TLab.SFU.Interact
             NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GrabLock).Marshall());
         }
 
-        public override void OnPhysicsRoleChange()
+        public override void OnPhysicsBehaviourChange()
         {
             if (m_grabState.grabbed)
                 return;
 
-            switch (NetworkClient.physicsRole)
+            switch (NetworkClient.physicsBehaviour)
             {
-                case NetworkClient.PhysicsRole.Send:
+                case NetworkClient.PhysicsBehaviour.Send:
                     EnableRigidbody(true);
                     break;
-                case NetworkClient.PhysicsRole.Recv:
+                case NetworkClient.PhysicsBehaviour.Recv:
                     EnableRigidbody(false, true);
                     break;
             }
@@ -217,7 +217,7 @@ namespace TLab.SFU.Interact
 
         public override void EnableRigidbody(bool active, bool force = false)
         {
-            if (force || (NetworkClient.physicsRole == NetworkClient.PhysicsRole.Send))
+            if (force || (NetworkClient.physicsBehaviour == NetworkClient.PhysicsBehaviour.Send))
                 base.EnableRigidbody(active);
         }
 

@@ -409,9 +409,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9eba22ddb83762b4ab671354ed507912, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_storeName: item
-  m_store: {fileID: 0}
-  m_anchorProvider: {fileID: 3780820281229064134}
+  m_store: {fileID: 11400000, guid: be4547a289e905d438ec5d692103aa33, type: 2}
+  m_anchor: {fileID: 3780820281229064134}
 --- !u!114 &3780820281229064134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -948,6 +947,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1992072394097134739}
+  - component: {fileID: 5102256938453195480}
   m_Layer: 0
   m_Name: NetworkSample
   m_TagString: Untagged
@@ -974,6 +974,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5102256938453195480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1992072394097134738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 148e1b8f7e01c4e45ac6dbc558328948, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_registry:
+  - {fileID: 2344611332196474381}
+  - {fileID: 4126424925775958839}
+  - {fileID: 2504157659483334309}
 --- !u!1 &1992072394206774098
 GameObject:
   m_ObjectHideFlags: 0
@@ -1359,7 +1375,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_adapter: {fileID: 11400000, guid: 4db9b2b4314be9e4ea6cac97593e43a6, type: 2}
   m_avatorStore: {fileID: 11400000, guid: cba48bb44de940e4f84daeabb33e6dd5, type: 2}
-  m_respownAnchor: {fileID: 75741989075287186}
+  m_anchor: {fileID: 75741989075287186}
+  m_objectGroup: {fileID: 5102256938453195480}
   m_onLog:
     m_PersistentCalls:
       m_Calls:
