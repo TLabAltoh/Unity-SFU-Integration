@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Collections;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -11,7 +11,7 @@ namespace TLab.SFU.Network
         #region STRUCT
 
 
-        [System.Serializable]
+        [Serializable]
         public class StoreElement
         {
             public string name;
@@ -19,10 +19,10 @@ namespace TLab.SFU.Network
             public GameObject distribute;
         }
 
-        [System.Serializable]
-        public struct StoreAction
+        [Serializable]
+        public struct SpawnAction
         {
-            [System.Serializable]
+            [Serializable]
             public enum Action
             {
                 None,
@@ -31,22 +31,22 @@ namespace TLab.SFU.Network
                 DeleteByPublicId,
             }
 
-            public static StoreAction GetSpawnAction(int elemId, int userId, Address32 publicId, WebTransform transform)
+            public static SpawnAction GetSpawnAction(int elemId, int userId, Address32 publicId, WebTransform transform)
             {
-                return new StoreAction(Action.Spawn, elemId, userId, publicId, transform);
+                return new SpawnAction(Action.Spawn, elemId, userId, publicId, transform);
             }
 
-            public static StoreAction GetDeleteAction(int userId)
+            public static SpawnAction GetDeleteAction(int userId)
             {
-                return new StoreAction(Action.DeleteByUserId, -1, userId, new Address32(), new WebTransform());
+                return new SpawnAction(Action.DeleteByUserId, -1, userId, new Address32(), new WebTransform());
             }
 
-            public static StoreAction GetDeleteAction(Address32 publicId)
+            public static SpawnAction GetDeleteAction(Address32 publicId)
             {
-                return new StoreAction(Action.DeleteByPublicId, -1, -1, publicId, new WebTransform());
+                return new SpawnAction(Action.DeleteByPublicId, -1, -1, publicId, new WebTransform());
             }
 
-            public StoreAction(Action action, int elemId, int userId, Address32 publicId, WebTransform transform)
+            public SpawnAction(Action action, int elemId, int userId, Address32 publicId, WebTransform transform)
             {
                 this.action = action;
                 this.elemId = elemId;
@@ -62,38 +62,50 @@ namespace TLab.SFU.Network
             public WebTransform transform;
         }
 
-        public class History
+        public class InstanceRef : ICloneable
         {
             public int userId;
-            public NetworkObjectGroup group;
+            public SpawnAction.Action action;
+            public SpawnAction spawnAction;
+            public Address32 publicId;
             public GameObject instance;
+            public NetworkObjectGroup objectGroup;
 
-            public History(int userId, NetworkObjectGroup group, GameObject instance)
+            public InstanceRef(int userId, SpawnAction.Action action, SpawnAction spawnAction, Address32 publicId, NetworkObjectGroup objectGroup, GameObject instance)
             {
                 this.userId = userId;
-                this.group = group;
+                this.action = action;
+                this.spawnAction = spawnAction;
+                this.publicId = publicId;
+                this.objectGroup = objectGroup;
                 this.instance = instance;
             }
+
+            public InstanceRef() { }
+
+            public object Clone() => new InstanceRef(userId, action, spawnAction, publicId, objectGroup, instance);
         }
 
         #endregion STRUCT
 
         #region REGISTORY
 
-        private Hashtable m_registry = new Hashtable();
+        private Dictionary<Address32, InstanceRef> m_registry = new Dictionary<Address32, InstanceRef>();
 
-        private Hashtable m_map = new Hashtable();
+        private Dictionary<int, List<Address32>> m_map = new Dictionary<int, List<Address32>>();
 
-        protected void Register(Address32 publicId, History history)
+        public Dictionary<Address32, InstanceRef> registry => m_registry;
+
+        protected void Register(Address32 publicId, InstanceRef instance)
         {
             if (!m_registry.ContainsKey(publicId))
             {
-                m_registry.Add(publicId, history);
+                m_registry.Add(publicId, instance);
 
-                if (!m_map.ContainsKey(history.userId))
-                    m_map[history.userId] = new List<Address32>();
+                if (!m_map.ContainsKey(instance.userId))
+                    m_map[instance.userId] = new List<Address32>();
 
-                var map = m_map[history.userId] as List<Address32>;
+                var map = m_map[instance.userId];
                 map.Add(publicId);
             }
         }
@@ -102,26 +114,32 @@ namespace TLab.SFU.Network
         {
             if (m_registry.ContainsKey(publicId))
             {
-                var history = m_registry[publicId] as History;
+                var instance = m_registry[publicId];
                 m_registry.Remove(publicId);
 
-                var map = m_map[history.userId] as List<Address32>;
+                var map = m_map[instance.userId];
                 map.Remove(publicId);
             }
         }
 
         public void ClearRegistry()
         {
-            var map = m_registry.Values.Cast<History>();
+            var map = m_registry.Values.Cast<InstanceRef>();
 
-            foreach (var history in map)
-                Destroy(history.instance);
+            foreach (var instance in map)
+                Destroy(instance.instance);
 
             m_registry.Clear();
             m_map.Clear();
         }
 
-        public History GetById(Address32 publicId) => m_registry[publicId] as History;
+        public IEnumerable<SpawnAction> GetLatestActions() => m_registry.Values.Select((t) => t.spawnAction);
+
+        public SpawnAction[] GetLatestActionArray() => GetLatestActions().ToArray();
+
+        public IEnumerable<InstanceRef> GetByUserId(int userId) => m_registry.Where((t) => t.Value.userId == userId).Select((t) => t.Value);
+
+        public InstanceRef GetByPublicId(Address32 publicId) => m_registry[publicId];
 
         #endregion REGISTORY
 
@@ -129,39 +147,22 @@ namespace TLab.SFU.Network
 
         private string THIS_NAME => "[" + this.GetType() + $"] ";
 
-        public class Result
+        public bool ProcessSpawnAction(SpawnAction spawnAction, out InstanceRef instanceRef)
         {
-            public StoreAction.Action action;
-            public NetworkObjectGroup objectGroup;
-            public GameObject instance;
+            instanceRef = new InstanceRef();
+            instanceRef.action = spawnAction.action;
 
-            public Result(StoreAction.Action action, NetworkObjectGroup objectGroup, GameObject instance)
+            switch (spawnAction.action)
             {
-                this.action = action;
-                this.objectGroup = objectGroup;
-                this.instance = instance;
+                case SpawnAction.Action.Spawn:
+                    return SpawnByElementId(spawnAction.elemId, spawnAction.userId, spawnAction.publicId, spawnAction.transform, out instanceRef);
+                case SpawnAction.Action.DeleteByUserId:
+                    return DeleteByUserId(spawnAction.userId);
+                case SpawnAction.Action.DeleteByPublicId:
+                    return DeleteByPublicId(spawnAction.publicId);
             }
 
-            public Result() { }
-        }
-
-        public void ProcessStoreAction(StoreAction storeAction, out Result result)
-        {
-            result = new Result();
-            result.action = storeAction.action;
-
-            switch (storeAction.action)
-            {
-                case StoreAction.Action.Spawn:
-                    SpawnByElementId(storeAction.elemId, storeAction.userId, storeAction.publicId, storeAction.transform, out result.objectGroup, out result.instance);
-                    return;
-                case StoreAction.Action.DeleteByUserId:
-                    DeleteByUserId(storeAction.userId);
-                    return;
-                case StoreAction.Action.DeleteByPublicId:
-                    DeleteByPublicId(storeAction.publicId);
-                    return;
-            }
+            return false;
         }
 
         public bool DeleteByPublicId(Address32 publicId)
@@ -169,12 +170,12 @@ namespace TLab.SFU.Network
             if (!m_registry.ContainsKey(publicId))
                 return false;
 
-            var history = m_registry[publicId] as History;
-            Destroy(history.instance);
+            var instance = m_registry[publicId];
+            Destroy(instance.instance);
 
             m_registry.Remove(publicId);
 
-            var map = m_map[history.userId] as List<Address32>;
+            var map = m_map[instance.userId];
             map.Remove(publicId);
 
             return true;
@@ -185,41 +186,51 @@ namespace TLab.SFU.Network
             if (!m_map.ContainsKey(userId))
                 return false;
 
-            var map = m_map[userId] as List<Address32>;
+            var map = m_map[userId];
             map = new List<Address32>(map);
             map.ForEach((id) => DeleteByPublicId(id));
 
             return true;
         }
 
-        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out NetworkObjectGroup group, out GameObject instance)
+        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out InstanceRef instanceRef)
         {
             if (!GetByElementId(elemId, userId, out var prefab))
             {
                 Debug.LogWarning(THIS_NAME + "element is null !");
-                instance = null;
-                group = null;
+
+                instanceRef = new InstanceRef();
+                instanceRef.action = SpawnAction.Action.Spawn;
+
                 return false;
             }
 
-            instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
+            var instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            group = instance.GetComponent<NetworkObjectGroup>();
-            group.InitAllObjects(publicId, userId == NetworkClient.userId);
+            var group = instance.GetComponent<NetworkObjectGroup>();
+            var self = userId == NetworkClient.userId;
+            group.InitAllObjects(publicId, self);
 
-            Register(publicId, new History(userId, group, instance));
+            var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, publicId, transform);
+            instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, publicId, group, instance);
+            Register(publicId, instanceRef.Clone() as InstanceRef);
 
             return true;
         }
 
-        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out NetworkObjectGroup group, out GameObject instance)
+        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out InstanceRef instanceRef)
         {
-            GetByElementName(elemName, userId, out var prefab);
+            GetByElementName(elemName, userId, out var elemId, out var prefab);
 
-            instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
+            var instance = Instantiate(prefab, @transform.position, @transform.rotation.ToQuaternion());
 
-            group = instance.GetComponent<NetworkObjectGroup>();
-            group.InitAllObjects(publicId, userId == NetworkClient.userId);
+            var group = instance.GetComponent<NetworkObjectGroup>();
+            var self = userId == NetworkClient.userId;
+            group.InitAllObjects(publicId, self);
+
+            var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, publicId, transform);
+            instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, publicId, group, instance);
+            Register(publicId, instanceRef.Clone() as InstanceRef);
 
             return true;
         }
@@ -235,17 +246,21 @@ namespace TLab.SFU.Network
             if (NetworkClient.IsOwn(userId))
                 instance = m_store[elemId].prefab;
             else
-                instance = (m_store[elemId].distribute != null) ? m_store[(int)elemId].distribute : m_store[(int)elemId].prefab;
+                instance = (m_store[elemId].distribute != null) ? m_store[elemId].distribute : m_store[elemId].prefab;
 
             return instance != null;
         }
 
-        public bool GetByElementName(string elemName, int userId, out GameObject instance)
+        public bool GetByElementName(string elemName, int userId, out int elemId, out GameObject instance)
         {
-            foreach (var elem in m_store)
+            for (int i = 0; i < m_store.Count; i++)
             {
+                var elem = m_store[i];
+
                 if (elem.name == elemName)
                 {
+                    elemId = i;
+
                     if (NetworkClient.IsOwn(userId))
                         instance = elem.prefab;
                     else
@@ -255,7 +270,9 @@ namespace TLab.SFU.Network
                 }
             }
 
+            elemId = -1;
             instance = null;
+
             return false;
         }
     }

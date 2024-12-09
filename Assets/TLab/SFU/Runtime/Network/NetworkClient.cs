@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Collections;
+using System.Threading.Tasks;
 using System;
 using System.Linq;
 using System.Text;
@@ -18,6 +18,7 @@ namespace TLab.SFU.Network
     {
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
+        [SerializeField] private Transform m_playerRoot;
         [SerializeField] private Adapter m_adapter;
         [SerializeField] private SpawnableStore m_avatorStore;
         [SerializeField] private BaseAnchorProvider m_anchor;
@@ -30,11 +31,10 @@ namespace TLab.SFU.Network
 
         public static Queue<Address32> idAvails = new Queue<Address32>();
 
-        private Dictionary<int, SpawnableStore.StoreAction> m_latestAvatorActions = new Dictionary<int, SpawnableStore.StoreAction>();
-        public SpawnableStore.StoreAction[] latestAvatorActions => m_latestAvatorActions.Values.ToArray();
+        private Dictionary<int, SpawnableStore.SpawnAction> m_latestAvatorActions = new Dictionary<int, SpawnableStore.SpawnAction>();
+        public SpawnableStore.SpawnAction[] latestAvatorActions => m_latestAvatorActions.Values.ToArray();
 
-        private IEnumerator m_connectTask = null;
-        private IEnumerator m_syncWorldTask = null;
+        private Dictionary<string, Coroutine> m_coroutines = new Dictionary<string, Coroutine>();
 
         public static NetworkClient instance;
 
@@ -130,13 +130,13 @@ namespace TLab.SFU.Network
                 this.messageType = messageType;
             }
 
-            public MSG_Join(MessageType messageType, SpawnableStore.StoreAction avatorAction) : this(messageType)
+            public MSG_Join(MessageType messageType, SpawnableStore.SpawnAction avatorAction) : this(messageType)
             {
                 this.messageType = messageType;
                 this.avatorAction = avatorAction;
             }
 
-            public MSG_Join(MessageType messageType, SpawnableStore.StoreAction avatorAction, Address32[] idAvails, PhysicsBehaviour physicsBehaviour, SpawnableShop.State[] latestShopStates, SpawnableStore.StoreAction[] latestAvatorActions) : this(messageType, avatorAction)
+            public MSG_Join(MessageType messageType, SpawnableStore.SpawnAction avatorAction, Address32[] idAvails, PhysicsBehaviour physicsBehaviour, SpawnableShop.State[] latestShopStates, SpawnableStore.SpawnAction[] latestAvatorActions) : this(messageType, avatorAction)
             {
                 this.idAvails = idAvails;
                 this.physicsBehaviour = physicsBehaviour;
@@ -149,13 +149,13 @@ namespace TLab.SFU.Network
             public MessageType messageType;
 
             // Request0, Response0
-            public SpawnableStore.StoreAction avatorAction;
+            public SpawnableStore.SpawnAction avatorAction;
 
             // Response0
             public Address32[] idAvails;
             public PhysicsBehaviour physicsBehaviour;
             public SpawnableShop.State[] latestShopStates;
-            public SpawnableStore.StoreAction[] latestAvatorActions;
+            public SpawnableStore.SpawnAction[] latestAvatorActions;
         }
 
         [Serializable, Message(typeof(MSG_UpdatePhysicsBehaviour))]
@@ -246,10 +246,7 @@ namespace TLab.SFU.Network
                 m_messageCallbacks[msgId] = callback;
         }
 
-        public static void RegisterOnMessage<T>(OnMessageCallback callback) where T : Message
-        {
-            RegisterOnMessage(Message.GetMsgId<T>(), callback);
-        }
+        public static void RegisterOnMessage<T>(OnMessageCallback callback) where T : Message => RegisterOnMessage(Message.GetMsgId<T>(), callback);
 
         public static void UnRegisterOnMessage(int msgId)
         {
@@ -259,7 +256,7 @@ namespace TLab.SFU.Network
 
         public bool IsPlayerJoined(int index) => m_latestAvatorActions.ContainsKey(index);
 
-        public bool GetLatestAvatorAction(int index, out SpawnableStore.StoreAction avatorAction)
+        public bool GetLatestAvatorAction(int index, out SpawnableStore.SpawnAction avatorAction)
         {
             if (m_latestAvatorActions.ContainsKey(index))
             {
@@ -268,33 +265,41 @@ namespace TLab.SFU.Network
             }
             else
             {
-                avatorAction = new SpawnableStore.StoreAction();
+                avatorAction = new SpawnableStore.SpawnAction();
                 return false;
             }
         }
 
-        private bool ProcessAvatorAction(SpawnableStore.StoreAction avatorAction, out SpawnableStore.Result result)
+        private bool ProcessAvatorAction(SpawnableStore.SpawnAction avatorAction, out SpawnableStore.InstanceRef instanceRef)
         {
-            result = new SpawnableStore.Result();
+            instanceRef = new SpawnableStore.InstanceRef();
 
             switch (avatorAction.action)
             {
-                case SpawnableStore.StoreAction.Action.Spawn:
+                case SpawnableStore.SpawnAction.Action.Spawn:
                     if (!m_latestAvatorActions.ContainsKey(avatorAction.userId))
                     {
-                        m_latestAvatorActions.Add(avatorAction.userId, avatorAction);
+                        if (m_avatorStore.ProcessSpawnAction(avatorAction, out instanceRef))
+                        {
+                            var self = avatorAction.userId == userId;
+                            if (self)
+                            {
+                                m_playerRoot.position = avatorAction.transform.position;
+                                m_playerRoot.rotation = avatorAction.transform.rotation.ToQuaternion();
+                            }
 
-                        m_avatorStore.ProcessStoreAction(avatorAction, out result);
-
-                        return true;
+                            m_latestAvatorActions.Add(avatorAction.userId, avatorAction);
+                            return true;
+                        }
+                        return false;
                     }
                     return false;
-                case SpawnableStore.StoreAction.Action.DeleteByUserId:
+                case SpawnableStore.SpawnAction.Action.DeleteByUserId:
                     if (m_latestAvatorActions.ContainsKey(avatorAction.userId))
                     {
                         m_latestAvatorActions.Remove(avatorAction.userId);
 
-                        m_avatorStore.ProcessStoreAction(avatorAction, out result);
+                        m_avatorStore.ProcessSpawnAction(avatorAction, out instanceRef);
 
                         return true;
                     }
@@ -305,47 +310,53 @@ namespace TLab.SFU.Network
 
         private void SyncSpawnableShopState(SpawnableShop.State shopState) => SpawnableShopRegistry.GetByKey(shopState.storeId)?.SyncState(shopState);
 
-        private void OnSyncWorldComplete(SpawnableStore.StoreAction avatorAction)
+        private void OnSyncWorldComplete(SpawnableStore.SpawnAction avatorAction)
         {
             m_onJoin.ForEach((c) => c.Item1.Invoke());
 
-            Debug.Log(THIS_NAME + $"{nameof(SyncWorldTask)}");
+            Debug.Log(THIS_NAME + $"{nameof(OnSyncWorldComplete)}");
+
+            ProcessAvatorAction(avatorAction, out var result);
 
             SendWS(new MSG_Join(MSG_Join.MessageType.Finish, avatorAction).Marshall());
         }
 
-        private IEnumerator SyncWorldTask(SpawnableStore.StoreAction avatorAction, NetworkObjectGroup[] groups)
+        private IEnumerator SyncWorldTask(SpawnableStore.SpawnAction avatorAction, NetworkObjectGroup[] groups)
         {
             var complete = false;
             while (!complete)
             {
-                groups.Foreach((t) => complete &= (t.state == NetworkObject.State.Initialized));
-                yield return null;
+                complete = true;
+                groups.Foreach((t) => complete &= ((t.state == NetworkObject.State.Initialized) || (t.state == NetworkObject.State.Shutdowned)));
+                yield return new WaitForSeconds(1f);
             }
-            m_syncWorldTask = null;
 
             OnSyncWorldComplete(avatorAction);
+
+            UnRegisterCoroutine(nameof(SyncWorldTask));
 
             yield break;
         }
 
-        private void SyncWorldAsync(SpawnableStore.StoreAction avatorAction, SpawnableStore.StoreAction[] latestAvatorActions, SpawnableShop.State[] latestShopStates)
+        private void SyncWorldAsync(SpawnableStore.SpawnAction avatorAction, SpawnableStore.SpawnAction[] latestAvatorActions, SpawnableShop.State[] latestShopStates)
         {
             var objectGroups = new List<NetworkObjectGroup>() { m_objectGroup };
 
             m_objectGroup.InitAllObjects(false);
 
             latestAvatorActions.Foreach((avatorAction) => {
+                Debug.Log(THIS_NAME + "latestAvatorAction:" + avatorAction.elemId);
+
                 if (ProcessAvatorAction(avatorAction, out var result))
                 {
-                    if (result.action == SpawnableStore.StoreAction.Action.Spawn)
+                    if (result.action == SpawnableStore.SpawnAction.Action.Spawn)
                         objectGroups.Add(result.objectGroup);
                 }
             });
 
             latestShopStates.Foreach((shopState) => SyncSpawnableShopState(shopState));
 
-            m_syncWorldTask = SyncWorldTask(avatorAction, objectGroups.ToArray());
+            RegisterCoroutine(nameof(SyncWorldTask), StartCoroutine(SyncWorldTask(avatorAction, objectGroups.ToArray())));
         }
 
         private IEnumerator ConnectTask()
@@ -420,13 +431,13 @@ namespace TLab.SFU.Network
 
             RegisterOnMessage<MSG_IdAvails>((from, to, bytes) =>
             {
-                var @object = new MSG_IdAvails(bytes);
+                var receive = new MSG_IdAvails(bytes);
 
-                switch (@object.messageType)
+                switch (receive.messageType)
                 {
                     case MSG_IdAvails.MessageType.Request:
-                        @object.idAvails = UniqueId.Generate(@object.length);
-                        SendWS(@object.Marshall());
+                        receive.idAvails = UniqueId.Generate(receive.length);
+                        SendWS(receive.Marshall());
                         break;
                     case MSG_IdAvails.MessageType.Response:
                         break;
@@ -436,15 +447,37 @@ namespace TLab.SFU.Network
 
             m_wsClient = WebSocketClient.Open(this, m_adapter, "master", OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError);
 
-            m_connectTask = null;
+            UnRegisterCoroutine(nameof(ConnectTask));
 
             yield break;
+        }
+
+        private void RegisterCoroutine(string key, Coroutine coroutine)
+        {
+            if (m_coroutines.ContainsKey(key))
+            {
+                var tmp = m_coroutines[key];
+                if (tmp != null)
+                    StopCoroutine(tmp);
+            }
+            m_coroutines[key] = coroutine;
+        }
+
+        private void UnRegisterCoroutine(string key)
+        {
+            if (m_coroutines.ContainsKey(key))
+            {
+                var coroutine = m_coroutines[key];
+                if (coroutine != null)
+                    StopCoroutine(coroutine);
+                m_coroutines.Remove(key);
+            }
         }
 
         private void OnJoin(string @string)
         {
             m_onLog.Invoke(@string);
-            m_connectTask = ConnectTask();
+            RegisterCoroutine(nameof(ConnectTask), StartCoroutine(ConnectTask()));
         }
 
         private void OnCreate(string @string)
@@ -524,12 +557,6 @@ namespace TLab.SFU.Network
 
         void Awake() => instance = this;
 
-        private void Update()
-        {
-            m_connectTask?.MoveNext();
-            m_syncWorldTask?.MoveNext();
-        }
-
         private void OnDestroy()
         {
             CloseRTC();
@@ -560,15 +587,15 @@ namespace TLab.SFU.Network
             {
                 UpdatePhysicsBehaviour(PhysicsBehaviour.Send);
 
-                Foreach<NetworkObject>((t) => t.Init(true));
+                m_objectGroup.InitAllObjects(true);
 
                 if (m_anchor.Get(0, out var anchor))
-                    ProcessAvatorAction(SpawnableStore.StoreAction.GetSpawnAction(0, 0, UniqueId.Generate(), anchor), out var result);
+                    ProcessAvatorAction(SpawnableStore.SpawnAction.GetSpawnAction(0, 0, UniqueId.Generate(), anchor), out var result);
             }
             else
             {
                 if (m_anchor.Get(userId, out var anchor))
-                    SendWS(0, new MSG_Join(MSG_Join.MessageType.Request0, SpawnableStore.StoreAction.GetSpawnAction(0, userId, new Address32(), anchor)).Marshall());
+                    SendWS(0, new MSG_Join(MSG_Join.MessageType.Request0, SpawnableStore.SpawnAction.GetSpawnAction(0, userId, new Address32(), anchor)).Marshall());
             }
         }
 
@@ -580,7 +607,7 @@ namespace TLab.SFU.Network
         {
             m_onLog.Invoke($"{nameof(OnClose)}: " + from);
 
-            ProcessAvatorAction(SpawnableStore.StoreAction.GetDeleteAction(userId), out var result);
+            ProcessAvatorAction(SpawnableStore.SpawnAction.GetDeleteAction(from), out var result);
 
             m_onExit.ForEach((c) => c.Item2.Invoke(from));
         }

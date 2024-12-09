@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System;
-using System.Linq;
 using UnityEngine;
 
 namespace TLab.SFU.Network
@@ -13,16 +11,13 @@ namespace TLab.SFU.Network
         [SerializeField] private SpawnableStore m_store;
         [SerializeField] private BaseAnchorProvider m_anchor;
 
-        private Dictionary<int, SpawnableStore.StoreAction> m_latestActions = new Dictionary<int, SpawnableStore.StoreAction>();
-        public SpawnableStore.StoreAction[] latestActions => m_latestActions.Values.ToArray();
-
         [Serializable]
         public struct State
         {
             public string storeId;
-            public SpawnableStore.StoreAction[] latestActions;
+            public SpawnableStore.SpawnAction[] latestActions;
 
-            public State(string storeId, SpawnableStore.StoreAction[] latestActions)
+            public State(string storeId, SpawnableStore.SpawnAction[] latestActions)
             {
                 this.storeId = storeId;
                 this.latestActions = latestActions;
@@ -32,7 +27,7 @@ namespace TLab.SFU.Network
         [Serializable, Message(typeof(MSG_SpawnableShop), m_shopId)]
         public class MSG_SpawnableShop : Message
         {
-            public SpawnableStore.StoreAction action;
+            public SpawnableStore.SpawnAction action;
         }
 
         private string THIS_NAME => "[" + this.GetType() + "] ";
@@ -45,7 +40,7 @@ namespace TLab.SFU.Network
 
         private MSG_SpawnableShop m_tmp = new MSG_SpawnableShop();
 
-        public State GetState() => new State(m_shopId, latestActions);
+        public State GetState() => new State(m_shopId, m_store.GetLatestActionArray());
 
         //public bool RPCInstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
         //{
@@ -71,40 +66,12 @@ namespace TLab.SFU.Network
         //    return result;
         //}
 
-        private bool ProcessStoreAction(SpawnableStore.StoreAction avatorAction, out SpawnableStore.Result result)
-        {
-            result = new SpawnableStore.Result();
-
-            switch (avatorAction.action)
-            {
-                case SpawnableStore.StoreAction.Action.Spawn:
-                    if (!m_latestActions.ContainsKey(avatorAction.userId))
-                    {
-                        m_latestActions.Add(avatorAction.userId, avatorAction);
-
-                        m_store.ProcessStoreAction(avatorAction, out result);
-
-                        return true;
-                    }
-                    return false;
-                case SpawnableStore.StoreAction.Action.DeleteByUserId:
-                    if (m_latestActions.ContainsKey(avatorAction.userId))
-                    {
-                        m_latestActions.Remove(avatorAction.userId);
-
-                        m_store.ProcessStoreAction(avatorAction, out result);
-
-                        return true;
-                    }
-                    return false;
-            }
-            return false;
-        }
+        private bool ProcessSpawnAction(SpawnableStore.SpawnAction spawnAction, out SpawnableStore.InstanceRef instanceRef) => m_store.ProcessSpawnAction(spawnAction, out instanceRef);
 
         public void SyncState(State state)
         {
             foreach (var action in state.latestActions)
-                ProcessStoreAction(action, out var result);
+                ProcessSpawnAction(action, out var instanceRef);
         }
 
         private void OnEnable()

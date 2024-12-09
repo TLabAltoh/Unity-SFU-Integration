@@ -194,7 +194,7 @@ namespace TLab.SFU.Interact
                     break;
             }
 
-            SyncViaWebSocket(false, NetworkClient.userId);
+            SyncViaWebSocket(NetworkClient.userId);
 
             NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GrabLock).Marshall());
         }

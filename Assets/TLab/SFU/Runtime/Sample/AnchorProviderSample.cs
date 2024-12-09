@@ -47,8 +47,8 @@ namespace TLab.SFU.Sample
         {
             if (userId == 0)
             {
-                anchor = new WebTransform();
-                return false;
+                anchor = m_host.ToWebTransform();
+                return true;
             }
 
             var curves = m_curves.Where((c) => (userId >= c.users.x && userId <= c.users.y)).ToArray();

@@ -762,11 +762,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_privateId:
-    m_a0: 0
-    m_a1: 0
-    m_a2: 0
-    m_a3: 0
-    m_hash: 0
+    m_a0: 129
+    m_a1: 149
+    m_a2: 244
+    m_a3: 13
+    m_hash: -1427622410
   m_publicId:
     m_a0: 0
     m_a1: 0
@@ -778,11 +778,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 0
-    m_a5: 0
-    m_a6: 0
-    m_a7: 0
-    m_hash: 0
+    m_a4: 129
+    m_a5: 149
+    m_a6: 244
+    m_a7: 13
+    m_hash: 473981585
 --- !u!114 &4422602871895655704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -796,6 +796,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_group: {fileID: 0}
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01

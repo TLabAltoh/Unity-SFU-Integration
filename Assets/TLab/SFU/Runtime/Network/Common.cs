@@ -15,6 +15,11 @@ namespace TLab.SFU.Network
         public const Direction Recv = Direction.SendOnly | Direction.RecvOnly;
     }
 
+    public static class WebTransformExtension
+    {
+        public static WebTransform ToWebTransform(this Transform transform) => new WebTransform(transform);
+    }
+
     [System.Serializable]
     public struct WebTransform
     {

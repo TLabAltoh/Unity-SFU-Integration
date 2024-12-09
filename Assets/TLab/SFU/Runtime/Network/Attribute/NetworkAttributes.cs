@@ -13,14 +13,14 @@ namespace TLab.SFU.Network
         {
             this.type = type;
 
-            msgId = Cryptography.MD5From(type.Name);
+            msgId = Cryptography.MD5From(type.FullName);
         }
 
         public MessageAttribute(Type type, string seed)
         {
             this.type = type;
 
-            msgId = Cryptography.MD5From(type.Name + seed);
+            msgId = Cryptography.MD5From(type.FullName + seed);
         }
     }
 }

@@ -27,7 +27,9 @@ namespace TLab.SFU.Network
 
         public int msgId => m_msgId;
 
-        public static int GetMsgId<T>() where T : Message => Cryptography.MD5From(typeof(T).Name);
+        public static int GetMsgId<T>() where T : Message => Cryptography.MD5From(typeof(T).FullName);
+
+        public static int GetMsgId<T>(string seed) where T : Message => Cryptography.MD5From(typeof(T).FullName + seed);
 
         public virtual byte[] Marshall() => Combine(SfuClient.SEND_PACKET_HEADER_SIZE, m_msgId, Encoding.UTF8.GetBytes(JsonUtility.ToJson(this)));
 

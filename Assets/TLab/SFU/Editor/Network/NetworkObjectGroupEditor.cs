@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace TLab.SFU.Network.Editor
 {
-    [CustomEditor(typeof(NetworkObjectGroup))]
+    [CustomEditor(typeof(NetworkObjectGroup)), CanEditMultipleObjects]
     public class NetworkObjectGroupEditor : UnityEditor.Editor
     {
         private NetworkObjectGroup m_instance;

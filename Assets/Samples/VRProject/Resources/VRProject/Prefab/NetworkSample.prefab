@@ -806,6 +806,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_group: {fileID: 5102256938453195480}
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
@@ -1162,6 +1163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_group: {fileID: 5102256938453195480}
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
@@ -1576,6 +1578,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_group: {fileID: 5102256938453195480}
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01

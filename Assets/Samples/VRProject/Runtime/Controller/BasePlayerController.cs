@@ -2,10 +2,10 @@ using UnityEngine;
 
 namespace TLab.VRProjct
 {
-    public class BasePlayerController : MonoBehaviour
+    public abstract class BasePlayerController : MonoBehaviour
     {
-        [Header("Head Transform")]
-        [SerializeField] protected Transform m_directionAnchor;
+        [SerializeField] protected Transform m_cameraAnchor;
+        [SerializeField] protected CharacterController m_controller;
 
         [Header("Move")]
         [SerializeField] protected float m_runSpeed = 1.5f;
@@ -16,9 +16,6 @@ namespace TLab.VRProjct
         [SerializeField] protected float m_jumpHeight = 1.5f;
         [SerializeField] protected float m_jumpInertia = 0.5f;
         [SerializeField] protected float m_gravity = 1.0f;
-
-        [Header("Charactor Controller")]
-        [SerializeField] protected CharacterController m_controller;
 
         protected const float ZERO = 0.0f;
         protected const float RAY_OFFSET = 0.1f;
@@ -40,6 +37,15 @@ namespace TLab.VRProjct
                 m_currentJumpInertia = m_jumpInertia;
             }
         }
+
+#if UNITY_EDITOR
+        protected virtual void Reset()
+        {
+            m_controller = GetComponent<CharacterController>();
+
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+#endif
 
         protected virtual void Start() { }
 

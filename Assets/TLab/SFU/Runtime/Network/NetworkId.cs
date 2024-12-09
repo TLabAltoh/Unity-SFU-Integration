@@ -32,8 +32,6 @@ namespace TLab.SFU.Network
             m_privateId.Update(v[0], v[1], v[2], v[3]);
             m_id.UpdateLower32(v[0], v[1], v[2], v[3]);
 
-            Debug.Log(m_id.hash);
-
             UnityEditor.EditorUtility.SetDirty(this);
         }
 #endif

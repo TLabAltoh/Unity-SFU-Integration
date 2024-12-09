@@ -16,11 +16,6 @@ namespace TLab.VRProjct
 
         public void OnYRelease(float value) => m_yAxis = value;
 
-        protected override void Start()
-        {
-            base.Start();
-        }
-
         protected override void Update()
         {
             base.Update();
@@ -30,7 +25,7 @@ namespace TLab.VRProjct
 
             if (m_onGround)
             {
-                forward = Vector3.ProjectOnPlane(m_directionAnchor.forward, m_raycastHit.normal).normalized;
+                forward = Vector3.ProjectOnPlane(m_cameraAnchor.forward, m_raycastHit.normal).normalized;
                 right = -Vector3.Cross(forward, Vector3.up).normalized;
             }
 

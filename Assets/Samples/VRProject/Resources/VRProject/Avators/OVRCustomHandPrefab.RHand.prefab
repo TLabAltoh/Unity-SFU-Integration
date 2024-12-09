@@ -1913,11 +1913,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_privateId:
-    m_a0: 0
-    m_a1: 0
-    m_a2: 0
-    m_a3: 0
-    m_hash: 0
+    m_a0: 74
+    m_a1: 121
+    m_a2: 137
+    m_a3: 187
+    m_hash: 1497873267
   m_publicId:
     m_a0: 0
     m_a1: 0
@@ -1929,11 +1929,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 0
-    m_a5: 0
-    m_a6: 0
-    m_a7: 0
-    m_hash: 0
+    m_a4: 74
+    m_a5: 121
+    m_a6: 137
+    m_a7: 187
+    m_hash: -978406869
 --- !u!114 &4330380705842995049
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1947,6 +1947,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_group: {fileID: 0}
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01

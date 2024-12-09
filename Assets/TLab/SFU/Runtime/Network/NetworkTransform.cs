@@ -22,9 +22,9 @@ namespace TLab.SFU.Network
             public static bool operator ==(RigidbodyState a, RigidbodyState b) => (a.used == b.used) && (a.gravity == b.gravity);
             public static bool operator !=(RigidbodyState a, RigidbodyState b) => (a.used != b.used) || (a.gravity != b.gravity);
 
-            [SerializeField] private bool m_used;
+            [SerializeField, HideInInspector] private bool m_used;
 
-            [SerializeField] private bool m_gravity;
+            [SerializeField, HideInInspector] private bool m_gravity;
 
             public bool used => m_used;
 
@@ -72,11 +72,9 @@ namespace TLab.SFU.Network
         #region MESSAGE
 
         [Serializable, Message(typeof(MSG_SyncTransform))]
-        public class MSG_SyncTransform : Message
+        public class MSG_SyncTransform : MSG_Sync
         {
             public WebTransform transform;
-
-            public bool requested = false;
 
             public const int BOOL_FIELD_LEN = 2;  // requested (1) + rbState.used (1) + rbState.gravity (1)
 
@@ -222,7 +220,7 @@ namespace TLab.SFU.Network
 
         protected void EstimateRbVelocity(out Vector3 velocity, out Vector3 angularVelocity)
         {
-            if (m_rbHistory.Count < 2)
+            if (m_rbHistory.Count < 3)  // ignore first element ...
             {
                 velocity = Vector3.zero;
                 angularVelocity = Vector3.zero;
@@ -236,7 +234,7 @@ namespace TLab.SFU.Network
             var positionDiff = Vector3.zero;
             var rotationDiff = Vector3.zero;
 
-            for (int i = 1; i < history.Length; i++)
+            for (int i = 2; i < history.Length; i++)
             {
                 positionDiff += history[i].Item1 - history[i - 1].Item1;
 
@@ -289,7 +287,7 @@ namespace TLab.SFU.Network
         {
             base.OnSyncRequested(from);
 
-            SyncViaWebSocket(true, from, true);
+            SyncViaWebSocket(from, true, true);
         }
 
         public void SyncFrom(int from, WebTransform transform)
@@ -360,7 +358,7 @@ namespace TLab.SFU.Network
             return isDirty;
         }
 
-        public override void SyncViaWebRTC(bool force, int to, bool reqested = false)
+        public override void SyncViaWebRTC(int to, bool force = false, bool requested = false)
         {
             if (!Const.Send.HasFlag(m_direction) || (m_state != State.Initialized))
                 return;
@@ -368,14 +366,14 @@ namespace TLab.SFU.Network
             if (force || ApplyCurrentTransform())
             {
                 m_tmp.transform = m_networkState;
-                m_tmp.requested = reqested;
+                m_tmp.requested = requested;
                 NetworkClient.instance.SendRTC(to, m_tmp.Marshall());
 
                 m_synchronised = false;
             }
         }
 
-        public override void SyncViaWebSocket(bool force, int to, bool reqested = false)
+        public override void SyncViaWebSocket(int to, bool force = false, bool requested = false)
         {
             if (!Const.Send.HasFlag(m_direction) || (m_state != State.Initialized))
                 return;
@@ -383,7 +381,7 @@ namespace TLab.SFU.Network
             if (force || ApplyCurrentTransform())
             {
                 m_tmp.transform = m_networkState;
-                m_tmp.requested = reqested;
+                m_tmp.requested = requested;
                 NetworkClient.instance.SendWS(to, m_tmp.Marshall());
 
                 m_synchronised = false;
@@ -425,7 +423,7 @@ namespace TLab.SFU.Network
                 {
                     transform.SyncFrom(from, m_tmp.transform);
                     if (m_tmp.requested)
-                        OnSyncRequestCompleted(from);
+                        transform.OnSyncRequestCompleted(from);
                 }
             });
         }
@@ -441,7 +439,7 @@ namespace TLab.SFU.Network
         {
             UpdateRbHistory();
 
-            SyncViaWebRTC(false, NetworkClient.userId);
+            SyncViaWebRTC(NetworkClient.userId);
         }
 
         protected override void Register()

@@ -5,6 +5,9 @@ namespace TLab.SFU
     [System.Serializable]
     public struct Address32
     {
+        public static bool operator ==(Address32 a, Address32 b) => a.Equals(b);
+        public static bool operator !=(Address32 a, Address32 b) => !a.Equals(b);
+
         [SerializeField] private byte m_a0;
         [SerializeField] private byte m_a1;
         [SerializeField] private byte m_a2;
@@ -51,6 +54,13 @@ namespace TLab.SFU
 
         public override int GetHashCode() => m_hash;
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Address32)
+                return Equals((Address32)obj);
+            return false;
+        }
+
         public bool Equals(Address32 address)
         {
             return
@@ -64,6 +74,9 @@ namespace TLab.SFU
     [System.Serializable]
     public struct Address64
     {
+        public static bool operator ==(Address64 a, Address64 b) => a.Equals(b);
+        public static bool operator !=(Address64 a, Address64 b) => !a.Equals(b);
+
         [SerializeField] private byte m_a0;
         [SerializeField] private byte m_a1;
         [SerializeField] private byte m_a2;
@@ -157,6 +170,13 @@ namespace TLab.SFU
         public void CopyLower32(in Address32 from) => UpdateLower32(from.a0, from.a1, from.a2, from.a3);
 
         public override int GetHashCode() => m_hash;
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Address64)
+                return Equals((Address64)obj);
+            return false;
+        }
 
         public bool Equals(Address64 address)
         {

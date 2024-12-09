@@ -13,10 +13,25 @@ namespace TLab.SFU.Network
         {
             public Address64 networkId;
 
-            public MSG_SyncRequest(Address64 networkId)
+            public MSG_SyncRequest(Address64 networkId) : base()
             {
                 this.networkId = networkId;
             }
+
+            public MSG_SyncRequest(byte[] bytes) : base(bytes) { }
+        }
+
+        [SerializeField, Message(typeof(MSG_Sync))]
+        public class MSG_Sync : Message
+        {
+            public bool requested = false;
+
+            public MSG_Sync(bool requested = false) : base()
+            {
+                this.requested = requested;
+            }
+
+            public MSG_Sync(byte[] bytes) : base(bytes) { }
         }
 
         public enum State
@@ -29,6 +44,7 @@ namespace TLab.SFU.Network
         }
 
         [SerializeField] protected Direction m_direction = Direction.SendRecv;
+        [SerializeField] protected NetworkObjectGroup m_group;
 
         protected State m_state = State.None;
 
@@ -56,7 +72,7 @@ namespace TLab.SFU.Network
 
         public virtual void Shutdown()
         {
-            if (m_state == State.Shutdowned)
+            if (shutdowned)
                 return;
 
             BeforeShutdown();
@@ -68,16 +84,31 @@ namespace TLab.SFU.Network
 
             m_state = State.Shutdowned;
 
+            m_group.OnShutdown(this);
+
             AfterShutdown();
         }
 
-        protected virtual void OnSyncRequestCompleted(int from) => m_state = (m_state == State.Waiting0) ? State.Waiting1 : m_state;
+#if UNITY_EDITOR
+        public virtual void OnGroupChanged(NetworkObjectGroup group)
+        {
+            m_group = group;
+        }
+#endif
+
+        protected virtual void OnSyncRequestCompleted(int from)
+        {
+            m_state = (m_state == State.Waiting0) ? State.Waiting1 : m_state;
+            Debug.Log(THIS_NAME + $"{nameof(OnSyncRequestCompleted)}:{gameObject.name}");
+        }
 
         public bool started => m_state != State.None;
 
+        public bool shutdowned => m_state == State.Shutdowned;
+
         protected virtual void OnInitComplete() { }
 
-        public virtual void NoticeInitComplete()
+        public virtual void NotifyInitComplete()
         {
             if (m_state == State.Initialized)
                 return;
@@ -85,6 +116,11 @@ namespace TLab.SFU.Network
             m_state = State.Initialized;
 
             OnInitComplete();
+        }
+
+        protected virtual void Move2Waiting0()
+        {
+            m_state = State.Waiting0;
         }
 
         public virtual void Init(Address32 publicId, bool self)
@@ -105,16 +141,9 @@ namespace TLab.SFU.Network
             Register();
 
             if (self)
-                NoticeInitComplete();
+                NotifyInitComplete();
             else
-            {
-                // Request synchronization
-                m_state = State.Waiting0;
-                m_tmp.networkId = networkId.id;
-                NetworkClient.instance.SendWS(m_tmp.Marshall());
-            }
-
-            Debug.Log(THIS_NAME + $"{nameof(Init)}:{gameObject.name}:{m_state}");
+                Move2Waiting0();
         }
 
         public virtual void Init(bool self)
@@ -133,23 +162,19 @@ namespace TLab.SFU.Network
             Register();
 
             if (self)
-                NoticeInitComplete();
+                NotifyInitComplete();
             else
-            {
-                // Request synchronization
-                m_state = State.Waiting0;
-                m_tmp.networkId = networkId.id;
-                NetworkClient.instance.SendWS(m_tmp.Marshall());
-            }
-
-            Debug.Log(THIS_NAME + $"{nameof(Init)}:{gameObject.name}:{m_state}");
+                Move2Waiting0();
         }
 
-        public virtual void OnSyncRequested(int from) { }
+        public virtual void OnSyncRequested(int from)
+        {
+            Debug.Log(THIS_NAME + $"{nameof(OnSyncRequested)}:{gameObject.name}");
+        }
 
-        public virtual void SyncViaWebRTC(bool force, int to, bool requested = false) { }
+        public virtual void SyncViaWebRTC(int to, bool force = false, bool requested = false) { }
 
-        public virtual void SyncViaWebSocket(bool force, int to, bool requested = false) { }
+        public virtual void SyncViaWebSocket(int to, bool force = false, bool requested = false) { }
 
         protected virtual void Register() => Registry.Register(m_networkId.id, this);
 
@@ -179,13 +204,13 @@ namespace TLab.SFU.Network
 
         protected virtual void OnEnable()
         {
-            if ((m_state == State.Initialized) && m_networkId)
+            if (started && m_networkId)
                 Register();
         }
 
         protected virtual void OnDisable()
         {
-            if ((m_state == State.Initialized) && m_networkId)
+            if (started && m_networkId)
                 UnRegister();
         }
 
