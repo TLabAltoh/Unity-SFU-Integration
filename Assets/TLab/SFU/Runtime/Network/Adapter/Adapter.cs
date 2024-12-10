@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using TLab.SFU.Network.Json;
 
 namespace TLab.SFU.Network
 {
@@ -9,9 +10,9 @@ namespace TLab.SFU.Network
     {
         [SerializeField] private Config m_config;
 
-        [SerializeField] private string m_key;
+        [SerializeField] private string m_sharedKey = "password";
 
-        [SerializeField] private string m_masterKey;
+        [SerializeField] private string m_masterKey = "password";
 
         private int m_roomId;
 
@@ -25,7 +26,7 @@ namespace TLab.SFU.Network
 
         public uint token => m_token;
 
-        public string key => m_key;
+        public string sharedKey => m_sharedKey;
 
         public string masterKey => m_masterKey;
 
@@ -44,7 +45,7 @@ namespace TLab.SFU.Network
 
             m_roomId = roomId;
 
-            m_key = key;
+            m_sharedKey = key;
 
             m_masterKey = masterKey;
         }
@@ -62,7 +63,7 @@ namespace TLab.SFU.Network
         {
             var instance = CreateInstance<Adapter>();
 
-            instance.Init(m_config, m_roomId, m_userId, m_token, m_key, m_masterKey);
+            instance.Init(m_config, m_roomId, m_userId, m_token, m_sharedKey, m_masterKey);
 
             return instance;
         }
@@ -80,18 +81,18 @@ namespace TLab.SFU.Network
                 yield break;
             }
 
-            var answer = JsonUtility.FromJson<Answer.Create>(task.Result);
+            var answer = new CreateRoom.Response(task.Result);
 
-            m_roomId = answer.room_id;
+            m_roomId = answer.id;
 
-            m_config.GetAuth(out m_key, out m_masterKey);
+            m_config.GetAuth(out m_sharedKey, out m_masterKey);
 
             callback.Invoke(task.Result);
         }
 
         public IEnumerator CreateAsync(UnityAction<string> callback)
         {
-            var url = m_config.GetUrl() + $"/room/create/{Http.GetBase64(m_config.GetCreate())}/";
+            var url = m_config.GetUrl() + $"/room/create/{Http.GetBase64(m_config.GetInit().ToJson())}/";
 
             var task = Http.GetResponse(url);
 
@@ -102,24 +103,18 @@ namespace TLab.SFU.Network
                 yield break;
             }
 
-            var answer = JsonUtility.FromJson<Answer.Create>(task.Result);
+            var answer = new CreateRoom.Response(task.Result);
 
-            m_roomId = answer.room_id;
+            m_roomId = answer.id;
 
-            m_config.GetAuth(out m_key, out m_masterKey);
+            m_config.GetAuth(out m_sharedKey, out m_masterKey);
 
             callback.Invoke(task.Result);
         }
 
         public IEnumerator DeleteAsync(UnityAction<string> callback)
         {
-            var @object = new Offer.Delete()
-            {
-                room_id = roomId,
-                master_key = masterKey,
-            };
-
-            var url = m_config.GetUrl() + $"/room/delete/{Http.GetBase64(@object)}/";
+            var url = m_config.GetUrl() + $"/room/delete/{Http.GetBase64(new DeleteRoom.Request(roomId, masterKey).ToJson())}/";
 
             var task = Http.GetResponse(url);
 
@@ -141,15 +136,7 @@ namespace TLab.SFU.Network
 
         public IEnumerator JoinAsync(UnityAction<string> callback)
         {
-            var @object = new Offer.Join
-            {
-                user_name = m_config.name,
-                room_id = m_roomId,
-                room_key = m_key,
-                master_key = m_masterKey,
-            };
-
-            var url = m_config.GetUrl() + $"/room/join/{Http.GetBase64(@object)}/";
+            var url = m_config.GetUrl() + $"/room/join/{Http.GetBase64(new JoinRoom.Request(m_config.GetInit().name, m_roomId, m_sharedKey, m_masterKey).ToJson())}/";
 
             var task = Http.GetResponse(url);
 
@@ -160,25 +147,17 @@ namespace TLab.SFU.Network
                 yield break;
             }
 
-            var answer = JsonUtility.FromJson<Answer.Join>(task.Result);
+            var answer = new JoinRoom.Response(task.Result);
 
-            m_userId = answer.user_id;
-            m_token = answer.user_token;
+            m_userId = answer.id;
+            m_token = answer.token;
 
             callback.Invoke(task.Result);
         }
 
         public IEnumerator ExitAsync(UnityAction<string> callback)
         {
-            var @object = new Offer.Exit
-            {
-                room_id = m_roomId,
-                room_key = m_key,
-                user_id = m_userId,
-                user_token = m_token
-            };
-
-            var url = m_config.GetUrl() + $"/room/exit/{Http.GetBase64(@object)}/";
+            var url = m_config.GetUrl() + $"/room/exit/{Http.GetBase64(new ExitRoom.Request(m_roomId, m_sharedKey, m_userId, m_token).ToJson())}/";
 
             var task = Http.GetResponse(url);
 
@@ -196,6 +175,6 @@ namespace TLab.SFU.Network
 
         public void Exit(MonoBehaviour mono, UnityAction<string> callback) => mono.StartCoroutine(ExitAsync(callback));
 
-        public RequestAuth GetRequestAuth() => new RequestAuth(m_roomId, m_key, m_userId, m_token);
+        public RequestAuth GetRequestAuth() => new RequestAuth(m_roomId, m_sharedKey, m_userId, m_token);
     }
 }

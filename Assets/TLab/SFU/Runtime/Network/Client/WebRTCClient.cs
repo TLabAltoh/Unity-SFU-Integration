@@ -3,10 +3,12 @@ using System.Collections;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
+using System;
 using Unity.WebRTC;
 using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
+using TLab.SFU.Network.Json;
 using static System.BitConverter;
 
 namespace TLab.SFU.Network
@@ -73,26 +75,56 @@ namespace TLab.SFU.Network
             Whep,
         };
 
-        [System.Serializable]
-        public class Signaling
+        [Serializable]
+        public class Signaling : IRequest, IResponse<Signaling>
         {
-            public bool is_candidate;
+            public bool isCandidate;
             public string sdp;
             public string session;
             public string candidate;
 
-            public Signaling() { }
+            public Signaling(string json) => FromJsonOverwrite(json);
 
-            public Signaling(bool is_candidate, string sdp, string session, string candidate)
+            public Signaling(bool isCandidate, string sdp, string session, string candidate)
             {
-                this.is_candidate = is_candidate;
+                this.isCandidate = isCandidate;
                 this.sdp = sdp;
                 this.session = session;
                 this.candidate = candidate;
             }
-        };
 
-        [System.Serializable]
+            [Serializable]
+            public class RustFormat
+            {
+                public bool is_candidate;
+                public string sdp;
+                public string session;
+                public string candidate;
+
+                public RustFormat() { }
+
+                public RustFormat(bool isCandidate, string sdp, string session, string candidate)
+                {
+                    this.is_candidate = isCandidate;
+                    this.sdp = sdp;
+                    this.session = session;
+                    this.candidate = candidate;
+                }
+            }
+
+            public string ToJson() => JsonUtility.ToJson(new RustFormat(isCandidate, sdp, session, candidate));
+
+            public void FromJsonOverwrite(string json)
+            {
+                var tmp = JsonUtility.FromJson<RustFormat>(json);
+                isCandidate = tmp.is_candidate;
+                sdp = tmp.sdp;
+                session = tmp.session;
+                candidate = tmp.candidate;
+            }
+        }
+
+        [Serializable]
         public class StreamRequest : RequestAuth
         {
             public string stream;
@@ -103,6 +135,29 @@ namespace TLab.SFU.Network
                 this.stream = stream;
                 this.offer = offer;
             }
+
+            [Serializable]
+            public new class RustFormat
+            {
+                public int room_id;
+                public int user_id;
+                public uint token;
+                public string stream;
+                public string offer;
+                public string shared_key;
+
+                public RustFormat(int roomId, string sharedKey, int userId, uint token, string stream, string offer)
+                {
+                    this.room_id = roomId;
+                    this.user_id = userId;
+                    this.token = token;
+                    this.stream = stream;
+                    this.offer = offer;
+                    this.shared_key = sharedKey;
+                }
+            }
+
+            public override string ToJson() => JsonUtility.ToJson(new RustFormat(roomId, sharedKey, userId, token, stream, offer));
         }
 
         #endregion STRUCT
@@ -452,7 +507,7 @@ namespace TLab.SFU.Network
             if (dataChannelCnf != null)
             {
                 m_dc = m_pc.CreateDataChannel("data", dataChannelCnf);
-                m_dc.OnMessage = bytes => OnPacket(bytes);
+                m_dc.OnMessage = OnPacket;
                 m_dc.OnOpen = () => Debug.Log(THIS_NAME + "DataChannel Open");
                 m_dc.OnClose = () => Debug.Log(THIS_NAME + "DataChannel Close");
             }
@@ -465,7 +520,7 @@ namespace TLab.SFU.Network
             var base64 = "";
             var action = "";
 
-            base64 = Http.GetBase64(new StreamRequest(m_adapter.GetRequestAuth(), stream, offer));
+            base64 = Http.GetBase64(new StreamRequest(m_adapter.GetRequestAuth(), stream, offer).ToJson());
 
             switch (m_clientType)
             {
@@ -490,9 +545,9 @@ namespace TLab.SFU.Network
             m_signalingSocket.OnMessage += (bytes) =>
             {
                 var json = Encoding.UTF8.GetString(bytes);
-                var signaling = JsonUtility.FromJson<Signaling>(json);
+                var signaling = new Signaling(json);
 
-                if (signaling.is_candidate && signaling.candidate != "")
+                if (signaling.isCandidate && signaling.candidate != "")
                 {
                     Debug.Log("[Signaling] recv: " + signaling.candidate);
 
@@ -587,13 +642,14 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override Task Send(int to, byte[] bytes)
+        public unsafe override Task Send(int to, byte[] bytes)
         {
             if ((m_dc != null) && (m_dc.ReadyState == RTCDataChannelState.Open))
             {
-                var hedder = GetBytes(to);
-                var packet = hedder.Concat(bytes);
-                m_dc.Send(packet.ToArray());
+                var headderBuf = GetBytes(to);
+                fixed (byte* bytesPtr = bytes, headderBufPtr = headderBuf)
+                    UnsafeUtility.LongCopy(headderBufPtr, bytesPtr, sizeof(int));
+                m_dc.Send(bytes);
             }
 
             return base.Send(to, bytes);

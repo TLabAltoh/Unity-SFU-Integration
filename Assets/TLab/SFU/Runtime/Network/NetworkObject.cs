@@ -99,7 +99,7 @@ namespace TLab.SFU.Network
         protected virtual void OnSyncRequestCompleted(int from)
         {
             m_state = (m_state == State.Waiting0) ? State.Waiting1 : m_state;
-            Debug.Log(THIS_NAME + $"{nameof(OnSyncRequestCompleted)}:{gameObject.name}");
+            //Debug.Log(THIS_NAME + $"{nameof(OnSyncRequestCompleted)}:{gameObject.name}");
         }
 
         public bool started => m_state != State.None;

@@ -118,9 +118,9 @@ namespace TLab.SFU.Network
                     {
                         bool rbUsed = transform.rb.used, rbGravity = transform.rb.gravity, requested = this.requested;
 
-                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 0] = (byte)(&requested);
-                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 1] = (byte)(&rbUsed);
-                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 2] = (byte)(&rbGravity);
+                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 0] = *((byte*)(&requested));
+                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 1] = *((byte*)(&rbUsed));
+                        packetBufPtr[HEADER_LEN + NETWORK_ID_LEN + 2] = *((byte*)(&rbGravity));
 
                         transform.id.CopyTo(packetBufPtr + HEADER_LEN);
 
@@ -174,6 +174,8 @@ namespace TLab.SFU.Network
 
         #endregion MESSAGE
 
+        [SerializeField] protected NetworkTransform m_parent;
+
         public float positionThreshold = 0.001f;
 
         [Range(0.00001f, 360.0f)]
@@ -195,6 +197,7 @@ namespace TLab.SFU.Network
 
         protected FixedQueue<(Vector3, Quaternion)> m_rbHistory = new FixedQueue<(Vector3, Quaternion)>(CASH_COUNT);
 
+        protected WebTransform m_delta;
         protected WebTransform m_networkState;
 
         public Rigidbody rb => m_rb;
@@ -292,8 +295,20 @@ namespace TLab.SFU.Network
 
         public void SyncFrom(int from, WebTransform transform)
         {
-            var position = transform.position;
-            var rotation = transform.rotation;
+            Vector3 position;
+            Vector4 rotation;
+
+            if (m_parent != null)
+            {
+                position = m_parent.transform.position + transform.position;
+                rotation = (transform.rotation.ToQuaternion() * m_parent.transform.rotation).ToVec();
+            }
+            else
+            {
+                position = transform.position;
+                rotation = transform.rotation;
+            }
+
             var localScale = transform.localScale;
 
             this.transform.localScale = new Vector3(localScale.x, localScale.y, localScale.z);
@@ -330,21 +345,46 @@ namespace TLab.SFU.Network
                 isDirty = true;
             }
 
-            if (Vector3.Distance(m_networkState.position, this.transform.position) > positionThreshold)
+            if (m_parent != null)
             {
-                m_networkState.position.x = this.transform.position.x;
-                m_networkState.position.y = this.transform.position.y;
-                m_networkState.position.z = this.transform.position.z;
-                isDirty = true;
-            }
+                var positionDelta = m_parent.transform.position - this.transform.position;
+                var rotationDelta = m_parent.transform.rotation * Quaternion.Inverse(this.transform.rotation);
 
-            if (Quaternion.Angle(m_networkState.rotation.ToQuaternion(), this.transform.rotation) > rotAngleThreshold)
+                if (Vector3.Distance(m_networkState.position, positionDelta) > positionThreshold)
+                {
+                    m_networkState.position.x = positionDelta.x;
+                    m_networkState.position.y = positionDelta.y;
+                    m_networkState.position.z = positionDelta.z;
+                    isDirty = true;
+                }
+
+                if (Quaternion.Angle(m_networkState.rotation.ToQuaternion(), rotationDelta) > rotAngleThreshold)
+                {
+                    m_networkState.rotation.x = rotationDelta.x;
+                    m_networkState.rotation.y = rotationDelta.y;
+                    m_networkState.rotation.z = rotationDelta.z;
+                    m_networkState.rotation.w = rotationDelta.w;
+                    isDirty = true;
+                }
+            }
+            else
             {
-                m_networkState.rotation.x = this.transform.rotation.x;
-                m_networkState.rotation.y = this.transform.rotation.y;
-                m_networkState.rotation.z = this.transform.rotation.z;
-                m_networkState.rotation.w = this.transform.rotation.w;
-                isDirty = true;
+                if (Vector3.Distance(m_networkState.position, this.transform.position) > positionThreshold)
+                {
+                    m_networkState.position.x = this.transform.position.x;
+                    m_networkState.position.y = this.transform.position.y;
+                    m_networkState.position.z = this.transform.position.z;
+                    isDirty = true;
+                }
+
+                if (Quaternion.Angle(m_networkState.rotation.ToQuaternion(), this.transform.rotation) > rotAngleThreshold)
+                {
+                    m_networkState.rotation.x = this.transform.rotation.x;
+                    m_networkState.rotation.y = this.transform.rotation.y;
+                    m_networkState.rotation.z = this.transform.rotation.z;
+                    m_networkState.rotation.w = this.transform.rotation.w;
+                    isDirty = true;
+                }
             }
 
             if (Vector3.Distance(m_networkState.localScale, this.transform.localScale) > scaleThreshold)

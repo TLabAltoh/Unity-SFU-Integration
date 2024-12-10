@@ -20,13 +20,11 @@ namespace TLab.SFU.Network
             });
         }
 
-        public static string GetBase64(object @object)
+        public static string GetBase64(string text)
         {
-            var json = JsonUtility.ToJson(@object);
+            Debug.Log($"{nameof(GetBase64)}: " + text);
 
-            Debug.Log("Json: " + json);
-
-            var base64 = System.Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+            var base64 = System.Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
 
             return base64;
         }

@@ -5,7 +5,7 @@ namespace TLab.SFU.Network
 {
     using Registry = Registry<string, SpawnableShop>;
 
-    public class SpawnableShop : MonoBehaviour, INetworkRoomEventHandler
+    public class SpawnableShop : MonoBehaviour, INetworkClientEventHandler
     {
         [SerializeField] private const string m_shopId = "default";
         [SerializeField] private SpawnableStore m_store;

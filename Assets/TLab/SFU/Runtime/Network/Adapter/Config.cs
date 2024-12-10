@@ -1,4 +1,5 @@
 using UnityEngine;
+using TLab.SFU.Network.Json;
 
 namespace TLab.SFU.Network
 {
@@ -14,20 +15,20 @@ namespace TLab.SFU.Network
 
         [SerializeField] private string m_userName = "user";
 
-        [SerializeField] private Offer.Create m_create;
+        [SerializeField] private CreateRoom.Request m_init;
 
-        public Config(string prefix, string host, uint port, Offer.Create create)
+        public Config(string prefix, string host, uint port, CreateRoom.Request init)
         {
             m_prefix = prefix;
             m_host = host;
             m_port = port;
-            m_create = create;
+            m_init = init;
         }
 
-        public void GetAuth(out string roomKey, out string masterKey)
+        public void GetAuth(out string sharedKey, out string masterKey)
         {
-            roomKey = m_create.room_key;
-            masterKey = m_create.master_key;
+            sharedKey = m_init.sharedKey;
+            masterKey = m_init.masterKey;
         }
 
         public string GetPrefix() => m_prefix;
@@ -42,8 +43,8 @@ namespace TLab.SFU.Network
 
         public string GetUserName() => m_userName;
 
-        public Offer.Create GetCreate() => m_create;
+        public CreateRoom.Request GetInit() => m_init;
 
-        public Config GetClone() => new Config(m_prefix, m_host, m_port, m_create);
+        public Config GetClone() => new Config(m_prefix, m_host, m_port, m_init);
     }
 }

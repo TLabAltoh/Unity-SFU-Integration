@@ -747,7 +747,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 1
-  m_id: head
+  m_id: Head
   m_scale: 1
 --- !u!114 &1746604097514878627
 MonoBehaviour:
@@ -762,11 +762,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_privateId:
-    m_a0: 129
-    m_a1: 149
-    m_a2: 244
-    m_a3: 13
-    m_hash: -1427622410
+    m_a0: 155
+    m_a1: 28
+    m_a2: 159
+    m_a3: 29
+    m_hash: -1116992995
   m_publicId:
     m_a0: 0
     m_a1: 0
@@ -778,11 +778,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 129
-    m_a5: 149
-    m_a6: 244
-    m_a7: 13
-    m_hash: 473981585
+    m_a4: 155
+    m_a5: 28
+    m_a6: 159
+    m_a7: 29
+    m_hash: -1191160217
 --- !u!114 &4422602871895655704
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,7 +5,7 @@ using TLab.SFU.Network;
 
 namespace TLab.VRProjct
 {
-    public class ScoreTabulation : MonoBehaviour, INetworkConnectionEventHandler, INetworkRoomEventHandler
+    public class ScoreTabulation : MonoBehaviour, INetworkEventHandler, INetworkClientEventHandler
     {
         private Dictionary<int, int> m_scores = new Dictionary<int, int>();
 

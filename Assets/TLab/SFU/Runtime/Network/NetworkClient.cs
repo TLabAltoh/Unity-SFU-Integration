@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
+using TLab.SFU.Network.Json;
 using static System.BitConverter;
 using static TLab.SFU.ComponentExtension;
 
@@ -14,7 +15,7 @@ namespace TLab.SFU.Network
     using SpawnableShopRegistry = Registry<string, SpawnableShop>;
 
     [AddComponentMenu("TLab/SFU/Network Client (TLab)")]
-    public class NetworkClient : MonoBehaviour, INetworkConnectionEventHandler
+    public class NetworkClient : MonoBehaviour, INetworkEventHandler
     {
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -279,15 +280,15 @@ namespace TLab.SFU.Network
                 case SpawnableStore.SpawnAction.Action.Spawn:
                     if (!m_latestAvatorActions.ContainsKey(avatorAction.userId))
                     {
+                        var self = avatorAction.userId == userId;
+                        if (self)
+                        {
+                            m_playerRoot.position = avatorAction.transform.position;
+                            m_playerRoot.rotation = avatorAction.transform.rotation.ToQuaternion();
+                        }
+
                         if (m_avatorStore.ProcessSpawnAction(avatorAction, out instanceRef))
                         {
-                            var self = avatorAction.userId == userId;
-                            if (self)
-                            {
-                                m_playerRoot.position = avatorAction.transform.position;
-                                m_playerRoot.rotation = avatorAction.transform.rotation.ToQuaternion();
-                            }
-
                             m_latestAvatorActions.Add(avatorAction.userId, avatorAction);
                             return true;
                         }
@@ -489,14 +490,15 @@ namespace TLab.SFU.Network
         public void Join() => m_adapter.GetInfo(this, (@string) =>
         {
             m_onLog.Invoke(@string);
-            var @object = JsonUtility.FromJson<Answer.Infos>(@string);
 
-            if (@object.room_infos.Length == 0)
+            var response = new RoomInfos(@string);
+
+            if (response.infos.Length == 0)
                 m_adapter.Create(this, OnCreate);
             else
             {
                 m_onLog.Invoke(@string);
-                m_adapter.Init(m_adapter.config, @object.room_infos[0].room_id, m_adapter.key, m_adapter.masterKey);
+                m_adapter.Init(m_adapter.config, response.infos[0].id, m_adapter.sharedKey, m_adapter.masterKey);
                 m_adapter.Join(this, OnJoin);
             }
         });

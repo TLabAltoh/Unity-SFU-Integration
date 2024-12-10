@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using TLab.SFU.Network.Json;
 
 namespace TLab.SFU.Network
 {
@@ -20,7 +22,7 @@ namespace TLab.SFU.Network
         public static WebTransform ToWebTransform(this Transform transform) => new WebTransform(transform);
     }
 
-    [System.Serializable]
+    [Serializable]
     public struct WebTransform
     {
         public Vector3 position;
@@ -62,28 +64,47 @@ namespace TLab.SFU.Network
     //    UNI_REFLESH_ANIM,
     //}
 
-    [System.Serializable]
-    public class RequestAuth
+    [Serializable]
+    public class RequestAuth : IRequest
     {
-        public int room_id;
-        public string room_key;
-        public int user_id;
-        public uint user_token;
+        public int roomId;
+        public int userId;
+        public uint token;
+        public string sharedKey;
 
-        public RequestAuth(int room_id, string room_key, int user_id, uint user_token)
+        public RequestAuth(int roomId, string sharedKey, int userId, uint token)
         {
-            this.room_id = room_id;
-            this.room_key = room_key;
-            this.user_id = user_id;
-            this.user_token = user_token;
+            this.roomId = roomId;
+            this.userId = userId;
+            this.token = token;
+            this.sharedKey = sharedKey;
         }
 
         public RequestAuth(RequestAuth auth)
         {
-            this.room_id = auth.room_id;
-            this.room_key = auth.room_key;
-            this.user_id = auth.user_id;
-            this.user_token = auth.user_token;
+            roomId = auth.roomId;
+            userId = auth.userId;
+            token = auth.token;
+            sharedKey = auth.sharedKey;
         }
+
+        [Serializable]
+        public class RustFormat
+        {
+            public int room_id;
+            public int user_id;
+            public uint token;
+            public string shared_key;
+
+            public RustFormat(int roomId, string sharedKey, int userId, uint token)
+            {
+                this.room_id = roomId;
+                this.user_id = userId;
+                this.token = token;
+                this.shared_key = sharedKey;
+            }
+        }
+
+        public virtual string ToJson() => JsonUtility.ToJson(new RustFormat(roomId, sharedKey, userId, token));
     }
 }

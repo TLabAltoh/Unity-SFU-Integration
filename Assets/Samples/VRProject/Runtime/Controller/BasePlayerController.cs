@@ -4,12 +4,12 @@ namespace TLab.VRProjct
 {
     public abstract class BasePlayerController : MonoBehaviour
     {
-        [SerializeField] protected Transform m_cameraAnchor;
         [SerializeField] protected CharacterController m_controller;
 
         [Header("Move")]
         [SerializeField] protected float m_runSpeed = 1.5f;
         [SerializeField] protected float m_moveSpeed = 1.0f;
+        [SerializeField] protected float m_rotateSpeed = 35.0f;
 
         [Header("Jump")]
         [SerializeField] protected float m_groundThreshold = 0.2f;
@@ -17,12 +17,11 @@ namespace TLab.VRProjct
         [SerializeField] protected float m_jumpInertia = 0.5f;
         [SerializeField] protected float m_gravity = 1.0f;
 
-        protected const float ZERO = 0.0f;
         protected const float RAY_OFFSET = 0.1f;
 
         protected bool m_onGround = false;
-        protected float m_currentJumpInertia = ZERO;
-        protected float m_currentJumpVelocity = ZERO;
+        protected float m_currentJumpInertia = 0.0f;
+        protected float m_currentJumpVelocity = 0.0f;
 
         protected Ray m_ray;
         protected RaycastHit m_raycastHit;
@@ -61,7 +60,7 @@ namespace TLab.VRProjct
             m_onGround = Physics.Raycast(m_ray, out m_raycastHit, m_groundThreshold);
 
             if (m_onGround)
-                m_currentJumpVelocity = m_currentJumpInertia < ZERO ? ZERO : m_currentJumpVelocity;
+                m_currentJumpVelocity = m_currentJumpInertia < 0.0f ? 0.0f : m_currentJumpVelocity;
         }
     }
 }

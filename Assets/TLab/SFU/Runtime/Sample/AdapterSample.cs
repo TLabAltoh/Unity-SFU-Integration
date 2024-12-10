@@ -1,6 +1,7 @@
 using UnityEngine;
 using TLab.SFU.UI;
 using TLab.SFU.Network;
+using TLab.SFU.Network.Json;
 
 namespace TLab.SFU.Sample
 {
@@ -32,27 +33,29 @@ namespace TLab.SFU.Sample
 
         public Adapter GetClone() => m_adapter.GetClone();
 
-        public void GetFirstRoom() => m_adapter.GetInfo(this, (response) => {
-            var @object = JsonUtility.FromJson<Network.Answer.Infos>(response);
-            if (@object.room_infos.Length == 0)
+        public void GetFirstRoom() => m_adapter.GetInfo(this, (@string) => {
+            var response = new RoomInfos(@string);
+
+            if (response.infos.Length == 0)
                 return;
-            var roomId = @object.room_infos[0].room_id;
-            m_adapter.Init(m_adapter.config, roomId, m_adapter.key, m_adapter.masterKey);
-            m_logView?.Append(response);
+
+            var roomId = response.infos[0].id;
+            m_adapter.Init(m_adapter.config, roomId, m_adapter.sharedKey, m_adapter.masterKey);
+            m_logView?.Append(@string);
         });
 
-        private void OnCreate(string response)
+        private void OnCreate(string @string)
         {
             m_state = State.Created;
-            m_logView?.Append(response);
+            m_logView?.Append(@string);
         }
 
         public void Create() => adapter.Create(this, OnCreate);
 
-        private void OnDelete(string response)
+        private void OnDelete(string @string)
         {
             m_state = State.Deleted;
-            m_logView?.Append(response);
+            m_logView?.Append(@string);
         }
 
         public void Delete() => adapter.Delete(this, OnDelete);

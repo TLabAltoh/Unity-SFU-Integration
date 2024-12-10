@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Collections;
 using System.Text;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
@@ -17,7 +18,7 @@ namespace TLab.SFU.Network
 
         #region STRUCT
 
-        [System.Serializable]
+        [Serializable]
         public class StreamRequest : RequestAuth
         {
             public string stream;
@@ -26,6 +27,27 @@ namespace TLab.SFU.Network
             {
                 this.stream = stream;
             }
+
+            [Serializable]
+            public new class RustFormat
+            {
+                public int room_id;
+                public int user_id;
+                public uint token;
+                public string stream;
+                public string shared_key;
+
+                public RustFormat(int roomId, string sharedKey, int userId, uint token, string stream)
+                {
+                    this.room_id = roomId;
+                    this.user_id = userId;
+                    this.token = token;
+                    this.stream = stream;
+                    this.shared_key = sharedKey;
+                }
+            }
+
+            public override string ToJson() => JsonUtility.ToJson(new RustFormat(roomId, sharedKey, userId, token, stream));
         }
 
         #endregion STRUCT
@@ -34,7 +56,7 @@ namespace TLab.SFU.Network
         {
             var base64 = "";
 
-            base64 = Http.GetBase64(new StreamRequest(m_adapter.GetRequestAuth(), stream));
+            base64 = Http.GetBase64(new StreamRequest(m_adapter.GetRequestAuth(), stream).ToJson());
 
             var url = "ws://" + m_adapter.config.GetHostPort() + $"/ws/connect/{base64}/";
 
@@ -65,11 +87,7 @@ namespace TLab.SFU.Network
                     OnClose1();
                 }, null);
             };
-            m_socket.OnMessage += (bytes) =>
-            {
-                Debug.Log(THIS_NAME + "Message !");
-                OnPacket(bytes);
-            };
+            m_socket.OnMessage += OnPacket;
             _ = m_socket.Connect();
         }
 
@@ -130,9 +148,9 @@ namespace TLab.SFU.Network
 
         public unsafe override Task Send(int to, byte[] bytes)
         {
-            var headder = GetBytes(to);
-            fixed (byte* bytesPtr = bytes, headderPtr = headder)
-                UnsafeUtility.LongCopy(headderPtr, bytesPtr, sizeof(int));
+            var headderBuf = GetBytes(to);
+            fixed (byte* bytesPtr = bytes, headderBufPtr = headderBuf)
+                UnsafeUtility.LongCopy(headderBufPtr, bytesPtr, sizeof(int));
             return m_socket.Send(bytes);
         }
 

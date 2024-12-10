@@ -1,6 +1,6 @@
 namespace TLab.SFU.Network
 {
-    public interface INetworkConnectionEventHandler
+    public interface INetworkEventHandler
     {
         void OnMessage(int from, int to, byte[] bytes);
 

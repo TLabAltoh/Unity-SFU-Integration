@@ -12,8 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7074e6aa310a96c4aa7f515f6c458e31, type: 3}
   m_Name: Classroom (Room Config)
   m_EditorClassIdentifier: 
-  m_id: Default
-  m_syncServerAddr: {fileID: 11400000, guid: a75aa8b6d455a6648a171e86ece66051, type: 2}
-  m_signalingServerAddr: {fileID: 11400000, guid: c4e3374df0fa86e4391ef746adc80256, type: 2}
-  m_password: 
-  m_passwordHash: 03AC674216F3E15C761EE1A5E255F067953623C8B388B4459E13F978D7C846F4
+  m_host: 192.168.3.9
+  m_port: 7777
+  m_prefix: http
+  m_userName: user
+  m_init:
+    name: default
+    capacity: 2
+    needsHost: 0
+    isPublic: 1
+    sharedKey: password
+    masterKey: password
+    description: description
