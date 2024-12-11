@@ -10,6 +10,8 @@ namespace TLab.SFU
 		public static Vector4 ToVec(this Quaternion quaternion) => new Vector4(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
 		public static Quaternion ToQuaternion(this Vector4 vector4) => new Quaternion(vector4.x, vector4.y, vector4.z, vector4.w);
+
+		public static Quaternion LerpQuaternion(this Vector4 quaternion0, Vector4 quaternion1, float t) => Quaternion.Lerp(quaternion0.ToQuaternion(), quaternion1.ToQuaternion(), t);
 	}
 
 	public static class ComponentExtension

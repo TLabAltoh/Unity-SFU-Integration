@@ -31,22 +31,22 @@ namespace TLab.SFU.Network
                 DeleteByPublicId,
             }
 
-            public static SpawnAction GetSpawnAction(int elemId, int userId, Address32 publicId, WebTransform transform)
+            public static SpawnAction GetSpawnAction(int elemId, int userId, Address32 publicId, SerializableTransform transform)
             {
                 return new SpawnAction(Action.Spawn, elemId, userId, publicId, transform);
             }
 
             public static SpawnAction GetDeleteAction(int userId)
             {
-                return new SpawnAction(Action.DeleteByUserId, -1, userId, new Address32(), new WebTransform());
+                return new SpawnAction(Action.DeleteByUserId, -1, userId, new Address32(), new SerializableTransform());
             }
 
             public static SpawnAction GetDeleteAction(Address32 publicId)
             {
-                return new SpawnAction(Action.DeleteByPublicId, -1, -1, publicId, new WebTransform());
+                return new SpawnAction(Action.DeleteByPublicId, -1, -1, publicId, new SerializableTransform());
             }
 
-            public SpawnAction(Action action, int elemId, int userId, Address32 publicId, WebTransform transform)
+            public SpawnAction(Action action, int elemId, int userId, Address32 publicId, SerializableTransform transform)
             {
                 this.action = action;
                 this.elemId = elemId;
@@ -59,7 +59,7 @@ namespace TLab.SFU.Network
             public int elemId;
             public int userId;
             public Address32 publicId;
-            public WebTransform transform;
+            public SerializableTransform transform;
         }
 
         public class InstanceRef : ICloneable
@@ -193,7 +193,7 @@ namespace TLab.SFU.Network
             return true;
         }
 
-        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out InstanceRef instanceRef)
+        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, SerializableTransform @transform, out InstanceRef instanceRef)
         {
             if (!GetByElementId(elemId, userId, out var prefab))
             {
@@ -218,7 +218,7 @@ namespace TLab.SFU.Network
             return true;
         }
 
-        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out InstanceRef instanceRef)
+        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, SerializableTransform @transform, out InstanceRef instanceRef)
         {
             GetByElementName(elemName, userId, out var elemId, out var prefab);
 

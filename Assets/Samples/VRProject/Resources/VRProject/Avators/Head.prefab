@@ -797,6 +797,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 2
   m_group: {fileID: 0}
+  m_parent: {fileID: 0}
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
+  m_interpolationMode: 1
+  m_interpolationStep: 2

@@ -43,11 +43,11 @@ namespace TLab.SFU.Sample
             }
         }
 
-        public override bool Get(int userId, out WebTransform anchor)
+        public override bool Get(int userId, out SerializableTransform anchor)
         {
             if (userId == 0)
             {
-                anchor = m_host.ToWebTransform();
+                anchor = m_host.ToSerializableTransform();
                 return true;
             }
 
@@ -55,7 +55,7 @@ namespace TLab.SFU.Sample
 
             if (curves.Length == 0)
             {
-                anchor = new WebTransform();
+                anchor = new SerializableTransform();
                 return false;
             }
 
@@ -66,16 +66,16 @@ namespace TLab.SFU.Sample
             var offset = (curve.range.y - curve.range.x) * t;
             var forward = Quaternion.AngleAxis(2 * Mathf.PI * Mathf.Rad2Deg * (curve.angle + curve.range.x + offset - 0.5f), Vector3.up) * transform.forward;
 
-            anchor = new WebTransform(forward * curve.radius + new Vector3(0, curve.height, 0), Quaternion.LookRotation(-forward * (curve.flipZ ? -1 : 1)));
+            anchor = new SerializableTransform(forward * curve.radius + new Vector3(0, curve.height, 0), Quaternion.LookRotation(-forward * (curve.flipZ ? -1 : 1)));
             return true;
         }
 
-        public override bool Get(Address32 id, out WebTransform anchor)
+        public override bool Get(in Address32 id, out SerializableTransform anchor)
         {
             throw new System.NotImplementedException();
         }
 
-        public override bool Get(Address64 id, out WebTransform anchor)
+        public override bool Get(in Address64 id, out SerializableTransform anchor)
         {
             throw new System.NotImplementedException();
         }

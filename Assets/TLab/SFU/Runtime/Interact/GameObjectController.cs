@@ -143,7 +143,7 @@ namespace TLab.SFU.Interact
             public int grabberId;
             public bool active;
 
-            public MSG_DivideGrabber(Address64 networkId, int grabberId, bool active) : base()
+            public MSG_DivideGrabber(in Address64 networkId, int grabberId, bool active) : base()
             {
                 this.networkId = networkId;
                 this.grabberId = grabberId;
@@ -168,7 +168,7 @@ namespace TLab.SFU.Interact
             public int grabberId;
             public Action action;
 
-            public MSG_GrabbLock(Address64 networkId, int grabberId, Action action) : base()
+            public MSG_GrabbLock(in Address64 networkId, int grabberId, Action action) : base()
             {
                 this.networkId = networkId;
                 this.grabberId = grabberId;
@@ -188,6 +188,7 @@ namespace TLab.SFU.Interact
             {
                 case GrabState.Action.Grab:
                     EnableRigidbody(false);
+                    StopInterpolation();
                     break;
                 case GrabState.Action.Free:
                     EnableRigidbody(true);
@@ -199,17 +200,17 @@ namespace TLab.SFU.Interact
             NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GrabLock).Marshall());
         }
 
-        public override void OnPhysicsBehaviourChange()
+        public override void OnRigidbodyModeChange()
         {
             if (m_grabState.grabbed)
                 return;
 
-            switch (NetworkClient.physicsBehaviour)
+            switch (NetworkClient.rbMode)
             {
-                case NetworkClient.PhysicsBehaviour.Send:
+                case NetworkClient.RigidbodyMode.Send:
                     EnableRigidbody(true);
                     break;
-                case NetworkClient.PhysicsBehaviour.Recv:
+                case NetworkClient.RigidbodyMode.Recv:
                     EnableRigidbody(false, true);
                     break;
             }
@@ -217,7 +218,7 @@ namespace TLab.SFU.Interact
 
         public override void EnableRigidbody(bool active, bool force = false)
         {
-            if (force || (NetworkClient.physicsBehaviour == NetworkClient.PhysicsBehaviour.Send))
+            if (force || (NetworkClient.rbMode == NetworkClient.RigidbodyMode.Send))
                 base.EnableRigidbody(active);
         }
 
@@ -234,6 +235,8 @@ namespace TLab.SFU.Interact
                 m_grabState.Update(index);
 
                 EnableRigidbody(false);
+
+                StopInterpolation();
             }
             else
             {

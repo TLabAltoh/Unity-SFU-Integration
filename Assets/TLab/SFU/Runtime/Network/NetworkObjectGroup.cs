@@ -93,7 +93,7 @@ namespace TLab.SFU.Network
 
         protected virtual void UnRegister() => Registry.UnRegister(m_networkId.id);
 
-        private void PostSyncRequest()
+        public void PostSyncRequest()
         {
             // Request synchronization
             m_tmp.networkId = m_networkId.id;

@@ -123,7 +123,7 @@ namespace TLab.SFU.Network
             m_state = State.Waiting0;
         }
 
-        public virtual void Init(Address32 publicId, bool self)
+        public virtual void Init(in Address32 publicId, bool self)
         {
             if (started)
                 return;

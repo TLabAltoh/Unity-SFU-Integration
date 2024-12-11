@@ -178,7 +178,7 @@ namespace TLab.SFU
             return false;
         }
 
-        public bool Equals(Address64 address)
+        public bool Equals(in Address64 address)
         {
             return
                 (address.m_a0 == m_a0) &&

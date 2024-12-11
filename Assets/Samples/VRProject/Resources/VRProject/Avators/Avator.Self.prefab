@@ -118,10 +118,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 0
   m_group: {fileID: 7621256556746051558}
+  m_parent: {fileID: 0}
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
-  m_parent: {fileID: 0}
+  m_interpolationMode: 1
+  m_interpolationStep: 3
 --- !u!1001 &3478780567449186132
 PrefabInstance:
   m_ObjectHideFlags: 0

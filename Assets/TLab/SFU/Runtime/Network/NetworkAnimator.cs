@@ -13,7 +13,7 @@ namespace TLab.SFU.Network
         #region STRUCT
 
         [Serializable]
-        public class AnimParameter
+        public class AnimatorControllerParameterHistory
         {
             public AnimatorControllerParameterType type;
             public string name;
@@ -21,18 +21,18 @@ namespace TLab.SFU.Network
         }
 
         [Serializable]
-        public struct WebAnimState
+        public struct AnimatorControllerParameterState
         {
             public Address64 id;
             public string parameter;
             public int type;
 
-            public float floatVal;
-            public int intVal;
-            public bool boolVal;
+            public float f;
+            public int i;
+            public bool z;
         }
 
-        public enum WebAnimValueType
+        public enum AnimatorControllerParameterValueType
         {
             Float,
             Int,
@@ -44,19 +44,19 @@ namespace TLab.SFU.Network
 
         #region MESSAGE
 
-        [Serializable, Message(typeof(MSG_SyncAnim))]
-        public class MSG_SyncAnim : MSG_Sync
+        [Serializable, Message(typeof(MSG_SyncAnimatorController))]
+        public class MSG_SyncAnimatorController : MSG_Sync
         {
             public Address64 networkId;
-            public WebAnimState[] animStates;
+            public AnimatorControllerParameterState[] parameterStates;
 
-            public MSG_SyncAnim(Address64 networkId, WebAnimState[] animStates) : base()
+            public MSG_SyncAnimatorController(Address64 networkId, AnimatorControllerParameterState[] parameterStates) : base()
             {
                 this.networkId = networkId;
-                this.animStates = animStates;
+                this.parameterStates = parameterStates;
             }
 
-            public MSG_SyncAnim(byte[] bytes) : base(bytes) { }
+            public MSG_SyncAnimatorController(byte[] bytes) : base(bytes) { }
         }
 
         #endregion MESSAGE
@@ -65,19 +65,19 @@ namespace TLab.SFU.Network
 
         private Hashtable m_parameters = new Hashtable();
 
-        private MSG_SyncAnim m_tmp = new MSG_SyncAnim(new Address64(), null);
+        private MSG_SyncAnimatorController m_tmp = new MSG_SyncAnimatorController(new Address64(), null);
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
-        protected virtual void SyncAnim(int to, bool requested = false, params AnimParameter[] parameters)
+        protected virtual void SyncAnimatorController(int to, bool requested = false, params AnimatorControllerParameterHistory[] parameters)
         {
-            var animStates = new WebAnimState[parameters.Length];
+            var parameterStates = new AnimatorControllerParameterState[parameters.Length];
 
-            for (int i = 0; i < animStates.Length; i++)
+            for (int i = 0; i < parameterStates.Length; i++)
             {
                 var parameter = parameters[i];
 
-                var animState = new WebAnimState
+                var animState = new AnimatorControllerParameterState
                 {
                     id = m_networkId.id,
                     parameter = parameter.name
@@ -86,38 +86,38 @@ namespace TLab.SFU.Network
                 switch (parameter.type)
                 {
                     case AnimatorControllerParameterType.Int:
-                        animState.type = (int)WebAnimValueType.Int;
-                        animState.intVal = m_animator.GetInteger(parameter.name);
+                        animState.type = (int)AnimatorControllerParameterValueType.Int;
+                        animState.i = m_animator.GetInteger(parameter.name);
                         break;
                     case AnimatorControllerParameterType.Float:
-                        animState.type = (int)WebAnimValueType.Float;
-                        animState.floatVal = m_animator.GetFloat(parameter.name);
+                        animState.type = (int)AnimatorControllerParameterValueType.Float;
+                        animState.f = m_animator.GetFloat(parameter.name);
                         break;
                     case AnimatorControllerParameterType.Bool:
-                        animState.type = (int)WebAnimValueType.Bool;
-                        animState.boolVal = m_animator.GetBool(parameter.name);
+                        animState.type = (int)AnimatorControllerParameterValueType.Bool;
+                        animState.z = m_animator.GetBool(parameter.name);
                         break;
                     default: // AnimatorControllerParameterType.Trigger:
-                        animState.type = (int)WebAnimValueType.Trigger;
-                        animState.boolVal = m_animator.GetBool(parameter.name);
+                        animState.type = (int)AnimatorControllerParameterValueType.Trigger;
+                        animState.z = m_animator.GetBool(parameter.name);
                         break;
                 }
 
-                animStates[i] = animState;
+                parameterStates[i] = animState;
             }
 
             m_tmp.networkId = m_networkId.id;
             m_tmp.requested = requested;
-            m_tmp.animStates = animStates;
+            m_tmp.parameterStates = parameterStates;
 
             NetworkClient.instance.SendWS(to, m_tmp.Marshall());
 
             m_synchronised = false;
         }
 
-        protected virtual void SyncAnim(int to, bool force = false, bool requested = false)
+        protected virtual void SyncAnimatorController(int to, bool force = false, bool requested = false)
         {
-            foreach (AnimParameter parameter in m_parameters.Values)
+            foreach (AnimatorControllerParameterHistory parameter in m_parameters.Values)
             {
                 int prevValueHash = parameter.lastValueHash;
                 int currentValueHash;
@@ -143,7 +143,7 @@ namespace TLab.SFU.Network
                 }
 
                 if (force || (prevValueHash != currentValueHash))
-                    SyncAnim(to, requested, parameter);
+                    SyncAnimatorController(to, requested, parameter);
             }
         }
 
@@ -151,30 +151,30 @@ namespace TLab.SFU.Network
         {
             base.OnSyncRequested(from);
 
-            SyncAnim(from, true, m_parameters.Values.Cast<AnimParameter>().ToArray());
+            SyncAnimatorController(from, true, m_parameters.Values.Cast<AnimatorControllerParameterHistory>().ToArray());
         }
 
-        public void SyncFrom(int from, WebAnimState[] animStates)
+        public void SyncFrom(int from, in AnimatorControllerParameterState[] parameterStates)
         {
-            foreach (var animState in animStates)
+            foreach (var animState in parameterStates)
             {
                 switch (animState.type)
                 {
-                    case (int)WebAnimValueType.Float:
-                        if (ApplyParameter(animState.parameter, animState.floatVal.GetHashCode()))
-                            SetFloat(animState.parameter, animState.floatVal);
+                    case (int)AnimatorControllerParameterValueType.Float:
+                        if (ApplyParameter(animState.parameter, animState.f.GetHashCode()))
+                            SetFloat(animState.parameter, animState.f);
                         break;
-                    case (int)WebAnimValueType.Int:
-                        if (ApplyParameter(animState.parameter, animState.intVal.GetHashCode()))
-                            SetInteger(animState.parameter, animState.intVal);
+                    case (int)AnimatorControllerParameterValueType.Int:
+                        if (ApplyParameter(animState.parameter, animState.i.GetHashCode()))
+                            SetInteger(animState.parameter, animState.i);
                         break;
-                    case (int)WebAnimValueType.Bool:
-                        if (ApplyParameter(animState.parameter, animState.boolVal.GetHashCode()))
-                            SetBool(animState.parameter, animState.boolVal);
+                    case (int)AnimatorControllerParameterValueType.Bool:
+                        if (ApplyParameter(animState.parameter, animState.z.GetHashCode()))
+                            SetBool(animState.parameter, animState.z);
                         break;
-                    case (int)WebAnimValueType.Trigger:
-                        if (ApplyParameter(animState.parameter, animState.boolVal.GetHashCode()))
-                            SetTrigger(animState.parameter, animState.boolVal);
+                    case (int)AnimatorControllerParameterValueType.Trigger:
+                        if (ApplyParameter(animState.parameter, animState.z.GetHashCode()))
+                            SetTrigger(animState.parameter, animState.z);
                         break;
                 }
             }
@@ -182,11 +182,11 @@ namespace TLab.SFU.Network
             m_synchronised = true;
         }
 
-        public override void SyncViaWebRTC(int to, bool force = false, bool requested = false) => SyncAnim(to, force, requested);
+        public override void SyncViaWebRTC(int to, bool force = false, bool requested = false) => SyncAnimatorController(to, force, requested);
 
         protected virtual bool ApplyParameter(string paramName, int hashCode)
         {
-            var parameterInfo = m_parameters[paramName] as AnimParameter;
+            var parameterInfo = m_parameters[paramName] as AnimatorControllerParameterHistory;
 
             if (parameterInfo == null)
             {
@@ -213,12 +213,12 @@ namespace TLab.SFU.Network
                 m_animator.SetTrigger(paramName);
         }
 
-        protected virtual void InitAnimationParameter()
+        protected virtual void InitAnimatorControllerParameterHistory()
         {
             int parameterLength = m_animator.parameters.Length;
             for (int i = 0; i < parameterLength; i++)
             {
-                var parameterInfo = new AnimParameter();
+                var parameterInfo = new AnimatorControllerParameterHistory();
                 var parameter = m_animator.GetParameter(i);
                 parameterInfo.type = parameter.type;
                 parameterInfo.name = parameter.name;
@@ -243,31 +243,31 @@ namespace TLab.SFU.Network
             }
         }
 
-        public override void Init(Address32 id, bool self)
+        public override void Init(in Address32 id, bool self)
         {
             base.Init(id, self);
 
-            InitAnimationParameter();
+            InitAnimatorControllerParameterHistory();
         }
 
         public override void Init(bool self)
         {
             base.Init(self);
 
-            InitAnimationParameter();
+            InitAnimatorControllerParameterHistory();
         }
 
         protected override void RegisterOnMessage()
         {
             base.RegisterOnMessage();
 
-            NetworkClient.RegisterOnMessage<MSG_SyncAnim>((from, to, bytes) =>
+            NetworkClient.RegisterOnMessage<MSG_SyncAnimatorController>((from, to, bytes) =>
             {
                 m_tmp.UnMarshall(bytes);
                 var animator = Registry.GetByKey(m_tmp.networkId);
                 if (animator)
                 {
-                    animator.SyncFrom(from, m_tmp.animStates);
+                    animator.SyncFrom(from, m_tmp.parameterStates);
                     if (m_tmp.requested)
                         animator.OnSyncRequestCompleted(from);
                 }

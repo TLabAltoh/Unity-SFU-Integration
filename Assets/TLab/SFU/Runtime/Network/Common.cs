@@ -17,52 +17,39 @@ namespace TLab.SFU.Network
         public const Direction Recv = Direction.SendOnly | Direction.RecvOnly;
     }
 
-    public static class WebTransformExtension
+    public static class SerializableTransformExtension
     {
-        public static WebTransform ToWebTransform(this Transform transform) => new WebTransform(transform);
+        public static SerializableTransform ToSerializableTransform(this Transform transform) => new SerializableTransform(transform);
     }
 
     [Serializable]
-    public struct WebTransform
+    public struct SerializableTransform
     {
         public Vector3 position;
         public Vector4 rotation;
         public Vector3 localScale;
 
-        public WebTransform(Transform transform)
+        public SerializableTransform(Transform transform)
         {
             this.position = transform.position;
             this.rotation = transform.rotation.ToVec();
             this.localScale = transform.localScale;
         }
 
-        public WebTransform(Vector3 position, Quaternion rotation)
+        public SerializableTransform(Vector3 position, Quaternion rotation)
         {
             this.position = position;
             this.rotation = rotation.ToVec();
             this.localScale = Vector4.one;
         }
 
-        public WebTransform(Vector3 position, Quaternion rotation, Vector3 localScale)
+        public SerializableTransform(Vector3 position, Quaternion rotation, Vector3 localScale)
         {
             this.position = position;
             this.rotation = rotation.ToVec();
             this.localScale = localScale;
         }
     }
-
-    //public enum WebAction
-    //{
-    //    REGIST,
-    //    REGECT,
-    //    ACEPT,
-    //    EXIT,
-    //    GUEST_DISCONNECT,
-    //    GUEST_PARTICIPATION,
-    //    REFLESH,
-    //    UNI_REFLESH_TRANSFORM,
-    //    UNI_REFLESH_ANIM,
-    //}
 
     [Serializable]
     public class RequestAuth : IRequest

@@ -5,7 +5,7 @@ using System.Reflection;
 namespace TLab.SFU.Editor
 {
     [SerializeField]
-    public class SaveTransform
+    public struct SerializableTransform
     {
         [SerializeField] private Vector3 m_position;
         [SerializeField] private Quaternion m_rotation;
@@ -29,12 +29,9 @@ namespace TLab.SFU.Editor
 
     [CustomEditor(typeof(Transform), true)]
     [CanEditMultipleObjects]
-    public class TransformCustomInspectorEditor : UnityEditor.Editor
+    public class TransformInspectorEditor : UnityEditor.Editor
     {
-        /**
-         * Created to reflect changes in Transform.localPosition while the scene is running, even after play ends
-         * Created to reflect changes in Transform.localPosition while the scene is running, even after play ends
-         */
+        // Created to reflect changes in Transform.localPosition while the scene is running, even after play ends.
 
         private UnityEditor.Editor m_editor;
         private Transform m_param;
@@ -63,9 +60,9 @@ namespace TLab.SFU.Editor
             m_editor.OnInspectorGUI();
             if (EditorApplication.isPlaying || EditorApplication.isPaused)
             {
-                if (GUILayout.Button("Save Current State"))
+                if (GUILayout.Button("Save"))
                 {
-                    var s = new SaveTransform();
+                    var s = new SerializableTransform();
                     s.SetValue(m_param);
                     string json = JsonUtility.ToJson(s);
                     EditorPrefs.SetString("Save Param " + m_param.GetInstanceID().ToString(), json);
@@ -85,7 +82,7 @@ namespace TLab.SFU.Editor
                 var transform = target as Transform;
                 var key = "Save Param " + transform.GetInstanceID().ToString();
                 var json = EditorPrefs.GetString(key);
-                var t = JsonUtility.FromJson<SaveTransform>(json);
+                var t = JsonUtility.FromJson<SerializableTransform>(json);
                 EditorPrefs.DeleteKey(key);
                 transform = t.GetValue(transform);
                 EditorUtility.SetDirty(target);

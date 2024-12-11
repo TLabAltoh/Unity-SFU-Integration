@@ -39,8 +39,8 @@ namespace TLab.SFU.Network
 
         public static NetworkClient instance;
 
-        private static PhysicsBehaviour m_physicsBehaviour = PhysicsBehaviour.None;
-        public static PhysicsBehaviour physicsBehaviour => m_physicsBehaviour;
+        private static RigidbodyMode m_rbMode = RigidbodyMode.None;
+        public static RigidbodyMode rbMode => m_rbMode;
 
         public delegate void OnMessageCallback(int from, int to, byte[] bytes);
         private static Hashtable m_messageCallbacks = new Hashtable();
@@ -98,7 +98,7 @@ namespace TLab.SFU.Network
         #region STRUCT
 
         [Serializable]
-        public enum PhysicsBehaviour
+        public enum RigidbodyMode
         {
             None,
             Send,
@@ -137,10 +137,10 @@ namespace TLab.SFU.Network
                 this.avatorAction = avatorAction;
             }
 
-            public MSG_Join(MessageType messageType, SpawnableStore.SpawnAction avatorAction, Address32[] idAvails, PhysicsBehaviour physicsBehaviour, SpawnableShop.State[] latestShopStates, SpawnableStore.SpawnAction[] latestAvatorActions) : this(messageType, avatorAction)
+            public MSG_Join(MessageType messageType, SpawnableStore.SpawnAction avatorAction, Address32[] idAvails, RigidbodyMode rbMode, SpawnableShop.State[] latestShopStates, SpawnableStore.SpawnAction[] latestAvatorActions) : this(messageType, avatorAction)
             {
                 this.idAvails = idAvails;
-                this.physicsBehaviour = physicsBehaviour;
+                this.rbMode = rbMode;
                 this.latestShopStates = latestShopStates;
                 this.latestAvatorActions = latestAvatorActions;
             }
@@ -154,22 +154,22 @@ namespace TLab.SFU.Network
 
             // Response0
             public Address32[] idAvails;
-            public PhysicsBehaviour physicsBehaviour;
+            public RigidbodyMode rbMode;
             public SpawnableShop.State[] latestShopStates;
             public SpawnableStore.SpawnAction[] latestAvatorActions;
         }
 
-        [Serializable, Message(typeof(MSG_UpdatePhysicsBehaviour))]
-        public class MSG_UpdatePhysicsBehaviour : Message
+        [Serializable, Message(typeof(MSG_UpdateRigidbodyMode))]
+        public class MSG_UpdateRigidbodyMode : Message
         {
-            public MSG_UpdatePhysicsBehaviour(PhysicsBehaviour physicsBehaviour) : base()
+            public MSG_UpdateRigidbodyMode(RigidbodyMode rbMode) : base()
             {
-                this.physicsBehaviour = physicsBehaviour;
+                this.rbMode = rbMode;
             }
 
-            public MSG_UpdatePhysicsBehaviour(byte[] bytes) : base(bytes) { }
+            public MSG_UpdateRigidbodyMode(byte[] bytes) : base(bytes) { }
 
-            public PhysicsBehaviour physicsBehaviour;
+            public RigidbodyMode rbMode;
         }
 
         [Serializable, Message(typeof(MSG_IdAvails))]
@@ -197,24 +197,10 @@ namespace TLab.SFU.Network
 
         #endregion MESSAGE
 
-        #region REFLESH
-
-        //public void ForceReflesh(bool reloadWorldData)
-        //{
-        //    SendWS(action: WebAction.REFLESH, active: reloadWorldData);
-        //}
-
-        //public void UniReflesh(string id)
-        //{
-        //    SendWS(action: WebAction.UNI_REFLESH_TRANSFORM, transform: new WebObjectInfo { id = id });
-        //}
-
-        #endregion REFLESH
-
-        public void UpdatePhysicsBehaviour(PhysicsBehaviour physicsBehaviour)
+        public void UpdateRigidbodyMode(RigidbodyMode rbMode)
         {
-            m_physicsBehaviour = physicsBehaviour;
-            Foreach<NetworkTransform>((t) => t.OnPhysicsBehaviourChange());
+            m_rbMode = rbMode;
+            Foreach<NetworkTransform>((t) => t.OnRigidbodyModeChange());
         }
 
         public static void RegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
@@ -328,7 +314,14 @@ namespace TLab.SFU.Network
             while (!complete)
             {
                 complete = true;
-                groups.Foreach((t) => complete &= ((t.state == NetworkObject.State.Initialized) || (t.state == NetworkObject.State.Shutdowned)));
+                groups.Foreach((t) => {
+                    var initialized = (t.state == NetworkObject.State.Initialized) || (t.state == NetworkObject.State.Shutdowned);
+                    complete &= initialized;
+
+                    if (!initialized)
+                        t.PostSyncRequest();
+                });
+
                 yield return new WaitForSeconds(1f);
             }
 
@@ -385,14 +378,14 @@ namespace TLab.SFU.Network
 
                             var latestShopStates = SpawnableShopRegistry.values.Select((t) => t.GetState()).ToArray();
 
-                            SendWS(from, new MSG_Join(MSG_Join.MessageType.Response0, avatorAction, UniqueId.Generate(5), PhysicsBehaviour.Recv, latestShopStates, latestAvatorActions).Marshall());
+                            SendWS(from, new MSG_Join(MSG_Join.MessageType.Response0, avatorAction, UniqueId.Generate(5), RigidbodyMode.Recv, latestShopStates, latestAvatorActions).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.Response0:
                         {
                             Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response0));
 
-                            UpdatePhysicsBehaviour(receive.physicsBehaviour);
+                            UpdateRigidbodyMode(receive.rbMode);
 
                             SyncWorldAsync(receive.avatorAction, receive.latestAvatorActions, receive.latestShopStates);
 
@@ -425,9 +418,9 @@ namespace TLab.SFU.Network
                 }
             });
 
-            RegisterOnMessage<MSG_UpdatePhysicsBehaviour>((from, to, bytes) =>
+            RegisterOnMessage<MSG_UpdateRigidbodyMode>((from, to, bytes) =>
             {
-                UpdatePhysicsBehaviour(new MSG_UpdatePhysicsBehaviour(bytes).physicsBehaviour);
+                UpdateRigidbodyMode(new MSG_UpdateRigidbodyMode(bytes).rbMode);
             });
 
             RegisterOnMessage<MSG_IdAvails>((from, to, bytes) =>
@@ -587,7 +580,7 @@ namespace TLab.SFU.Network
 
             if (userId == 0)
             {
-                UpdatePhysicsBehaviour(PhysicsBehaviour.Send);
+                UpdateRigidbodyMode(RigidbodyMode.Send);
 
                 m_objectGroup.InitAllObjects(true);
 
