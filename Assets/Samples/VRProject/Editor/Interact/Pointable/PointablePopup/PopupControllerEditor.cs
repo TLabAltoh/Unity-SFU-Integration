@@ -6,9 +6,9 @@ namespace TLab.SFU.Interact.Editor
     [CustomEditor(typeof(PopupController))]
     public class PopupControllerEditor : UnityEditor.Editor
     {
-        private void OverwritePointablePopup(int index, ref PopupController popupController)
+        private void Convert2PointablePopup(int index, ref PopupController popupController)
         {
-            const string NAME = "[PopupController] ";
+            const string NAME = "[" + nameof(PopupController) + "] ";
             const string BAR = "-----------------------------------";
 
             Debug.Log(NAME + BAR);
@@ -28,15 +28,15 @@ namespace TLab.SFU.Interact.Editor
                 pointablePopup.enableCollision = false;
                 DestroyImmediate(pointableOutline);
                 EditorUtility.SetDirty(pointablePopup);
-                Debug.Log(NAME + "Update to PointablePopup " + index.ToString());
+                Debug.Log(NAME + "Convert 2 " + nameof(PointablePopup) + " " + index.ToString());
             }
 
             Debug.Log(NAME + BAR);
         }
 
-        private void RevertPointableOutline(int index, ref PopupController popupController)
+        private void Convert2PointableOutline(int index, ref PopupController popupController)
         {
-            const string NAME = "[PopupController] ";
+            const string NAME = "[" + nameof(PopupController) + "] ";
             const string BAR = "-----------------------------------";
 
             Debug.Log(NAME + BAR);
@@ -51,7 +51,7 @@ namespace TLab.SFU.Interact.Editor
 
             if (pointablePopup != null)
             {
-                Debug.Log(NAME + "Revert to OutlinePointable " + index.ToString());
+                Debug.Log(NAME + "Convert 2 " + nameof(PointableOutline) + " " + index.ToString());
                 pointableOutline.outlineMat = pointablePopup.outlineMat;
                 DestroyImmediate(pointablePopup);
             }
@@ -71,19 +71,27 @@ namespace TLab.SFU.Interact.Editor
 
             var popupController = target as PopupController;
 
-            if (GUILayout.Button("Overwrite to PointablePopup"))
+            EditorGUILayout.Space();
+            GUILayout.Label($"Convert 2: ", GUILayout.ExpandWidth(false));
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button(nameof(PointablePopup)))
             {
                 for (int index = 0; index < popupController.pointerPairs.Length; index++)
-                    OverwritePointablePopup(index, ref popupController);
+                    Convert2PointablePopup(index, ref popupController);
                 EditorUtility.SetDirty(popupController);
             }
 
-            if (GUILayout.Button("Revert to PointableOutline"))
+            if (GUILayout.Button(nameof(PointableOutline)))
             {
                 for (int index = 0; index < popupController.pointerPairs.Length; index++)
-                    RevertPointableOutline(index, ref popupController);
+                    Convert2PointableOutline(index, ref popupController);
                 EditorUtility.SetDirty(popupController);
             }
+
+            EditorGUILayout.EndHorizontal();
         }
     }
 }

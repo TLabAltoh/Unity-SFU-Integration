@@ -10,7 +10,7 @@ namespace TLab.SFU.Interact
     using Registry = Registry<Address64, GameObjectController>;
 
     [AddComponentMenu("TLab/SFU/Game Object Controller (TLab)")]
-    public class GameObjectController : NetworkTransform
+    public class GameObjectController : NetworkRigidbodyTransform
     {
         public enum HandType
         {
@@ -103,6 +103,14 @@ namespace TLab.SFU.Interact
 
             var rb = GetComponent<Rigidbody>();
             rb.useGravity = false;
+        }
+
+        public void AutoFitScaleLogicLim()
+        {
+            var localScale = this.transform.localScale;
+            m_scale.scaleXLim = new Vector2(localScale.x * 0.5f, localScale.x * 2.0f);
+            m_scale.scaleYLim = new Vector2(localScale.y * 0.5f, localScale.y * 2.0f);
+            m_scale.scaleZLim = new Vector2(localScale.z * 0.5f, localScale.z * 2.0f);
         }
 #endif
 

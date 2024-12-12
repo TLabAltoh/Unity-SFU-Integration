@@ -31,7 +31,12 @@ namespace TLab.SFU.Network
 
         public static int GetMsgId<T>(string seed) where T : Message => Cryptography.MD5From(typeof(T).FullName + seed);
 
-        public virtual byte[] Marshall() => Combine(SfuClient.SEND_PACKET_HEADER_SIZE, m_msgId, Encoding.UTF8.GetBytes(JsonUtility.ToJson(this)));
+        public virtual unsafe byte[] Marshall()
+        {
+            var bytes = Padding(SfuClient.SEND_PACKET_HEADER_SIZE + sizeof(int), Encoding.UTF8.GetBytes(JsonUtility.ToJson(this)));
+            Copy(msgId, bytes, SfuClient.SEND_PACKET_HEADER_SIZE);
+            return bytes;
+        }
 
         public virtual void UnMarshall(byte[] bytes) => JsonUtility.FromJsonOverwrite(Encoding.UTF8.GetString(bytes, NetworkClient.PAYLOAD_OFFSET, bytes.Length - NetworkClient.PAYLOAD_OFFSET), this);
     }

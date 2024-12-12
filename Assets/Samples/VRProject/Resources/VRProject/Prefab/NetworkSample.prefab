@@ -923,13 +923,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_privateId:
-    m_a0: 39
-    m_a1: 80
-    m_a2: 103
-    m_a3: 67
-    m_hash: -828804889
-  m_publicId:
+  m_private:
+    m_a0: 101
+    m_a1: 143
+    m_a2: 117
+    m_a3: 102
+    m_hash: -124083564
+  m_public:
     m_a0: 0
     m_a1: 0
     m_a2: 0
@@ -940,11 +940,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 39
-    m_a5: 80
-    m_a6: 103
-    m_a7: 67
-    m_hash: 1341021414
+    m_a4: 101
+    m_a5: 143
+    m_a6: 117
+    m_a7: 102
+    m_hash: 521412595
 --- !u!1 &1992072394097134738
 GameObject:
   m_ObjectHideFlags: 0
@@ -1010,13 +1010,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_privateId:
-    m_a0: 0
-    m_a1: 0
-    m_a2: 0
-    m_a3: 0
-    m_hash: 0
-  m_publicId:
+  m_private:
+    m_a0: 227
+    m_a1: 207
+    m_a2: 15
+    m_a3: 64
+    m_hash: -882987431
+  m_public:
     m_a0: 0
     m_a1: 0
     m_a2: 0
@@ -1027,11 +1027,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 0
-    m_a5: 0
-    m_a6: 0
-    m_a7: 0
-    m_hash: 0
+    m_a4: 227
+    m_a5: 207
+    m_a6: 15
+    m_a7: 64
+    m_hash: -912183556
 --- !u!1 &1992072394206774098
 GameObject:
   m_ObjectHideFlags: 0
@@ -1320,13 +1320,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_privateId:
-    m_a0: 180
-    m_a1: 147
-    m_a2: 97
-    m_a3: 2
-    m_hash: -12619836
-  m_publicId:
+  m_private:
+    m_a0: 106
+    m_a1: 113
+    m_a2: 20
+    m_a3: 61
+    m_hash: 292990228
+  m_public:
     m_a0: 0
     m_a1: 0
     m_a2: 0
@@ -1337,11 +1337,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 180
-    m_a5: 147
-    m_a6: 97
-    m_a7: 2
-    m_hash: 1142749981
+    m_a4: 106
+    m_a5: 113
+    m_a6: 20
+    m_a7: 61
+    m_hash: -1484807334
 --- !u!1 &1992072394535383978
 GameObject:
   m_ObjectHideFlags: 0
@@ -1423,6 +1423,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_playerRoot: {fileID: 0}
   m_adapter: {fileID: 11400000, guid: 4db9b2b4314be9e4ea6cac97593e43a6, type: 2}
+  m_avatorConfig: {fileID: 11400000, guid: d7a52e8ac99b9aa4d9a0ec1187db4293, type: 2}
   m_avatorStore: {fileID: 11400000, guid: cba48bb44de940e4f84daeabb33e6dd5, type: 2}
   m_anchor: {fileID: 75741989075287186}
   m_objectGroup: {fileID: 5102256938453195480}
@@ -1741,13 +1742,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_privateId:
-    m_a0: 0
-    m_a1: 0
-    m_a2: 0
-    m_a3: 0
-    m_hash: 0
-  m_publicId:
+  m_private:
+    m_a0: 231
+    m_a1: 225
+    m_a2: 209
+    m_a3: 252
+    m_hash: -225001479
+  m_public:
     m_a0: 0
     m_a1: 0
     m_a2: 0
@@ -1758,11 +1759,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 0
-    m_a5: 0
-    m_a6: 0
-    m_a7: 0
-    m_hash: 0
+    m_a4: 231
+    m_a5: 225
+    m_a6: 209
+    m_a7: 252
+    m_hash: 266293278
 --- !u!1 &2026784516853686580
 GameObject:
   m_ObjectHideFlags: 0

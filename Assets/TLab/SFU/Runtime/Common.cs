@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TLab.SFU
@@ -7,6 +8,33 @@ namespace TLab.SFU
     {
         public static bool operator ==(Address32 a, Address32 b) => a.Equals(b);
         public static bool operator !=(Address32 a, Address32 b) => !a.Equals(b);
+
+        public static Address32 Generate()
+        {
+            var r = new System.Random();
+            var v = new byte[4];
+
+            r.NextBytes(v);
+            return new Address32(v[0], v[1], v[2], v[3]);
+        }
+
+        public static Address32[] Generate(int length)
+        {
+            var ids = new List<Address32>();
+            for (int i = 0; i < length; i++)
+            {
+                while (true)
+                {
+                    var candidate = Generate();
+                    if (!ids.Contains(candidate))
+                    {
+                        ids.Add(candidate);
+                        break;
+                    }
+                }
+            }
+            return ids.ToArray();
+        }
 
         [SerializeField] private byte m_a0;
         [SerializeField] private byte m_a1;
@@ -40,17 +68,17 @@ namespace TLab.SFU
             m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3);
         }
 
-        public unsafe void CopyTo(byte* ptr)
+        public unsafe void CopyTo(byte* dstPtr)
         {
-            ptr[0] = m_a0;
-            ptr[1] = m_a1;
-            ptr[2] = m_a2;
-            ptr[3] = m_a3;
+            dstPtr[0] = m_a0;
+            dstPtr[1] = m_a1;
+            dstPtr[2] = m_a2;
+            dstPtr[3] = m_a3;
         }
 
         public void Copy(in Address32 from) => Update(from.a0, from.a1, from.a2, from.a3);
 
-        public unsafe void Copy(byte* from) => Update(from[0], from[1], from[2], from[3]);
+        public unsafe void Copy(byte* fromPtr) => Update(fromPtr[0], fromPtr[1], fromPtr[2], fromPtr[3]);
 
         public override int GetHashCode() => m_hash;
 
@@ -76,6 +104,23 @@ namespace TLab.SFU
     {
         public static bool operator ==(Address64 a, Address64 b) => a.Equals(b);
         public static bool operator !=(Address64 a, Address64 b) => !a.Equals(b);
+
+        public static Address64 Generate()
+        {
+            var r = new System.Random();
+            var v = new byte[8];
+
+            r.NextBytes(v);
+            return new Address64(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+        }
+
+        public static Address64[] Generate(int length)
+        {
+            var ids = new Address64[length];
+            for (int i = 0; i < ids.Length; i++)
+                ids[i] = Generate();
+            return ids;
+        }
 
         [SerializeField] private byte m_a0;
         [SerializeField] private byte m_a1;
@@ -149,21 +194,21 @@ namespace TLab.SFU
             m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
         }
 
-        public unsafe void CopyTo(byte* ptr)
+        public unsafe void CopyTo(byte* dstPtr)
         {
-            ptr[0] = m_a0;
-            ptr[1] = m_a1;
-            ptr[2] = m_a2;
-            ptr[3] = m_a3;
-            ptr[4] = m_a4;
-            ptr[5] = m_a5;
-            ptr[6] = m_a6;
-            ptr[7] = m_a7;
+            dstPtr[0] = m_a0;
+            dstPtr[1] = m_a1;
+            dstPtr[2] = m_a2;
+            dstPtr[3] = m_a3;
+            dstPtr[4] = m_a4;
+            dstPtr[5] = m_a5;
+            dstPtr[6] = m_a6;
+            dstPtr[7] = m_a7;
         }
 
         public void Copy(in Address64 from) => Update(from.a0, from.a1, from.a2, from.a3, from.a4, from.a5, from.a6, from.a7);
 
-        public unsafe void Copy(byte* from) => Update(from[0], from[1], from[2], from[3], from[4], from[5], from[6], from[7]);
+        public unsafe void Copy(byte* fromPtr) => Update(fromPtr[0], fromPtr[1], fromPtr[2], fromPtr[3], fromPtr[4], fromPtr[5], fromPtr[6], fromPtr[7]);
 
         public void CopyUpper32(in Address32 from) => UpdateUpper32(from.a0, from.a1, from.a2, from.a3);
 

@@ -26,8 +26,8 @@ namespace TLab.SFU.Editor
 
             using (var sw = new StreamWriter(savePath, false))
             {
-                var jsonstr = JsonUtility.ToJson(this, false);
-                sw.Write(jsonstr);
+                var json = JsonUtility.ToJson(this, false);
+                sw.Write(json);
                 sw.Flush();
             }
         }

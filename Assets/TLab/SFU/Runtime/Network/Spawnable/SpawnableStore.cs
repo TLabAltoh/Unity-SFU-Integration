@@ -27,13 +27,19 @@ namespace TLab.SFU.Network
             {
                 None,
                 Spawn,
+                WithoutAddress,
                 DeleteByUserId,
                 DeleteByPublicId,
             }
 
-            public static SpawnAction GetSpawnAction(int elemId, int userId, Address32 publicId, SerializableTransform transform)
+            public static SpawnAction GetSpawnAction(int elemId, int userId, Address32 @public, SerializableTransform transform)
             {
-                return new SpawnAction(Action.Spawn, elemId, userId, publicId, transform);
+                return new SpawnAction(Action.Spawn, elemId, userId, @public, transform);
+            }
+
+            public static SpawnAction GetSpawnActionWithoutAddress(int elemId, int userId, SerializableTransform transform)
+            {
+                return new SpawnAction(Action.WithoutAddress, elemId, userId, new Address32(), transform);
             }
 
             public static SpawnAction GetDeleteAction(int userId)
@@ -41,24 +47,24 @@ namespace TLab.SFU.Network
                 return new SpawnAction(Action.DeleteByUserId, -1, userId, new Address32(), new SerializableTransform());
             }
 
-            public static SpawnAction GetDeleteAction(Address32 publicId)
+            public static SpawnAction GetDeleteAction(Address32 @public)
             {
-                return new SpawnAction(Action.DeleteByPublicId, -1, -1, publicId, new SerializableTransform());
+                return new SpawnAction(Action.DeleteByPublicId, -1, -1, @public, new SerializableTransform());
             }
 
-            public SpawnAction(Action action, int elemId, int userId, Address32 publicId, SerializableTransform transform)
+            public SpawnAction(Action action, int elemId, int userId, Address32 @public, SerializableTransform transform)
             {
                 this.action = action;
                 this.elemId = elemId;
                 this.userId = userId;
-                this.publicId = publicId;
+                this.@public = @public;
                 this.transform = transform;
             }
 
             public Action action;
             public int elemId;
             public int userId;
-            public Address32 publicId;
+            public Address32 @public;
             public SerializableTransform transform;
         }
 
@@ -67,23 +73,23 @@ namespace TLab.SFU.Network
             public int userId;
             public SpawnAction.Action action;
             public SpawnAction spawnAction;
-            public Address32 publicId;
+            public Address32 @public;
             public GameObject instance;
             public NetworkObjectGroup objectGroup;
 
-            public InstanceRef(int userId, SpawnAction.Action action, SpawnAction spawnAction, Address32 publicId, NetworkObjectGroup objectGroup, GameObject instance)
+            public InstanceRef(int userId, SpawnAction.Action action, SpawnAction spawnAction, Address32 @public, NetworkObjectGroup objectGroup, GameObject instance)
             {
                 this.userId = userId;
                 this.action = action;
                 this.spawnAction = spawnAction;
-                this.publicId = publicId;
+                this.@public = @public;
                 this.objectGroup = objectGroup;
                 this.instance = instance;
             }
 
             public InstanceRef() { }
 
-            public object Clone() => new InstanceRef(userId, action, spawnAction, publicId, objectGroup, instance);
+            public object Clone() => new InstanceRef(userId, action, spawnAction, @public, objectGroup, instance);
         }
 
         #endregion STRUCT
@@ -96,29 +102,29 @@ namespace TLab.SFU.Network
 
         public Dictionary<Address32, InstanceRef> registry => m_registry;
 
-        protected void Register(Address32 publicId, InstanceRef instance)
+        protected void Register(Address32 @public, InstanceRef instance)
         {
-            if (!m_registry.ContainsKey(publicId))
+            if (!m_registry.ContainsKey(@public))
             {
-                m_registry.Add(publicId, instance);
+                m_registry.Add(@public, instance);
 
                 if (!m_map.ContainsKey(instance.userId))
                     m_map[instance.userId] = new List<Address32>();
 
                 var map = m_map[instance.userId];
-                map.Add(publicId);
+                map.Add(@public);
             }
         }
 
-        protected void UnRegister(Address32 publicId)
+        protected void UnRegister(Address32 @public)
         {
-            if (m_registry.ContainsKey(publicId))
+            if (m_registry.ContainsKey(@public))
             {
-                var instance = m_registry[publicId];
-                m_registry.Remove(publicId);
+                var instance = m_registry[@public];
+                m_registry.Remove(@public);
 
                 var map = m_map[instance.userId];
-                map.Remove(publicId);
+                map.Remove(@public);
             }
         }
 
@@ -139,7 +145,7 @@ namespace TLab.SFU.Network
 
         public IEnumerable<InstanceRef> GetByUserId(int userId) => m_registry.Where((t) => t.Value.userId == userId).Select((t) => t.Value);
 
-        public InstanceRef GetByPublicId(Address32 publicId) => m_registry[publicId];
+        public InstanceRef GetByPublicId(Address32 @public) => m_registry[@public];
 
         #endregion REGISTORY
 
@@ -155,28 +161,28 @@ namespace TLab.SFU.Network
             switch (spawnAction.action)
             {
                 case SpawnAction.Action.Spawn:
-                    return SpawnByElementId(spawnAction.elemId, spawnAction.userId, spawnAction.publicId, spawnAction.transform, out instanceRef);
+                    return SpawnByElementId(spawnAction.elemId, spawnAction.userId, spawnAction.@public, spawnAction.transform, out instanceRef);
                 case SpawnAction.Action.DeleteByUserId:
                     return DeleteByUserId(spawnAction.userId);
                 case SpawnAction.Action.DeleteByPublicId:
-                    return DeleteByPublicId(spawnAction.publicId);
+                    return DeleteByPublicId(spawnAction.@public);
             }
 
             return false;
         }
 
-        public bool DeleteByPublicId(Address32 publicId)
+        public bool DeleteByPublicId(Address32 @public)
         {
-            if (!m_registry.ContainsKey(publicId))
+            if (!m_registry.ContainsKey(@public))
                 return false;
 
-            var instance = m_registry[publicId];
+            var instance = m_registry[@public];
             Destroy(instance.instance);
 
-            m_registry.Remove(publicId);
+            m_registry.Remove(@public);
 
             var map = m_map[instance.userId];
-            map.Remove(publicId);
+            map.Remove(@public);
 
             return true;
         }
@@ -193,7 +199,7 @@ namespace TLab.SFU.Network
             return true;
         }
 
-        public bool SpawnByElementId(int elemId, int userId, Address32 publicId, SerializableTransform @transform, out InstanceRef instanceRef)
+        public bool SpawnByElementId(int elemId, int userId, Address32 @public, SerializableTransform @transform, out InstanceRef instanceRef)
         {
             if (!GetByElementId(elemId, userId, out var prefab))
             {
@@ -209,16 +215,16 @@ namespace TLab.SFU.Network
 
             var group = instance.GetComponent<NetworkObjectGroup>();
             var self = userId == NetworkClient.userId;
-            group.InitAllObjects(publicId, self);
+            group.InitAllObjects(@public, self);
 
-            var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, publicId, transform);
-            instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, publicId, group, instance);
-            Register(publicId, instanceRef.Clone() as InstanceRef);
+            var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, @public, transform);
+            instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, @public, group, instance);
+            Register(@public, instanceRef.Clone() as InstanceRef);
 
             return true;
         }
 
-        public bool SpawnByElementName(string elemName, int userId, Address32 publicId, SerializableTransform @transform, out InstanceRef instanceRef)
+        public bool SpawnByElementName(string elemName, int userId, Address32 @public, SerializableTransform @transform, out InstanceRef instanceRef)
         {
             GetByElementName(elemName, userId, out var elemId, out var prefab);
 
@@ -226,11 +232,11 @@ namespace TLab.SFU.Network
 
             var group = instance.GetComponent<NetworkObjectGroup>();
             var self = userId == NetworkClient.userId;
-            group.InitAllObjects(publicId, self);
+            group.InitAllObjects(@public, self);
 
-            var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, publicId, transform);
-            instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, publicId, group, instance);
-            Register(publicId, instanceRef.Clone() as InstanceRef);
+            var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, @public, transform);
+            instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, @public, group, instance);
+            Register(@public, instanceRef.Clone() as InstanceRef);
 
             return true;
         }

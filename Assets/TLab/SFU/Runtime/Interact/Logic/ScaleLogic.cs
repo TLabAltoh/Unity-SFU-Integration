@@ -135,6 +135,51 @@ namespace TLab.SFU.Interact
             }
         }
 
+        public Vector2 scaleXLim
+        {
+            get => m_scaleXLim;
+            set
+            {
+                if (m_scaleXLim != value)
+                {
+                    m_scaleXLim = value;
+
+                    if (m_targetTransform != null)
+                        UpdateLocalScale(m_targetTransform.localScale);
+                }
+            }
+        }
+
+        public Vector2 scaleYLim
+        {
+            get => m_scaleYLim;
+            set
+            {
+                if (m_scaleYLim != value)
+                {
+                    m_scaleYLim = value;
+
+                    if (m_targetTransform != null)
+                        UpdateLocalScale(m_targetTransform.localScale);
+                }
+            }
+        }
+
+        public Vector2 scaleZLim
+        {
+            get => m_scaleZLim;
+            set
+            {
+                if (m_scaleZLim != value)
+                {
+                    m_scaleZLim = value;
+
+                    if (m_targetTransform != null)
+                        UpdateLocalScale(m_targetTransform.localScale);
+                }
+            }
+        }
+
         public bool selected { get => m_handleSelected != null; }
 
         public void OnMainHandGrabbed(Interactor interactor)
@@ -210,6 +255,13 @@ namespace TLab.SFU.Interact
             });
         }
 
+        public void UpdateLocalScale(Vector3 newScale)
+        {
+            m_targetTransform.localScale = ClampScale(newScale);
+
+            UpdateHandleScale();
+        }
+
         public void UpdateTwoHandLogic()
         {
             if (m_enabled && m_mainHand != null && m_subHand != null && m_fcnt == 0)
@@ -229,9 +281,7 @@ namespace TLab.SFU.Interact
                     newScale = m_initialScaleOnGrabStart * scaleFactor;
                 }
 
-                m_targetTransform.localScale = ClampScale(newScale);
-
-                UpdateHandleScale();
+                UpdateLocalScale(newScale);
             }
 
             m_fcnt += 1;
@@ -278,9 +328,7 @@ namespace TLab.SFU.Interact
 
                 var newScale = Vector3.Scale(m_initialScaleOnGrabStart, scaleFactor);
 
-                m_targetTransform.localScale = ClampScale(newScale);
-
-                UpdateHandleScale();
+                UpdateLocalScale(newScale);
 
                 updated = true;
             }

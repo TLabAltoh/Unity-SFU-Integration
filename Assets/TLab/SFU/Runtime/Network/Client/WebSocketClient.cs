@@ -5,7 +5,6 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
-using static System.BitConverter;
 
 namespace TLab.SFU.Network
 {
@@ -148,9 +147,7 @@ namespace TLab.SFU.Network
 
         public unsafe override Task Send(int to, byte[] bytes)
         {
-            var headderBuf = GetBytes(to);
-            fixed (byte* bytesPtr = bytes, headderBufPtr = headderBuf)
-                UnsafeUtility.LongCopy(headderBufPtr, bytesPtr, sizeof(int));
+            UnsafeUtility.Copy(to, bytes);
             return m_socket.Send(bytes);
         }
 

@@ -73,6 +73,15 @@ namespace TLab.SFU.Network
                 }
             }
         }
+
+        public void SetPrivateForAllChild()
+        {
+            var ids = GetComponentsInChildren<NetworkId>();
+            var @privates = Address32.Generate(ids.Length);
+
+            for (int i = 0; i < ids.Length; i++)
+                ids[i].SetPrivate(privates[i]);
+        }
 #endif
 
         private void RegisterOnMessage()
@@ -81,9 +90,13 @@ namespace TLab.SFU.Network
             {
                 m_tmp.UnMarshall(bytes);
 
-                Debug.Log(THIS_NAME + $"{nameof(MSG_SyncRequest)}:{gameObject.name}:{m_networkId.id.hash}");
+                Debug.Log(THIS_NAME + $"{nameof(MSG_SyncRequest)}:{gameObject.name}:{m_tmp.networkId.hash}");
 
-                Registry.GetByKey(m_tmp.networkId)?.OnSyncRequested(from);
+                var group = Registry.GetByKey(m_tmp.networkId);
+                if (group)
+                    group.OnSyncRequested(from);
+                else
+                    Debug.LogWarning(THIS_NAME + $"group not found: {m_tmp.networkId.hash}");
             });
         }
 
@@ -124,7 +137,7 @@ namespace TLab.SFU.Network
                 PostSyncRequest();
         }
 
-        public void InitAllObjects(Address32 publicId, bool self)
+        public void InitAllObjects(Address32 @public, bool self)
         {
             if (started)
                 return;
@@ -137,14 +150,14 @@ namespace TLab.SFU.Network
                 return;
             }
 
-            m_networkId.SetPublicId(publicId);
+            m_networkId.SetPublic(@public);
 
             Register();
 
             if (!self)
                 m_coroutine = StartCoroutine(WaitForInitialized());
 
-            m_registry.Foreach((t) => t.Init(publicId, self));
+            m_registry.Foreach((t) => t.Init(@public, self));
 
             if (!self)
                 PostSyncRequest();
@@ -178,11 +191,11 @@ namespace TLab.SFU.Network
             var complete = false;
             while (!complete)
             {
+                yield return new WaitForSeconds(1f);
+
                 complete = true;
 
                 m_registry.Foreach((t) => complete &= ((t.state == NetworkObject.State.Waiting1) || (t.state == NetworkObject.State.Initialized)));
-
-                yield return new WaitForSeconds(1f);
             }
             m_registry.Foreach((t) => t.NotifyInitComplete());
 

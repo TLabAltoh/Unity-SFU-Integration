@@ -1,5 +1,5 @@
 using UnityEngine;
-using TLab.SFU.UI;
+using TLab.VRProjct.UI;
 
 namespace TLab.VRProjct
 {

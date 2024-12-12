@@ -38,7 +38,7 @@ namespace TLab.SFU.Network
 
         public BaseAnchorProvider anchor => m_anchor;
 
-        private MSG_SpawnableShop m_tmp = new MSG_SpawnableShop();
+        private static MSG_SpawnableShop packetBuf = new MSG_SpawnableShop();
 
         public State GetState() => new State(m_shopId, m_store.GetLatestActionArray());
 
@@ -78,7 +78,7 @@ namespace TLab.SFU.Network
         {
             Registry.Register(m_shopId, this);
 
-            NetworkClient.RegisterOnMessage(m_tmp.msgId, (from, to, bytes) =>
+            NetworkClient.RegisterOnMessage(packetBuf.msgId, (from, to, bytes) =>
             {
                 // TODO:
 
@@ -99,7 +99,7 @@ namespace TLab.SFU.Network
         {
             NetworkClient.UnRegisterOnJoin(OnJoin, OnJoin);
             NetworkClient.UnRegisterOnExit(OnExit, OnExit);
-            NetworkClient.UnRegisterOnMessage(m_tmp.msgId);
+            NetworkClient.UnRegisterOnMessage(packetBuf.msgId);
 
             Registry.UnRegister(m_shopId);
         }

@@ -52,6 +52,47 @@ namespace TLab.SFU.Network
     }
 
     [Serializable]
+    public struct RigidbodyState
+    {
+        public static bool operator ==(RigidbodyState a, RigidbodyState b) => (a.used == b.used) && (a.gravity == b.gravity);
+        public static bool operator !=(RigidbodyState a, RigidbodyState b) => (a.used != b.used) || (a.gravity != b.gravity);
+
+        [SerializeField, HideInInspector] private bool m_used;
+
+        [SerializeField, HideInInspector] private bool m_gravity;
+
+        public bool used => m_used;
+
+        public bool gravity => m_gravity;
+
+        public RigidbodyState(bool used, bool gravity)
+        {
+            m_used = used;
+            m_gravity = gravity;
+        }
+
+        public void Update(bool used, bool gravity)
+        {
+            m_used = used;
+            m_gravity = gravity;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not RigidbodyState)
+                return false;
+
+            var tmp = (RigidbodyState)obj;
+            return this == tmp;
+        }
+    }
+
+    [Serializable]
     public class RequestAuth : IRequest
     {
         public int roomId;

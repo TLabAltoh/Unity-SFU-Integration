@@ -3,16 +3,16 @@ using UnityEditor;
 
 namespace TLab.SFU.Network.Editor
 {
-    [CustomEditor(typeof(NetworkTransform), true)]
-    public class NetworkTransformEditor : NetworkObjectEditor
+    [CustomEditor(typeof(NetworkRigidbodyTransform), true)]
+    public class NetworkRigidbodyTransformEditor : NetworkObjectEditor
     {
-        private NetworkTransform m_transform;
+        private NetworkRigidbodyTransform m_transform;
 
         protected override void Init()
         {
             base.Init();
 
-            m_transform = target as NetworkTransform;
+            m_transform = target as NetworkRigidbodyTransform;
         }
 
         public override void OnInspectorGUI()

@@ -9,7 +9,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using NativeWebSocket;
 using TLab.SFU.Network.Json;
-using static System.BitConverter;
 
 namespace TLab.SFU.Network
 {
@@ -646,9 +645,7 @@ namespace TLab.SFU.Network
         {
             if ((m_dc != null) && (m_dc.ReadyState == RTCDataChannelState.Open))
             {
-                var headderBuf = GetBytes(to);
-                fixed (byte* bytesPtr = bytes, headderBufPtr = headderBuf)
-                    UnsafeUtility.LongCopy(headderBufPtr, bytesPtr, sizeof(int));
+                UnsafeUtility.Copy(to, bytes);
                 m_dc.Send(bytes);
             }
 

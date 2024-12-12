@@ -17,16 +17,6 @@ namespace TLab.SFU.Network.Editor
             EditorGUILayout.Space();
             GUILayout.Label($"Hash: {m_instance.id.hash}", GUILayout.ExpandWidth(false));
             EditorGUILayout.Space();
-
-            if (GUILayout.Button("Generate Address"))
-                m_instance.GenerateAddress();
-
-            if (GUILayout.Button("For All of Scene Object"))
-            {
-                var ids = FindObjectsOfType<NetworkId>();
-                foreach (var id in ids)
-                    id.GenerateAddress();
-            }
         }
     }
 }

@@ -23,6 +23,12 @@ namespace TLab.SFU.Network.Editor
                 m_instance.UpdateRegistry();
                 EditorUtility.SetDirty(m_instance);
             }
+
+            if (GUILayout.Button("Set Private For All Child"))
+            {
+                m_instance.SetPrivateForAllChild();
+                EditorUtility.SetDirty(m_instance);
+            }
         }
     }
 }

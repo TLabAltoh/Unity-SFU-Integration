@@ -8,39 +8,79 @@ namespace TLab.SFU
         /// Quote from here: https://github.com/neuecc/MessagePack-CSharp/issues/117
         /// Fastest approach to copy buffers
         /// </summary>
-        /// <param name="src"></param>
-        /// <param name="dst"></param>
+        /// <param name="srcPtr"></param>
+        /// <param name="dstPtr"></param>
         /// <param name="count"></param>
-        public static unsafe void LongCopy(byte* src, byte* dst, int count)
+        public static unsafe void LongCopy(byte* srcPtr, byte* dstPtr, int count)
         {
             while (count >= 8)
             {
-                *(ulong*)dst = *(ulong*)src;
-                dst += 8;
-                src += 8;
+                *(ulong*)dstPtr = *(ulong*)srcPtr;
+                dstPtr += 8;
+                srcPtr += 8;
                 count -= 8;
             }
 
             if (count >= 4)
             {
-                *(uint*)dst = *(uint*)src;
-                dst += 4;
-                src += 4;
+                *(uint*)dstPtr = *(uint*)srcPtr;
+                dstPtr += 4;
+                srcPtr += 4;
                 count -= 4;
             }
 
             if (count >= 2)
             {
-                *(ushort*)dst = *(ushort*)src;
-                dst += 2;
-                src += 2;
+                *(ushort*)dstPtr = *(ushort*)srcPtr;
+                dstPtr += 2;
+                srcPtr += 2;
                 count -= 2;
             }
 
             if (count >= 1)
             {
-                *dst = *src;
+                *dstPtr = *srcPtr;
             }
+        }
+
+        public unsafe static bool Get(byte* bufPtr) => *((bool*)&(bufPtr[0]));
+        public unsafe static bool Get(byte[] buf, int offset)
+        {
+            fixed (byte* bufPtr = buf)
+                return Get(bufPtr + offset);
+        }
+
+        public unsafe static void Copy(float[] src, byte* dstPtr, int length, int startIndex = 0)
+        {
+            fixed (float* srcPtr = &(src[0]))
+                LongCopy((byte*)srcPtr + startIndex, dstPtr, length * sizeof(float));
+        }
+
+        public unsafe static void Copy(byte* srcPtr, float[] dst, int length, int startIndex = 0)
+        {
+            fixed (float* dstPtr = dst)
+                LongCopy(srcPtr, (byte*)dstPtr + startIndex, length);
+        }
+
+        public unsafe static void Copy(bool z, byte* dstPtr) => dstPtr[0] = *((byte*)(&z));
+
+        public unsafe static void Copy(bool z, byte[] dst, int startIndex)
+        {
+            fixed (byte* dstPtr = dst)
+                Copy(z, dstPtr + startIndex);
+        }
+
+        public unsafe static void Copy(int i, byte* dstPtr)
+        {
+            var buf = GetBytes(i);
+            fixed (byte* bufPtr = buf)
+                LongCopy(bufPtr, dstPtr, buf.Length);
+        }
+
+        public unsafe static void Copy(int i, byte[] dst, int startIndex = 0)
+        {
+            fixed (byte* dstPtr = dst)
+                Copy(i, dstPtr + startIndex);
         }
 
         public unsafe static byte[] Padding(int length, byte[] b)
@@ -60,18 +100,5 @@ namespace TLab.SFU
         }
 
         public unsafe static byte[] Combine(int a, byte[] b) => Combine(GetBytes(a), b);
-
-        public unsafe static byte[] Combine(int padding, int a, byte[] b)
-        {
-            var total = padding + sizeof(int);
-            var _a = GetBytes(a);
-            var c = Padding(total, b);
-            fixed (byte* aPtr = _a, bPtr = b, cPtr = c)
-            {
-                LongCopy(bPtr, cPtr + total, b.Length);
-                LongCopy(aPtr, cPtr + padding, _a.Length);
-            }
-            return c;
-        }
     }
 }

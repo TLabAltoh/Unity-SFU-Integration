@@ -6,7 +6,7 @@ namespace TLab.SFU.Interact.Editor
 {
     [CustomEditor(typeof(GameObjectController), true)]
     [CanEditMultipleObjects]
-    public class GameObjectControllerEditor : NetworkTransformEditor
+    public class GameObjectControllerEditor : NetworkRigidbodyTransformEditor
     {
         private GameObjectController m_controller;
 
@@ -17,13 +17,13 @@ namespace TLab.SFU.Interact.Editor
             m_controller = target as GameObjectController;
         }
 
-        private void InitRotatable(GameObjectController controller)
+        private void InitGameObjectRotatable(GameObjectController controller)
         {
             controller.InitializeGameObjectRotatable();
             EditorUtility.SetDirty(controller);
         }
 
-        private void InitDivibable(GameObject target, bool isRoot)
+        private void InitDivideTarget(GameObject target, bool isRoot)
         {
             target.RequireComponent<MeshFilter>((c) => EditorUtility.SetDirty(c));
 
@@ -56,23 +56,45 @@ namespace TLab.SFU.Interact.Editor
         {
             base.OnInspectorGUI();
 
-            var rotatable = m_controller.gameObject.GetComponent<GameObjectRotatable>();
-            if (rotatable != null && GUILayout.Button("Init Rotatable"))
-                InitRotatable(m_controller);
+            EditorGUILayout.Space();
+            GUILayout.Label($"Initialize Component: ", GUILayout.ExpandWidth(false));
+            EditorGUILayout.Space();
 
-            if (m_controller.enableDivide && GUILayout.Button("Init Devibable"))
+            EditorGUILayout.BeginHorizontal();
+
+            var rotatable = m_controller.gameObject.GetComponent<GameObjectRotatable>();
+            if (rotatable != null && GUILayout.Button(nameof(GameObjectRotatable)))
+                InitGameObjectRotatable(m_controller);
+
+            if (m_controller.enableDivide && GUILayout.Button("Divide Target"))
             {
-                InitDivibable(m_controller.gameObject, true);
+                InitDivideTarget(m_controller.gameObject, true);
 
                 foreach (var divideTarget in m_controller.divideTargets)
                 {
                     GameObjectUtility.RemoveMonoBehavioursWithMissingScript(divideTarget);
 
-                    InitDivibable(divideTarget, false);
+                    InitDivideTarget(divideTarget, false);
 
                     EditorUtility.SetDirty(divideTarget);
                 }
             }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+            GUILayout.Label($"Initialize Transform: ", GUILayout.ExpandWidth(false));
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Auto Fit" + nameof(ScaleLogic) + " Lim"))
+            {
+                m_controller.AutoFitScaleLogicLim();
+                EditorUtility.SetDirty(m_controller);
+            }
+
+            EditorGUILayout.EndHorizontal();
 
             if (Application.isPlaying)
             {

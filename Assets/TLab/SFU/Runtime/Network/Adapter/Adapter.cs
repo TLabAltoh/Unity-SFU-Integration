@@ -39,20 +39,20 @@ namespace TLab.SFU.Network
 
         public bool regested => m_userId != (int)UserId.NOT_REGISTED;
 
-        public void Init(Config config, int roomId, string key, string masterKey)
+        public void Init(Config config, int roomId, string sharedKey, string masterKey)
         {
             m_config = config;
 
             m_roomId = roomId;
 
-            m_sharedKey = key;
+            m_sharedKey = sharedKey;
 
             m_masterKey = masterKey;
         }
 
-        public void Init(Config config, int roomId, int userId, uint token, string key, string masterKey)
+        public void Init(Config config, int roomId, int userId, uint token, string sharedKey, string masterKey)
         {
-            Init(config, roomId, key, masterKey);
+            Init(config, roomId, sharedKey, masterKey);
 
             m_userId = userId;
 

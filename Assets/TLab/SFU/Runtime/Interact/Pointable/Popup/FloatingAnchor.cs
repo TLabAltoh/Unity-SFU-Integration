@@ -4,22 +4,8 @@ using TLab.SFU.Network;
 
 namespace TLab.SFU.Interact
 {
-    public class FloatingAnchor : NetworkTransform
+    public class FloatingAnchor : NetworkRigidbodyTransform
     {
-        public class TransformCache
-        {
-            public TransformCache(Vector3 localPosition, Vector3 localScale, Quaternion localRotation)
-            {
-                this.localPosotion = localPosition;
-                this.localScale = localScale;
-                this.localRotation = localRotation;
-            }
-
-            public Vector3 localPosotion;
-            public Vector3 localScale;
-            public Quaternion localRotation;
-        }
-
         [SerializeField] private Transform m_target;
 
         [Header("Offset")]
@@ -27,7 +13,7 @@ namespace TLab.SFU.Interact
         [SerializeField] private float m_vertical;
         [SerializeField] private float m_horizontal;
 
-        private TransformCache m_initialTransform;
+        private SerializableTransform m_initial;
 
         const float DURATION = 0.25f;
 
@@ -38,65 +24,35 @@ namespace TLab.SFU.Interact
         }
 #endif
 
-        private void LerpScale(Transform target, TransformCache start, TransformCache end, float lerpValue)
+        private void LerpScale(Transform target, SerializableTransform start, SerializableTransform end, float lerpValue)
         {
             target.localScale = Vector3.Lerp(start.localScale, end.localScale, lerpValue);
         }
 
-        private IEnumerator FadeInTask()
+        private IEnumerator FadeTask(SerializableTransform target)
         {
-            var currentTransform = new TransformCache(
-                transform.localPosition,
-                transform.localScale,
-                transform.localRotation);
+            var current = new SerializableTransform(transform.localPosition, transform.localRotation, transform.localScale);
 
-            var current = 0.0f;
-            while (current < DURATION)
+            var time = 0.0f;
+            while (time < DURATION)
             {
-                current += Time.deltaTime;
-                LerpScale(this.transform, currentTransform, m_initialTransform, current / DURATION);
+                time += Time.deltaTime;
+                LerpScale(this.transform, current, target, time / DURATION);
                 yield return null;
             }
         }
 
-        private IEnumerator FadeOutTask()
-        {
-            var currentTransform = new TransformCache(
-                transform.localPosition,
-                transform.localScale,
-                transform.localRotation);
+        public void FadeInAsync() => StartCoroutine(FadeTask(m_initial));
 
-            var targetTransform = new TransformCache(
-                transform.localPosition,
-                Vector3.zero,
-                transform.localRotation);
-
-            var current = 0.0f;
-            while (current < DURATION)
-            {
-                current += Time.deltaTime;
-                LerpScale(this.transform, currentTransform, targetTransform, current / DURATION);
-                yield return null;
-            }
-        }
-
-        public void FadeInAsync() => StartCoroutine(FadeInTask());
-
-        public void FadeOutAsync() => StartCoroutine(FadeOutTask());
+        public void FadeOutAsync() => StartCoroutine(FadeTask(new SerializableTransform(transform.localPosition, transform.localRotation, Vector3.zero)));
 
         public void FadeOutImmidiately()
         {
-            m_initialTransform = new TransformCache(
-                this.transform.localPosition,
-                this.transform.localScale,
-                this.transform.localRotation);
+            m_initial = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, this.transform.localScale);
 
-            var targetTransform = new TransformCache(
-                this.transform.localPosition,
-                Vector3.zero,
-                this.transform.localRotation);
+            var target = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, Vector3.zero);
 
-            LerpScale(this.transform, m_initialTransform, targetTransform, 1.0f);
+            LerpScale(this.transform, m_initial, target, 1.0f);
         }
 
         protected override void Start()

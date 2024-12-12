@@ -65,7 +65,7 @@ namespace TLab.SFU.Network
 
         private Hashtable m_parameters = new Hashtable();
 
-        private MSG_SyncAnimatorController m_tmp = new MSG_SyncAnimatorController(new Address64(), null);
+        private static MSG_SyncAnimatorController packetBuf = new MSG_SyncAnimatorController(new Address64(), null);
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -106,11 +106,11 @@ namespace TLab.SFU.Network
                 parameterStates[i] = animState;
             }
 
-            m_tmp.networkId = m_networkId.id;
-            m_tmp.requested = requested;
-            m_tmp.parameterStates = parameterStates;
+            packetBuf.networkId = m_networkId.id;
+            packetBuf.requested = requested;
+            packetBuf.parameterStates = parameterStates;
 
-            NetworkClient.instance.SendWS(to, m_tmp.Marshall());
+            NetworkClient.instance.SendWS(to, packetBuf.Marshall());
 
             m_synchronised = false;
         }
@@ -263,12 +263,12 @@ namespace TLab.SFU.Network
 
             NetworkClient.RegisterOnMessage<MSG_SyncAnimatorController>((from, to, bytes) =>
             {
-                m_tmp.UnMarshall(bytes);
-                var animator = Registry.GetByKey(m_tmp.networkId);
+                packetBuf.UnMarshall(bytes);
+                var animator = Registry.GetByKey(packetBuf.networkId);
                 if (animator)
                 {
-                    animator.SyncFrom(from, m_tmp.parameterStates);
-                    if (m_tmp.requested)
+                    animator.SyncFrom(from, packetBuf.parameterStates);
+                    if (packetBuf.requested)
                         animator.OnSyncRequestCompleted(from);
                 }
             });

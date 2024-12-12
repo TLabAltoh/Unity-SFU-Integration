@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace TLab.SFU.UI
+namespace TLab.VRProjct.UI
 {
     public class OnScreenStick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
     {

@@ -1912,13 +1912,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_privateId:
-    m_a0: 151
-    m_a1: 119
-    m_a2: 44
-    m_a3: 86
-    m_hash: -717456418
-  m_publicId:
+  m_private:
+    m_a0: 192
+    m_a1: 50
+    m_a2: 36
+    m_a3: 113
+    m_hash: 970571225
+  m_public:
     m_a0: 0
     m_a1: 0
     m_a2: 0
@@ -1929,11 +1929,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 151
-    m_a5: 119
-    m_a6: 44
-    m_a7: 86
-    m_hash: 1395440599
+    m_a4: 192
+    m_a5: 50
+    m_a6: 36
+    m_a7: 113
+    m_hash: -1165414194
 --- !u!114 &4330380705842995049
 MonoBehaviour:
   m_ObjectHideFlags: 0
