@@ -8,19 +8,19 @@ namespace TLab.SFU.Network
 
         private static Queue<Address32> m_availables = new Queue<Address32>();
 
-        public static void EnqueueAvailables(IEnumerable<Address32> availables)
+        public static void AddAvailables(IEnumerable<Address32> availables)
         {
             foreach (var available in availables)
                 m_availables.Enqueue(available);
         }
 
-        public static void EnqueueAvailables(Address32[] availables)
+        public static void AddAvailables(Address32[] availables)
         {
             foreach (var available in availables)
                 m_availables.Enqueue(available);
         }
 
-        public static bool DequeueAvailable(out Address32 available)
+        public static bool GetAvailable(out Address32 available)
         {
             if (m_availables.Count > 0)
             {

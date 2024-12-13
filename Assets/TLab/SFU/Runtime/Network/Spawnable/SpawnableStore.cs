@@ -27,19 +27,19 @@ namespace TLab.SFU.Network
             {
                 None,
                 Spawn,
-                WithoutAddress,
+                RequestSpawn,
                 DeleteByUserId,
                 DeleteByPublicId,
             }
 
-            public static SpawnAction GetSpawnAction(int elemId, int userId, Address32 @public, SerializableTransform transform)
+            public static SpawnAction GetSpawnAction(int elemId, Address32 @public, SerializableTransform transform)
             {
-                return new SpawnAction(Action.Spawn, elemId, userId, @public, transform);
+                return new SpawnAction(Action.Spawn, elemId, NetworkClient.userId, @public, transform);
             }
 
-            public static SpawnAction GetSpawnActionWithoutAddress(int elemId, int userId, SerializableTransform transform)
+            public static SpawnAction GetRequestSpawnAction(int elemId, int userId, SerializableTransform transform)
             {
-                return new SpawnAction(Action.WithoutAddress, elemId, userId, new Address32(), transform);
+                return new SpawnAction(Action.RequestSpawn, elemId, userId, new Address32(), transform);
             }
 
             public static SpawnAction GetDeleteAction(int userId)

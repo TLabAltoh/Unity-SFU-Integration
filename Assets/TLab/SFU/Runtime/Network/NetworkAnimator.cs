@@ -65,11 +65,11 @@ namespace TLab.SFU.Network
 
         private Hashtable m_parameters = new Hashtable();
 
-        private static MSG_SyncAnimatorController packetBuf = new MSG_SyncAnimatorController(new Address64(), null);
+        private static MSG_SyncAnimatorController m_packet = new MSG_SyncAnimatorController(new Address64(), null);
 
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
-        protected virtual void SyncAnimatorController(int to, bool requested = false, params AnimatorControllerParameterHistory[] parameters)
+        protected virtual void SyncAnimatorController(int to, bool request = false, bool immediate = false, params AnimatorControllerParameterHistory[] parameters)
         {
             var parameterStates = new AnimatorControllerParameterState[parameters.Length];
 
@@ -106,16 +106,17 @@ namespace TLab.SFU.Network
                 parameterStates[i] = animState;
             }
 
-            packetBuf.networkId = m_networkId.id;
-            packetBuf.requested = requested;
-            packetBuf.parameterStates = parameterStates;
+            m_packet.networkId = m_networkId.id;
+            m_packet.request = request;
+            m_packet.immediate = immediate;
+            m_packet.parameterStates = parameterStates;
 
-            NetworkClient.instance.SendWS(to, packetBuf.Marshall());
+            NetworkClient.SendWS(to, m_packet.Marshall());
 
             m_synchronised = false;
         }
 
-        protected virtual void SyncAnimatorController(int to, bool force = false, bool requested = false)
+        protected virtual void SyncAnimatorController(int to, bool force = false, bool request = false, bool immediate = false)
         {
             foreach (AnimatorControllerParameterHistory parameter in m_parameters.Values)
             {
@@ -143,18 +144,18 @@ namespace TLab.SFU.Network
                 }
 
                 if (force || (prevValueHash != currentValueHash))
-                    SyncAnimatorController(to, requested, parameter);
+                    SyncAnimatorController(to, request, immediate, parameter);
             }
         }
 
-        public override void OnSyncRequested(int from)
+        public override void OnSyncRequest(int from)
         {
-            base.OnSyncRequested(from);
+            base.OnSyncRequest(from);
 
-            SyncAnimatorController(from, true, m_parameters.Values.Cast<AnimatorControllerParameterHistory>().ToArray());
+            SyncAnimatorController(from, true, true, m_parameters.Values.Cast<AnimatorControllerParameterHistory>().ToArray());
         }
 
-        public void SyncFrom(int from, in AnimatorControllerParameterState[] parameterStates)
+        public void SyncFrom(int from, bool immediate, in AnimatorControllerParameterState[] parameterStates)
         {
             foreach (var animState in parameterStates)
             {
@@ -182,7 +183,7 @@ namespace TLab.SFU.Network
             m_synchronised = true;
         }
 
-        public override void SyncViaWebRTC(int to, bool force = false, bool requested = false) => SyncAnimatorController(to, force, requested);
+        public override void SyncViaWebRTC(int to, bool force = false, bool request = false, bool immediate = false) => SyncAnimatorController(to, force, request, immediate);
 
         protected virtual bool ApplyParameter(string paramName, int hashCode)
         {
@@ -263,13 +264,13 @@ namespace TLab.SFU.Network
 
             NetworkClient.RegisterOnMessage<MSG_SyncAnimatorController>((from, to, bytes) =>
             {
-                packetBuf.UnMarshall(bytes);
-                var animator = Registry.GetByKey(packetBuf.networkId);
+                m_packet.UnMarshall(bytes);
+                var animator = Registry.GetByKey(m_packet.networkId);
                 if (animator)
                 {
-                    animator.SyncFrom(from, packetBuf.parameterStates);
-                    if (packetBuf.requested)
-                        animator.OnSyncRequestCompleted(from);
+                    animator.SyncFrom(from, m_packet.immediate, m_packet.parameterStates);
+                    if (m_packet.request)
+                        animator.OnSyncRequestComplete(from);
                 }
             });
         }

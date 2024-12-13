@@ -44,7 +44,7 @@ namespace TLab.VRProjct
         {
             m_scores[NetworkClient.userId] = score;
 
-            NetworkClient.instance.SendWS(new MSG_MiniTest(score).Marshall());
+            NetworkClient.SendWS(new MSG_MiniTest(score).Marshall());
         }
 
         void Awake()

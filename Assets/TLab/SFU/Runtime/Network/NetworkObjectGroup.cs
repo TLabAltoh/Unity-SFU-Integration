@@ -27,7 +27,7 @@ namespace TLab.SFU.Network
 
         private NetworkId m_networkId;
 
-        private MSG_SyncRequest m_tmp = new MSG_SyncRequest(new Address64());
+        private static MSG_SyncRequest m_packet = new MSG_SyncRequest(new Address64());
 
         private NetworkObject.State m_state = NetworkObject.State.None;
 
@@ -67,7 +67,7 @@ namespace TLab.SFU.Network
                 var group = GetComponentInParent<NetworkObjectGroup>(true);
                 if (group == this)
                 {
-                    @object.OnGroupChanged(this);
+                    @object.OnGroupChange(this);
                     m_registry.Add(@object);
                     UnityEditor.EditorUtility.SetDirty(@object);
                 }
@@ -88,19 +88,19 @@ namespace TLab.SFU.Network
         {
             NetworkClient.RegisterOnMessage<MSG_SyncRequest>((from, to, bytes) =>
             {
-                m_tmp.UnMarshall(bytes);
+                m_packet.UnMarshall(bytes);
 
-                Debug.Log(THIS_NAME + $"{nameof(MSG_SyncRequest)}:{gameObject.name}:{m_tmp.networkId.hash}");
+                Debug.Log(THIS_NAME + $"{nameof(MSG_SyncRequest)}:{gameObject.name}:{m_packet.networkId.hash}");
 
-                var group = Registry.GetByKey(m_tmp.networkId);
+                var group = Registry.GetByKey(m_packet.networkId);
                 if (group)
-                    group.OnSyncRequested(from);
+                    group.OnSyncRequest(from);
                 else
-                    Debug.LogWarning(THIS_NAME + $"group not found: {m_tmp.networkId.hash}");
+                    Debug.LogWarning(THIS_NAME + $"group not found: {m_packet.networkId.hash}");
             });
         }
 
-        private void OnSyncRequested(int from) => m_registry.Foreach((t) => t.OnSyncRequested(from));
+        private void OnSyncRequest(int from) => m_registry.Foreach((t) => t.OnSyncRequest(from));
 
         protected virtual void Register() => Registry.Register(m_networkId.id, this);
 
@@ -109,8 +109,8 @@ namespace TLab.SFU.Network
         public void PostSyncRequest()
         {
             // Request synchronization
-            m_tmp.networkId = m_networkId.id;
-            NetworkClient.instance.SendWS(m_tmp.Marshall());
+            m_packet.networkId = m_networkId.id;
+            NetworkClient.SendWS(m_packet.Marshall());
         }
 
         public void InitAllObjects(bool self)

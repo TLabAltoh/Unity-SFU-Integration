@@ -24,11 +24,13 @@ namespace TLab.SFU.Network
         [SerializeField, Message(typeof(MSG_Sync))]
         public class MSG_Sync : Message
         {
-            public bool requested = false;
+            public bool request = false;
+            public bool immediate = false;
 
-            public MSG_Sync(bool requested = false) : base()
+            public MSG_Sync(bool request = false, bool immediate = false) : base()
             {
-                this.requested = requested;
+                this.request = request;
+                this.immediate = immediate;
             }
 
             public MSG_Sync(byte[] bytes) : base(bytes) { }
@@ -52,7 +54,7 @@ namespace TLab.SFU.Network
 
         protected bool m_synchronised = false;
 
-        private MSG_SyncRequest m_tmp = new MSG_SyncRequest(new Address64());
+        private static MSG_SyncRequest m_packet = new MSG_SyncRequest(new Address64());
 
         private static bool m_msgCallbackRegisted = false;
 
@@ -90,16 +92,16 @@ namespace TLab.SFU.Network
         }
 
 #if UNITY_EDITOR
-        public virtual void OnGroupChanged(NetworkObjectGroup group)
+        public virtual void OnGroupChange(NetworkObjectGroup group)
         {
             m_group = group;
         }
 #endif
 
-        protected virtual void OnSyncRequestCompleted(int from)
+        protected virtual void OnSyncRequestComplete(int from)
         {
             m_state = (m_state == State.Waiting0) ? State.Waiting1 : m_state;
-            //Debug.Log(THIS_NAME + $"{nameof(OnSyncRequestCompleted)}:{gameObject.name}");
+            //Debug.Log(THIS_NAME + $"{nameof(OnSyncRequestComplete)}:{gameObject.name}");
         }
 
         public bool started => m_state != State.None;
@@ -167,14 +169,14 @@ namespace TLab.SFU.Network
                 Move2Waiting0();
         }
 
-        public virtual void OnSyncRequested(int from)
+        public virtual void OnSyncRequest(int from)
         {
-            Debug.Log(THIS_NAME + $"{nameof(OnSyncRequested)}:{gameObject.name}");
+            Debug.Log(THIS_NAME + $"{nameof(OnSyncRequest)}:{gameObject.name}");
         }
 
-        public virtual void SyncViaWebRTC(int to, bool force = false, bool requested = false) { }
+        public virtual void SyncViaWebRTC(int to, bool frce = false, bool request = false, bool immediate = false) { }
 
-        public virtual void SyncViaWebSocket(int to, bool force = false, bool requested = false) { }
+        public virtual void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false) { }
 
         protected virtual void Register() => Registry.Register(m_networkId.id, this);
 
@@ -184,8 +186,8 @@ namespace TLab.SFU.Network
         {
             NetworkClient.RegisterOnMessage<MSG_SyncRequest>((from, to, bytes) =>
             {
-                m_tmp.UnMarshall(bytes);
-                Registry.GetByKey(m_tmp.networkId)?.OnSyncRequested(from);
+                m_packet.UnMarshall(bytes);
+                Registry.GetByKey(m_packet.networkId)?.OnSyncRequest(from);
             });
         }
 

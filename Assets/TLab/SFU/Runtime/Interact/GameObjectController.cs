@@ -205,7 +205,7 @@ namespace TLab.SFU.Interact
 
             SyncViaWebSocket(NetworkClient.userId);
 
-            NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GrabLock).Marshall());
+            NetworkClient.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.GrabLock).Marshall());
         }
 
         public override void OnRigidbodyModeChange()
@@ -266,7 +266,7 @@ namespace TLab.SFU.Interact
             }
 
             if (self)
-                NetworkClient.instance.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.ForceRelease).Marshall());
+                NetworkClient.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.ForceRelease).Marshall());
         }
 
         private void CreateCombinedMeshCollider()
@@ -462,15 +462,15 @@ namespace TLab.SFU.Interact
 
             NetworkClient.RegisterOnMessage<MSG_GrabbLock>((from, to, bytes) =>
             {
-                var @object = new MSG_GrabbLock(bytes);
+                var receive = new MSG_GrabbLock(bytes);
 
-                switch (@object.action)
+                switch (receive.action)
                 {
                     case MSG_GrabbLock.Action.GrabLock:
-                        Registry.GetByKey(@object.networkId)?.GrabbLock(@object.grabberId);
+                        Registry.GetByKey(receive.networkId)?.GrabbLock(receive.grabberId);
                         break;
                     case MSG_GrabbLock.Action.ForceRelease:
-                        Registry.GetByKey(@object.networkId)?.ForceRelease(false);
+                        Registry.GetByKey(receive.networkId)?.ForceRelease(false);
                         break;
                     default:
                         break;
@@ -479,8 +479,8 @@ namespace TLab.SFU.Interact
 
             NetworkClient.RegisterOnMessage<MSG_DivideGrabber>((from, to, bytes) =>
             {
-                var @object = new MSG_DivideGrabber(bytes);
-                Registry.GetByKey(@object.networkId)?.Divide(@object.active);
+                var receive = new MSG_DivideGrabber(bytes);
+                Registry.GetByKey(receive.networkId)?.Divide(receive.active);
             });
         }
 

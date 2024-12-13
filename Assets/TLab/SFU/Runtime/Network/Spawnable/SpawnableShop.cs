@@ -1,4 +1,6 @@
+using System.Collections;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace TLab.SFU.Network
@@ -38,87 +40,130 @@ namespace TLab.SFU.Network
 
         public BaseAnchorProvider anchor => m_anchor;
 
-        private static MSG_SpawnableShop packetBuf = new MSG_SpawnableShop();
+        private static MSG_SpawnableShop m_packet = new MSG_SpawnableShop();
 
-        public State GetState() => new State(m_shopId, m_store.GetLatestActionArray());
+        public virtual State GetLatestState() => new State(m_shopId, m_store.GetLatestActionArray());
 
-        //public bool RPCInstantiateByElementId(int elemId, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
-        //{
-        //    var result = InstantiateByElementId(elemId, userId, publicId, @transform, out instance);
+        public virtual bool ProcessSpawnAction(SpawnableStore.SpawnAction spawnAction, out SpawnableStore.InstanceRef instanceRef)
+        {
+            var request = (spawnAction.action == SpawnableStore.SpawnAction.Action.RequestSpawn);
 
-        //    if (result)
-        //    {
-        //        // RPC
-        //    }
+            if (request)
+            {
+                spawnAction.action = SpawnableStore.SpawnAction.Action.Spawn;
+                if (UniqueNetworkId.GetAvailable(out var @public))
+                    spawnAction.@public = @public;
+                spawnAction.userId = NetworkClient.userId;
+            }
 
-        //    return result;
-        //}
+            bool result = m_store.ProcessSpawnAction(spawnAction, out instanceRef);
 
-        //public bool RPCInstantiateByElementName(string elemName, int userId, Address32 publicId, WebTransform @transform, out GameObject instance)
-        //{
-        //    var result = InstantiateByElementName(elemName, userId, publicId, @transform, out instance);
+            if (spawnAction.userId == NetworkClient.userId)
+            {
+                m_packet.action = spawnAction;
+                NetworkClient.SendWS(m_packet.Marshall());
+            }
 
-        //    if (result)
-        //    {
-        //        // RPC
-        //    }
+            return result;
+        }
 
-        //    return result;
-        //}
+        public virtual void Spawn(int elemId)
+        {
+            if (!m_anchor.Get(NetworkClient.userId, out var anchor))
+                return;
 
-        private bool ProcessSpawnAction(SpawnableStore.SpawnAction spawnAction, out SpawnableStore.InstanceRef instanceRef) => m_store.ProcessSpawnAction(spawnAction, out instanceRef);
+            if (!UniqueNetworkId.GetAvailable(out var address))
+                return;
 
-        public void SyncState(State state)
+            var action = SpawnableStore.SpawnAction.GetSpawnAction(elemId, address, anchor);
+
+            ProcessSpawnAction(action, out var instanceRef);
+        }
+
+        public virtual void RequestSpawn(int elemId, int userId)
+        {
+            if (!m_anchor.Get(userId, out var anchor))
+                return;
+
+            var action = SpawnableStore.SpawnAction.GetRequestSpawnAction(elemId, userId, anchor);
+            m_packet.action = action;
+            NetworkClient.SendWS(userId, m_packet.Marshall());
+        }
+
+        protected virtual IEnumerator RequestSpawnForAllUserTask(int elemId)
+        {
+            var users = NetworkClient.GetLatestAvatorActionArray().Select((t) => t.userId);
+            foreach (var user in users)
+            {
+                yield return new WaitForSeconds(0.25f);
+
+                var skip = m_store.GetLatestActions().Any((t) => (user == t.userId) && (elemId == t.elemId));
+
+                if (!skip)
+                    RequestSpawn(elemId, user);
+            }
+        }
+
+        public virtual void RequestSpawnForAllUserAsync(int elemId) => StartCoroutine(RequestSpawnForAllUserTask(elemId));
+
+        protected virtual IEnumerator DeleteByElementIdTask(int elemId)
+        {
+            var targets = m_store.GetLatestActions().Where((t) => t.elemId == elemId);
+            foreach (var target in targets)
+            {
+                yield return new WaitForSeconds(0.25f);
+                var action = SpawnableStore.SpawnAction.GetDeleteAction(target.@public);
+                m_packet.action = action;
+                NetworkClient.SendWS(m_packet.Marshall());
+            }
+        }
+
+        public virtual void DeleteByElementIdAsync(int elemId) => StartCoroutine(DeleteByElementIdTask(elemId));
+
+        public virtual void SyncState(State state)
         {
             foreach (var action in state.latestActions)
                 ProcessSpawnAction(action, out var instanceRef);
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             Registry.Register(m_shopId, this);
 
-            NetworkClient.RegisterOnMessage(packetBuf.msgId, (from, to, bytes) =>
+            NetworkClient.RegisterOnMessage(m_packet.msgId, (from, to, bytes) =>
             {
-                // TODO:
-
-                // Spawn by elementId
-
-                // NetworkObject.Init()
-
-                // Cache instance to registory
-
-                // Boradcast
+                ProcessSpawnAction(m_packet.action, out var instanceRef);
             });
 
             NetworkClient.RegisterOnJoin(OnJoin, OnJoin);
             NetworkClient.RegisterOnExit(OnExit, OnExit);
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             NetworkClient.UnRegisterOnJoin(OnJoin, OnJoin);
             NetworkClient.UnRegisterOnExit(OnExit, OnExit);
-            NetworkClient.UnRegisterOnMessage(packetBuf.msgId);
+            NetworkClient.UnRegisterOnMessage(m_packet.msgId);
 
             Registry.UnRegister(m_shopId);
         }
 
-        public void OnJoin()
+        public virtual void OnJoin()
         {
             Debug.Log(THIS_NAME + $"{nameof(OnJoin)}");
         }
 
-        public void OnExit()
+        public virtual void OnExit()
         {
             Debug.Log(THIS_NAME + $"{nameof(OnExit)}");
         }
 
-        public void OnJoin(int userId)
+        public virtual void OnJoin(int userId)
         {
             Debug.Log(THIS_NAME + $"{nameof(OnJoin)}");
         }
 
-        public void OnExit(int userId) => m_store?.DeleteByUserId(userId);
+        public virtual void OnExit(int userId) => m_store?.DeleteByUserId(userId);
     }
 }
+
