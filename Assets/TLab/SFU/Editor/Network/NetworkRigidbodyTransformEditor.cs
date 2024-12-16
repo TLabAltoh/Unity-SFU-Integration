@@ -22,7 +22,7 @@ namespace TLab.SFU.Network.Editor
             if (Application.isPlaying)
             {
                 EditorGUILayout.Space();
-                GUILayout.Label($"Rigidbody Active: {m_transform.rbState.active}, Gravity: {m_transform.rbState.gravity}", GUILayout.ExpandWidth(false));
+                GUILayout.Label($"Rigidbody Used: {m_transform.rbState.used}, Gravity: {m_transform.rbState.gravity}", GUILayout.ExpandWidth(false));
                 EditorGUILayout.Space();
             }
         }

@@ -49,7 +49,12 @@ namespace TLab.SFU.Network
 
             public static SpawnAction GetDeleteAction(Address32 @public)
             {
-                return new SpawnAction(Action.DeleteByPublicId, -1, -1, @public, new SerializableTransform());
+                return new SpawnAction(Action.DeleteByPublicId, -1, NetworkClient.userId, @public, new SerializableTransform());
+            }
+
+            public static SpawnAction GetDeleteAction(Address32 @public, int userId)
+            {
+                return new SpawnAction(Action.DeleteByPublicId, -1, userId, @public, new SerializableTransform());
             }
 
             public SpawnAction(Action action, int elemId, int userId, Address32 @public, SerializableTransform transform)
@@ -215,7 +220,7 @@ namespace TLab.SFU.Network
 
             var group = instance.GetComponent<NetworkObjectGroup>();
             var self = userId == NetworkClient.userId;
-            group.InitAllObjects(@public, self);
+            group.InitAllObjects(@public, userId, self);
 
             var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, @public, transform);
             instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, @public, group, instance);
@@ -232,7 +237,7 @@ namespace TLab.SFU.Network
 
             var group = instance.GetComponent<NetworkObjectGroup>();
             var self = userId == NetworkClient.userId;
-            group.InitAllObjects(@public, self);
+            group.InitAllObjects(@public, userId, self);
 
             var spawnAction = new SpawnAction(SpawnAction.Action.Spawn, elemId, userId, @public, transform);
             instanceRef = new InstanceRef(userId, SpawnAction.Action.Spawn, spawnAction, @public, group, instance);

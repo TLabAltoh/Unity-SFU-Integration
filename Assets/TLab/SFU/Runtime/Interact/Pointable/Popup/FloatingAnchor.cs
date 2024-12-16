@@ -4,8 +4,9 @@ using TLab.SFU.Network;
 
 namespace TLab.SFU.Interact
 {
-    public class FloatingAnchor : NetworkRigidbodyTransform
+    public class FloatingAnchor : MonoBehaviour
     {
+        [SerializeField] private bool m_hideOnStart;
         [SerializeField] private Transform m_target;
 
         [Header("Offset")]
@@ -22,6 +23,8 @@ namespace TLab.SFU.Interact
         {
             m_target = taregt;
         }
+
+        public void SetHideOnStart() => m_hideOnStart = true;
 #endif
 
         private void LerpScale(Transform target, SerializableTransform start, SerializableTransform end, float lerpValue)
@@ -31,6 +34,8 @@ namespace TLab.SFU.Interact
 
         private IEnumerator FadeTask(SerializableTransform target)
         {
+            m_initial = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, this.transform.localScale);
+
             var current = new SerializableTransform(transform.localPosition, transform.localRotation, transform.localScale);
 
             var time = 0.0f;
@@ -55,28 +60,24 @@ namespace TLab.SFU.Interact
             LerpScale(this.transform, m_initial, target, 1.0f);
         }
 
-        protected override void Start()
+        protected void Start()
         {
-            base.Start();
-
             transform.parent = null;
 
-            FadeOutImmidiately();
+            m_initial = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, this.transform.localScale);
+
+            if (m_hideOnStart)
+                FadeOutImmidiately();
         }
 
-        protected override void Update()
+        protected void Update()
         {
-            base.Update();
-
-            if (!Const.Send.HasFlag(m_direction))
-                return;
-
-            var mainCamera = Camera.main.transform;
-            var diff = mainCamera.position - m_target.position;
+            var camera = Camera.main.transform;
+            var diff = camera.position - m_target.position;
             var offset = diff.normalized * m_forward + Vector3.up * m_vertical + Vector3.Cross(diff.normalized, Vector3.up) * m_horizontal;
 
             transform.position = m_target.position + offset;
-            transform.LookAt(mainCamera, Vector3.up);
+            transform.LookAt(camera, Vector3.up);
         }
     }
 }

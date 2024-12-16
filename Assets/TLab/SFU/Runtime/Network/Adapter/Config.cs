@@ -1,11 +1,12 @@
 using UnityEngine;
+using TLab.VKeyborad;
 using TLab.SFU.Network.Json;
 
 namespace TLab.SFU.Network
 {
     [System.Serializable]
     [CreateAssetMenu(fileName = "Config", menuName = "TLab/SFU/Config")]
-    public class Config : ScriptableObject
+    public class Config : ScriptableObject, IInputHolder
     {
         [SerializeField] private string m_host = "127.0.0.1";
 
@@ -46,5 +47,19 @@ namespace TLab.SFU.Network
         public CreateRoom.Request GetInit() => m_init;
 
         public Config GetClone() => new Config(m_prefix, m_host, m_port, m_init);
+
+        public void OnValueChanged(string value) => m_host = value;
+
+        public bool GetInitValue(out string value)
+        {
+            if (m_host == "")
+            {
+                value = "";
+                return false;
+            }
+
+            value = m_host;
+            return true;
+        }
     }
 }

@@ -4,8 +4,8 @@ namespace TLab.SFU.Interact
 {
     using Registry = Registry<RayInteractable>;
 
-    [AddComponentMenu("TLab/SFU/Screen Space Ray Interactor (TLab)")]
-    public class ScreenSpaceRayInteractor : Interactor
+    [AddComponentMenu("TLab/SFU/Screen Space Interact Debugger (TLab)")]
+    public class ScreenSpaceInteractDebugger : Interactor
     {
         [Header("Raycast Settings")]
         [SerializeField] private float m_maxDistance = 5.0f;
@@ -21,32 +21,30 @@ namespace TLab.SFU.Interact
         public Ray ray => Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
 
         [Header("Move Settings")]
-        [SerializeField] float navigationSpeed = 2.4f;
-        [SerializeField] float shiftMultiplier = 2f;
-        [SerializeField] float sensitivity = 1.0f;
-        [SerializeField] float panSensitivity = 0.5f;
-        [SerializeField] float mouseWheelZoomSpeed = 1.0f;
+        [SerializeField] public float navigationSpeed = 2.4f;
+        [SerializeField] public float shiftMultiplier = 2f;
+        [SerializeField] public float sensitivity = 1.0f;
+        [SerializeField] public float panSensitivity = 0.5f;
+        [SerializeField] public float mouseWheelZoomSpeed = 1.0f;
 
         [Header("Debug In Editor")]
 
         [SerializeField] private GameObjectController[] m_controllers;
 
-        private Camera cam;
-        private Vector3 anchorPoint;
-        private Quaternion anchorRot;
+        private Vector3 m_prevMousePosition;
+        private Quaternion m_prevTransformRotation;
 
-        private bool isPanning;
+        private bool m_isPanning;
 
+#if UNITY_EDITOR
         public void Grab()
         {
-
             foreach (var controller in m_controllers)
-            {
                 controller.OnGrab(this);
-            }
         }
 
         public void Release() => m_controllers.Foreach((c) => c.OnRelease(this));
+#endif
 
         protected override void UpdateRaycast()
         {
@@ -93,25 +91,18 @@ namespace TLab.SFU.Interact
             m_rotateVelocity = m_angulerVelocity * m_rotateBias;
         }
 
-        protected override void Awake()
-        {
-            base.Awake();
-
-            cam = GetComponent<Camera>();
-        }
-
         protected override void Update()
         {
             base.Update();
 
             MousePanning();
-            if (isPanning)
+            if (m_isPanning)
                 return;
 
             if (UnityEngine.Input.GetMouseButton(1))
             {
-                Vector3 move = Vector3.zero;
-                float speed = navigationSpeed * (UnityEngine.Input.GetKey(KeyCode.LeftShift) ? shiftMultiplier : 1f) * Time.deltaTime * 9.1f;
+                var move = Vector3.zero;
+                var speed = navigationSpeed * (UnityEngine.Input.GetKey(KeyCode.LeftShift) ? shiftMultiplier : 1f) * Time.deltaTime * 9.1f;
                 if (UnityEngine.Input.GetKey(KeyCode.W))
                     move += Vector3.forward * speed;
                 if (UnityEngine.Input.GetKey(KeyCode.S))
@@ -125,63 +116,64 @@ namespace TLab.SFU.Interact
                 if (UnityEngine.Input.GetKey(KeyCode.Q))
                     move -= Vector3.up * speed;
 
-                Camera.main.transform.Translate(move);
+                transform.Translate(move);
             }
 
             if (UnityEngine.Input.GetMouseButtonDown(1))
             {
-                anchorPoint = new Vector3(UnityEngine.Input.mousePosition.y, -UnityEngine.Input.mousePosition.x);
-                anchorRot = Camera.main.transform.rotation;
+                m_prevMousePosition = new Vector3(UnityEngine.Input.mousePosition.y, -UnityEngine.Input.mousePosition.x);
+                m_prevTransformRotation = transform.rotation;
             }
 
             if (UnityEngine.Input.GetMouseButton(1))
             {
-                Quaternion rot = anchorRot;
-                Vector3 dif = anchorPoint - new Vector3(UnityEngine.Input.mousePosition.y, -UnityEngine.Input.mousePosition.x);
+                var rot = m_prevTransformRotation;
+                var dif = m_prevMousePosition - new Vector3(UnityEngine.Input.mousePosition.y, -UnityEngine.Input.mousePosition.x);
                 rot.eulerAngles += dif * sensitivity;
-                Camera.main.transform.rotation = rot;
+                transform.rotation = rot;
             }
 
             MouseWheeling();
         }
 
-        //Zoom with mouse wheel
         void MouseWheeling()
         {
-            float speed = 10 * (mouseWheelZoomSpeed * (UnityEngine.Input.GetKey(KeyCode.LeftShift) ? shiftMultiplier : 1f) * Time.deltaTime * 9.1f);
+            // Zoom with mouse wheel
 
-            Vector3 pos = Camera.main.transform.position;
+            var speed = 10 * (mouseWheelZoomSpeed * (UnityEngine.Input.GetKey(KeyCode.LeftShift) ? shiftMultiplier : 1f) * Time.deltaTime * 9.1f);
+
+            var pos = transform.position;
             if (UnityEngine.Input.GetAxis("Mouse ScrollWheel") < 0)
             {
                 pos = pos - (Camera.main.transform.forward * speed);
-                Camera.main.transform.position = pos;
+                transform.position = pos;
             }
             if (UnityEngine.Input.GetAxis("Mouse ScrollWheel") > 0)
             {
                 pos = pos + (Camera.main.transform.forward * speed);
-                Camera.main.transform.position = pos;
+                transform.position = pos;
             }
         }
 
-        private float pan_x;
-        private float pan_y;
-        private Vector3 panComplete;
+        private float m_panX;
+        private float m_panY;
+        private Vector3 m_panComplete;
 
         void MousePanning()
         {
-            pan_x = -UnityEngine.Input.GetAxis("Mouse X") * panSensitivity;
-            pan_y = -UnityEngine.Input.GetAxis("Mouse Y") * panSensitivity;
+            m_panX = -UnityEngine.Input.GetAxis("Mouse X") * panSensitivity;
+            m_panY = -UnityEngine.Input.GetAxis("Mouse Y") * panSensitivity;
 
-            panComplete = new Vector3(pan_x, pan_y, 0);
+            m_panComplete = new Vector3(m_panX, m_panY, 0);
 
             if (UnityEngine.Input.GetMouseButtonDown(2))
-                isPanning = true;
+                m_isPanning = true;
 
             if (UnityEngine.Input.GetMouseButtonUp(2))
-                isPanning = false;
+                m_isPanning = false;
 
-            if (isPanning)
-                Camera.main.transform.Translate(panComplete);
+            if (m_isPanning)
+                transform.Translate(m_panComplete);
         }
     }
 }

@@ -36,6 +36,16 @@ namespace TLab.SFU.Network
 
         public static void OnUserExit(int userId) => m_historys.Remove(userId);
 
+        public static void Return(Address32 address)
+        {
+            foreach (var user in m_historys.Keys)
+            {
+                var history = m_historys[user];
+                if (history.Contains(address))
+                    history.Remove(address);
+            }
+        }
+
         public static Address32 Generate(int userId)
         {
             while (true)

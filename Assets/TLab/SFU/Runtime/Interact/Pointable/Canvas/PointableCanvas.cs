@@ -14,11 +14,11 @@ namespace TLab.SFU.Interact
             Both,
         };
 
-        [Header("Target Canvas")]
+        [Header("UI")]
         [SerializeField] private Canvas m_canvas;
 
         private bool m_started = false;
-        private bool m_registered = false;
+        private bool m_registed = false;
 
         public Canvas canvas => m_canvas;
 
@@ -28,26 +28,19 @@ namespace TLab.SFU.Interact
 
             Registry.Register(this);
 
-            m_registered = true;
+            m_registed = true;
         }
 
         private void Unregister()
         {
-            if (!m_registered)
-            {
+            if (!m_registed)
                 return;
-            }
 
             CanvasModule.UnregisterPointableCanvas(this);
 
             Registry.UnRegister(this);
 
-            m_registered = false;
-        }
-
-        public override bool Spherecast(Vector3 point, out RaycastHit hit, float maxDistance)
-        {
-            return base.Spherecast(point, out hit, maxDistance);
+            m_registed = false;
         }
 
         protected override void Start()

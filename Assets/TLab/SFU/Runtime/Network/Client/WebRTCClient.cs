@@ -597,7 +597,7 @@ namespace TLab.SFU.Network
                 {
                     var candidate = m_candidates.Dequeue();
                     var signaling = new Signaling(true, "", "", candidate.Candidate);
-                    var json = JsonUtility.ToJson(signaling);
+                    var json = signaling.ToJson();
                     _ = m_signalingSocket?.SendText(json);
 
                     Debug.Log("[Signaling] send: " + candidate.Candidate);

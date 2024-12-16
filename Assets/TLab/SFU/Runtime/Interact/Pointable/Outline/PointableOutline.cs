@@ -1,5 +1,5 @@
-#define DEBUG_COLOR
-#undef DEBUG_COLOR
+#define DEBUG_OUTLINE
+#undef DEBUG_OUTLINE
 
 using System;
 using System.Collections.Generic;
@@ -10,13 +10,14 @@ namespace TLab.SFU.Interact
     [AddComponentMenu("TLab/SFU/Pointable Outline (TLab)")]
     public class PointableOutline : Pointable
     {
-        [SerializeField, Range(0f, 0.1f)] protected float m_outlineWidth = 0.025f;
+        [Header("Outline")]
+        [SerializeField, Range(0f, 0.1f)] protected float m_width = 0.025f;
         [SerializeField] protected Color m_hoverColor = new Color(0, 1, 1, 0.5f);
         [SerializeField] protected Color m_selectColor = Color.cyan;
 
         [SerializeField] protected Material m_material;
 
-#if UNITY_EDITOR && DEBUG_COLOR
+#if UNITY_EDITOR && DEBUG_OUTLINE
         [Header("Debug")]
         [SerializeField] protected Debug m_debug = Debug.None;
 
@@ -30,19 +31,19 @@ namespace TLab.SFU.Interact
 
         protected static readonly Color alphaZero = new Color(0, 0, 0, 0);
 
-        internal static readonly int PROP_OUTLINE_COLOR = Shader.PropertyToID("_OutlineColor");
-        internal static readonly int PROP_OUTLINE_WIDTH = Shader.PropertyToID("_OutlineWidth");
+        internal static readonly int PROP_COLOR = Shader.PropertyToID("_Color");
+        internal static readonly int PROP_WIDTH = Shader.PropertyToID("_Width");
 
-        public virtual Material outlineMat { get => m_material; set => m_material = value; }
+        public virtual Material material { get => m_material; set => m_material = value; }
 
-        public float outlineWidth
+        public float width
         {
-            get => m_outlineWidth;
+            get => m_width;
             set
             {
-                if (m_outlineWidth != value)
+                if (m_width != value)
                 {
-                    m_outlineWidth = value;
+                    m_width = value;
 
                     SetAllDirty();
                 }
@@ -100,27 +101,27 @@ namespace TLab.SFU.Interact
                 meshRenderer.sharedMaterials = materialList.ToArray();
             }
 
-            m_material.SetFloat(PROP_OUTLINE_WIDTH, 0.0f);
+            SetMaterialDirty();
         }
 
         private void SetMaterialDirty()
         {
             if (IsSelected())
             {
-                m_material.SetColor(PROP_OUTLINE_COLOR, m_selectColor);
-                m_material.SetFloat(PROP_OUTLINE_WIDTH, m_outlineWidth);
+                m_material.SetColor(PROP_COLOR, m_selectColor);
+                m_material.SetFloat(PROP_WIDTH, m_width);
                 return;
             }
 
             if (IsHovered())
             {
-                m_material.SetColor(PROP_OUTLINE_COLOR, m_hoverColor);
-                m_material.SetFloat(PROP_OUTLINE_WIDTH, m_outlineWidth);
+                m_material.SetColor(PROP_COLOR, m_hoverColor);
+                m_material.SetFloat(PROP_WIDTH, m_width);
                 return;
             }
 
-            m_material.SetColor(PROP_OUTLINE_COLOR, alphaZero);
-            m_material.SetFloat(PROP_OUTLINE_WIDTH, 0.0f);
+            m_material.SetColor(PROP_COLOR, alphaZero);
+            m_material.SetFloat(PROP_WIDTH, 0.0f);
         }
 
         private void SetAllDirty()
@@ -161,22 +162,22 @@ namespace TLab.SFU.Interact
         {
             base.OnValidate();
 
-#if DEBUG_COLOR
+#if DEBUG_OUTLINE
             if (m_material != null)
             {
                 switch (m_debug)
                 {
                     case Debug.None:
-                        m_material.SetColor(PROP_OUTLINE_COLOR, alphaZero);
-                        m_material.SetFloat(PROP_OUTLINE_WIDTH, 0.0f);
+                        m_material.SetColor(PROP_COLOR, alphaZero);
+                        m_material.SetFloat(PROP_WIDTH, 0.0f);
                         break;
                     case Debug.Hover:
-                        m_material.SetColor(PROP_OUTLINE_COLOR, m_hoverColor);
-                        m_material.SetFloat(PROP_OUTLINE_WIDTH, m_outlineWidth);
+                        m_material.SetColor(PROP_COLOR, m_hoverColor);
+                        m_material.SetFloat(PROP_WIDTH, m_width);
                         break;
                     case Debug.Select:
-                        m_material.SetColor(PROP_OUTLINE_COLOR, m_selectColor);
-                        m_material.SetFloat(PROP_OUTLINE_WIDTH, m_outlineWidth);
+                        m_material.SetColor(PROP_COLOR, m_selectColor);
+                        m_material.SetFloat(PROP_WIDTH, m_width);
                         break;
                 }
 

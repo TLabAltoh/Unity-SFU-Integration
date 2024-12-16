@@ -108,6 +108,8 @@ namespace TLab.SFU.Network
 
         public bool shutdowned => m_state == State.Shutdowned;
 
+        public bool initialized => m_state == State.Initialized;
+
         protected virtual void OnInitComplete() { }
 
         public virtual void NotifyInitComplete()

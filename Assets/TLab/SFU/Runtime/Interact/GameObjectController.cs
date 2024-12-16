@@ -35,9 +35,11 @@ namespace TLab.SFU.Interact
 
             public bool grabbed => m_grabberId != FREE;
 
-            public bool isFree => !grabbed;
+            public bool free => !grabbed;
 
-            public bool grabbByMe => grabbed && NetworkClient.IsOwn(m_grabberId);
+            public bool own => grabbed && NetworkClient.IsOwn(m_grabberId);
+
+            public bool others => (grabbed && !own);
 
             public void Update(int grabberId) => m_grabberId = grabberId;
 
@@ -210,13 +212,13 @@ namespace TLab.SFU.Interact
 
         public override void OnRigidbodyModeChange()
         {
-            if (m_grabState.grabbed)
-                return;
+            Debug.Log(nameof(OnRigidbodyModeChange) + $":{NetworkClient.rbMode}:{name}");
 
             switch (NetworkClient.rbMode)
             {
                 case NetworkClient.RigidbodyMode.Send:
-                    EnableRigidbody(true);
+                    if (m_grabState.free)
+                        EnableRigidbody(true);
                     break;
                 case NetworkClient.RigidbodyMode.Recv:
                     EnableRigidbody(false, true);
@@ -385,7 +387,7 @@ namespace TLab.SFU.Interact
 
         public HandType OnGrab(Interactor interactor)
         {
-            if (m_locked || (!m_grabState.isFree && !m_grabState.grabbByMe))
+            if (m_locked || !initialized || m_grabState.others)
                 return HandType.None;
 
             if (m_firstHand == null)
@@ -450,7 +452,7 @@ namespace TLab.SFU.Interact
 
         protected override void BeforeShutdown()
         {
-            if (m_grabState.grabbByMe)
+            if (m_grabState.own)
                 GrabbLock(GrabState.Action.Free);
 
             base.BeforeShutdown();
@@ -510,7 +512,7 @@ namespace TLab.SFU.Interact
                     m_rotation.UpdateOneHandLogic();
                 }
             }
-            else if (m_grabState.isFree)
+            else if (m_grabState.free)
                 m_scale.UpdateHandleLogic();
 
             base.Update();

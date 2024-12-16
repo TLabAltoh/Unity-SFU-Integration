@@ -37,6 +37,12 @@ namespace TLab.SFU.Network
 
         private Coroutine m_coroutine = null;
 
+        private int m_owner = -1;
+
+        private Address32 m_public;
+
+        private bool m_isPublicIdUsed = false;
+
         private static bool m_msgCallbackRegisted = false;
 
         public bool started => m_state != NetworkObject.State.None;
@@ -54,6 +60,10 @@ namespace TLab.SFU.Network
                 return m_registry.Count;
             }
         }
+
+        public int owner => m_owner;
+
+        public Address32 @public => m_public;
 
 #if UNITY_EDITOR
         public void UpdateRegistry()
@@ -137,10 +147,16 @@ namespace TLab.SFU.Network
                 PostSyncRequest();
         }
 
-        public void InitAllObjects(Address32 @public, bool self)
+        public void InitAllObjects(Address32 @public, int owner, bool self)
         {
             if (started)
                 return;
+
+            m_isPublicIdUsed = true;
+
+            m_public.Copy(@public);
+
+            m_owner = owner;
 
             m_networkId = GetComponent<NetworkId>();
 
@@ -180,6 +196,9 @@ namespace TLab.SFU.Network
 
             if (m_networkId)
                 UnRegister();
+
+            if (m_isPublicIdUsed)
+                UniqueNetworkId.Return(m_public);
 
             m_state = NetworkObject.State.Shutdowned;
         }

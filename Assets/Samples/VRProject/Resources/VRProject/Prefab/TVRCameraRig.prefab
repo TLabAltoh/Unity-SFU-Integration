@@ -2628,6 +2628,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96f1b1a97db8ba74da369a9aee703a05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_type: 0
   m_frequency: 16000
 --- !u!1 &183181524144818715
 GameObject:
@@ -9723,6 +9724,7 @@ MonoBehaviour:
   m_rayHideGestures:
   - Poke
   THRESHOLD: 0.05
+  m_usePinchAsGrab: 1
   m_editMode: 0
   m_recordKey: 32
 --- !u!4 &183181524335217154 stripped
@@ -9835,6 +9837,7 @@ MonoBehaviour:
   m_rayHideGestures:
   - Poke
   THRESHOLD: 0.05
+  m_usePinchAsGrab: 1
   m_editMode: 0
   m_recordKey: 32
 --- !u!114 &3796528280693268637

@@ -1,5 +1,8 @@
 namespace TLab.SFU.Network
 {
+    /// <summary>
+    /// Handler for NetworkClient's session event.
+    /// </summary>
     public interface INetworkClientEventHandler
     {
         void OnJoin();

@@ -10,20 +10,14 @@ namespace TLab.SFU.Network
 
         [SerializeField, HideInInspector] protected Address64 m_id;
 
-        private bool m_publicUsed = false;
-
         public Address32 @private => m_private;
 
         public Address32 @public => m_public;
 
         public Address64 id => m_id;
 
-        public bool publicUsed => m_publicUsed;
-
         public virtual void SetPublic(Address32 @public)
         {
-            m_publicUsed = true;
-
             m_public.Copy(@public);
             m_id.CopyUpper32(@public);
         }

@@ -7,34 +7,43 @@ namespace TLab.SFU.Interact
 {
     using Registry = Registry<Interactable>;
 
-    [System.Serializable]
-    public struct HoverCallback
+    public static class InteractionEvent
     {
-        public UnityEvent onHovered;
-        public UnityEvent onUnHovered;
-        public UnityEvent whileHovered;
+        [System.Serializable]
+        public class Hover
+        {
+            public UnityEvent onHovered;
+            public UnityEvent onUnHovered;
+            public UnityEvent whileHovered;
+        }
+
+        [System.Serializable]
+        public class Select
+        {
+            public UnityEvent onSelected;
+            public UnityEvent onUnSelected;
+            public UnityEvent whileSelected;
+        }
     }
 
     [System.Serializable]
-    public struct SelectCallback
+    public class Collision
     {
-        public UnityEvent onSelected;
-        public UnityEvent onUnSelected;
-        public UnityEvent whileSelected;
+        public bool enabled = false;
+        public Collider collider;
     }
 
     [AddComponentMenu("TLab/SFU/Interactable (TLab)")]
     public class Interactable : MonoBehaviour
     {
-        [Header("Raycat target")]
-        [SerializeField] protected bool m_colliderEnable = false;
-        [SerializeField] protected Collider m_collider;
+        [Header("Raycat")]
+        [SerializeField] protected Collision m_collision = new Collision();
 
-        [Header("Callback")]
-        [SerializeField] protected HoverCallback m_hoverCallback;
-        [SerializeField] protected SelectCallback m_selectCallback;
+        [Header("Interaction Event")]
+        [SerializeField] protected InteractionEvent.Hover m_hoverEvent = new InteractionEvent.Hover();
+        [SerializeField] protected InteractionEvent.Select m_selectEvent = new InteractionEvent.Select();
 
-        [Header("Chain interactables")]
+        [Header("Chain")]
         [SerializeField] protected List<Interactable> m_interactableChain;
 
         protected List<Interactor> m_hovereds = new List<Interactor>();
@@ -46,9 +55,7 @@ namespace TLab.SFU.Interact
 
         public List<Interactor> selecteds => m_selecteds;
 
-        public Collider srufaceCollider => m_collider;
-
-        public bool enableCollision { get => m_colliderEnable; set => m_colliderEnable = value; }
+        public Collision collision => m_collision;
 
         public virtual bool IsHovered() => m_hovereds.Count > 0;
 
@@ -62,7 +69,7 @@ namespace TLab.SFU.Interact
         {
             m_hovereds.Add(interactor);
 
-            m_hoverCallback.onHovered.Invoke();
+            m_hoverEvent.onHovered.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.Hovered(interactor));
@@ -70,7 +77,7 @@ namespace TLab.SFU.Interact
 
         public virtual void WhileHovered(Interactor interactor)
         {
-            m_hoverCallback.whileHovered.Invoke();
+            m_hoverEvent.whileHovered.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.WhileHovered(interactor));
@@ -80,7 +87,7 @@ namespace TLab.SFU.Interact
         {
             m_hovereds.Remove(interactor);
 
-            m_hoverCallback.onUnHovered.Invoke();
+            m_hoverEvent.onUnHovered.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.UnHovered(interactor));
@@ -90,7 +97,7 @@ namespace TLab.SFU.Interact
         {
             m_selecteds.Add(interactor);
 
-            m_selectCallback.onSelected.Invoke();
+            m_selectEvent.onSelected.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.Selected(interactor));
@@ -98,7 +105,7 @@ namespace TLab.SFU.Interact
 
         public virtual void WhileSelected(Interactor interactor)
         {
-            m_selectCallback.whileSelected.Invoke();
+            m_selectEvent.whileSelected.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.WhileSelected(interactor));
@@ -108,7 +115,7 @@ namespace TLab.SFU.Interact
         {
             m_selecteds.Remove(interactor);
 
-            m_selectCallback.onUnSelected.Invoke();
+            m_selectEvent.onUnSelected.Invoke();
 
             if (m_interactableChain != null)
                 m_interactableChain.ForEach((s) => s.UnSelected(interactor));
@@ -118,24 +125,24 @@ namespace TLab.SFU.Interact
 
         public virtual bool Raycast(Ray ray, out RaycastHit hit, float maxDistance)
         {
-            if (m_collider == null || !m_collider.enabled || !m_colliderEnable)
+            if (!m_collision.enabled || m_collision.collider == null || !m_collision.collider.enabled)
             {
                 hit = new RaycastHit();
                 return false;
             }
 
-            return m_collider.Raycast(ray, out hit, maxDistance);
+            return m_collision.collider.Raycast(ray, out hit, maxDistance);
         }
 
         public virtual bool Spherecast(Vector3 point, out RaycastHit hit, float maxDistance)
         {
-            if (m_collider == null || !m_collider.enabled || !m_colliderEnable)
+            if (!m_collision.enabled || m_collision.collider == null || !m_collision.collider.enabled)
             {
                 hit = new RaycastHit();
                 return false;
             }
 
-            var closestPoint = m_collider.ClosestPoint(point);
+            var closestPoint = m_collision.collider.ClosestPoint(point);
             hit = new RaycastHit();
 
             hit.distance = (point - closestPoint).magnitude;
@@ -157,12 +164,14 @@ namespace TLab.SFU.Interact
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
-            if (m_collider == null)
+            if (m_collision.collider == null)
             {
-                m_collider = GetComponent<Collider>();
-
-                if (m_collider != null)
+                var collider = GetComponent<Collider>();
+                if (collider != null)
+                {
+                    m_collision.collider = collider;
                     EditorUtility.SetDirty(this);
+                }
             }
         }
 #endif

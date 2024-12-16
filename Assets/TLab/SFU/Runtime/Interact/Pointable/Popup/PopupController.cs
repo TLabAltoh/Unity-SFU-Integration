@@ -20,13 +20,9 @@ namespace TLab.SFU.Interact
         public FloatingAnchor GetFloatingAnchor(int index)
         {
             if (index < m_pointerPairs.Length)
-            {
                 return m_pointerPairs[index].anchor;
-            }
             else
-            {
                 return null;
-            }
         }
 
         protected void OnDestroy()
@@ -36,9 +32,7 @@ namespace TLab.SFU.Interact
                 foreach (var anchor in m_anchors)
                 {
                     if (anchor != null)
-                    {
                         Destroy(anchor.gameObject);
-                    }
                 }
             }
 
@@ -47,9 +41,7 @@ namespace TLab.SFU.Interact
                 foreach (var pointerPair in m_pointerPairs)
                 {
                     if (pointerPair.anchor != null)
-                    {
                         Destroy(pointerPair.anchor.gameObject);
-                    }
                 }
             }
         }
@@ -58,15 +50,14 @@ namespace TLab.SFU.Interact
         protected void OnValidate()
         {
             if (m_pointerPairs == null)
-            {
                 return;
-            }
 
             foreach (var popupPair in m_pointerPairs)
             {
                 if (popupPair.anchor != null && popupPair.target != null)
                 {
                     popupPair.anchor.SetTarget(popupPair.target.transform);
+                    popupPair.anchor.SetHideOnStart();
                 }
             }
         }

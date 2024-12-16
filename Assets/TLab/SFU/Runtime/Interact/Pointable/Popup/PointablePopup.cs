@@ -4,19 +4,19 @@ namespace TLab.SFU.Interact
 {
     public class PointablePopup : PointableOutline
     {
-        [SerializeField] private PopupController m_popupController;
+        [Header("Popup")]
         [SerializeField] private int m_index;
+        [SerializeField] private PopupController m_controller;
 
-        public PopupController popupController
+        public PopupController controller
         {
-            get
-            {
-                return m_popupController;
-            }
-
+            get => m_controller;
             set
             {
-                m_popupController = value;
+                if (m_controller != value)
+                {
+                    m_controller = value;
+                }
             }
         }
 
@@ -26,7 +26,7 @@ namespace TLab.SFU.Interact
         {
             base.Hovered(interactor);
 
-            var instance = m_popupController.GetFloatingAnchor(m_index);
+            var instance = m_controller.GetFloatingAnchor(m_index);
             if (instance)
                 instance.FadeInAsync();
         }
@@ -35,7 +35,7 @@ namespace TLab.SFU.Interact
         {
             base.UnHovered(interactor);
 
-            var instance = m_popupController.GetFloatingAnchor(m_index);
+            var instance = m_controller.GetFloatingAnchor(m_index);
             if (instance)
                 instance.FadeOutAsync();
         }

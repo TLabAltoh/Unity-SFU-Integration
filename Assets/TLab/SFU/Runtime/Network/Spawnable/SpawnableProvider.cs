@@ -5,46 +5,27 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
-    using Registry = Registry<string, SpawnableShop>;
-
-    public class SpawnableShop : MonoBehaviour, INetworkClientEventHandler
+    public class SpawnableProvider : MonoBehaviour, INetworkClientEventHandler
     {
-        [SerializeField] private const string m_shopId = "default";
         [SerializeField] private SpawnableStore m_store;
         [SerializeField] private BaseAnchorProvider m_anchor;
 
-        [Serializable]
-        public struct State
-        {
-            public string storeId;
-            public SpawnableStore.SpawnAction[] latestActions;
-
-            public State(string storeId, SpawnableStore.SpawnAction[] latestActions)
-            {
-                this.storeId = storeId;
-                this.latestActions = latestActions;
-            }
-        }
-
-        [Serializable, Message(typeof(MSG_SpawnableShop), m_shopId)]
-        public class MSG_SpawnableShop : Message
+        [Serializable, Message(typeof(MSG_SpawnableProvider))]
+        public class MSG_SpawnableProvider : Message
         {
             public SpawnableStore.SpawnAction action;
         }
 
-        private string THIS_NAME => "[" + this.GetType() + "] ";
+        private static SpawnableProvider m_instance;
+        public static SpawnableProvider instance => m_instance;
 
-        public string shopId => m_shopId;
+        private static string THIS_NAME => "[" + typeof(SpawnableProvider).FullName + "] ";
 
-        public SpawnableStore store => m_store;
+        private static MSG_SpawnableProvider m_packet = new MSG_SpawnableProvider();
 
-        public BaseAnchorProvider anchor => m_anchor;
+        public static SpawnableStore.SpawnAction[] GetLatestActionArray() => instance.m_store.GetLatestActionArray();
 
-        private static MSG_SpawnableShop m_packet = new MSG_SpawnableShop();
-
-        public virtual State GetLatestState() => new State(m_shopId, m_store.GetLatestActionArray());
-
-        public virtual bool ProcessSpawnAction(SpawnableStore.SpawnAction spawnAction, out SpawnableStore.InstanceRef instanceRef)
+        public static bool ProcessSpawnAction(SpawnableStore.SpawnAction spawnAction, out SpawnableStore.InstanceRef instanceRef)
         {
             var request = (spawnAction.action == SpawnableStore.SpawnAction.Action.RequestSpawn);
 
@@ -56,7 +37,7 @@ namespace TLab.SFU.Network
                 spawnAction.userId = NetworkClient.userId;
             }
 
-            bool result = m_store.ProcessSpawnAction(spawnAction, out instanceRef);
+            bool result = instance.m_store.ProcessSpawnAction(spawnAction, out instanceRef);
 
             if (spawnAction.userId == NetworkClient.userId)
             {
@@ -67,9 +48,9 @@ namespace TLab.SFU.Network
             return result;
         }
 
-        public virtual void Spawn(int elemId)
+        public static void Spawn(int elemId)
         {
-            if (!m_anchor.Get(NetworkClient.userId, out var anchor))
+            if (!instance.m_anchor.Get(NetworkClient.userId, out var anchor))
                 return;
 
             if (!UniqueNetworkId.GetAvailable(out var address))
@@ -80,58 +61,67 @@ namespace TLab.SFU.Network
             ProcessSpawnAction(action, out var instanceRef);
         }
 
-        public virtual void RequestSpawn(int elemId, int userId)
+        public static void RequestSpawn(int elemId, int userId)
         {
-            if (!m_anchor.Get(userId, out var anchor))
+            if (!instance.m_anchor.Get(userId, out var anchor))
                 return;
 
-            var action = SpawnableStore.SpawnAction.GetRequestSpawnAction(elemId, userId, anchor);
-            m_packet.action = action;
-            NetworkClient.SendWS(userId, m_packet.Marshall());
+            if (userId == NetworkClient.userId)
+            {
+                var action = SpawnableStore.SpawnAction.GetRequestSpawnAction(elemId, userId, anchor);
+                ProcessSpawnAction(action, out var instanceRef);
+            }
+            else
+            {
+                var action = SpawnableStore.SpawnAction.GetRequestSpawnAction(elemId, userId, anchor);
+                m_packet.action = action;
+                NetworkClient.SendWS(userId, m_packet.Marshall());
+            }
+
+            Debug.Log(THIS_NAME + $"{nameof(RequestSpawn)}:{elemId}:{userId}");
         }
 
-        protected virtual IEnumerator RequestSpawnForAllUserTask(int elemId)
+        protected static IEnumerator RequestSpawnForAllUserTask(int elemId)
         {
             var users = NetworkClient.GetLatestAvatorActionArray().Select((t) => t.userId);
             foreach (var user in users)
             {
                 yield return new WaitForSeconds(0.25f);
 
-                var skip = m_store.GetLatestActions().Any((t) => (user == t.userId) && (elemId == t.elemId));
+                var skip = instance.m_store.GetLatestActions().Any((t) => (user == t.userId) && (elemId == t.elemId));
 
                 if (!skip)
                     RequestSpawn(elemId, user);
             }
         }
 
-        public virtual void RequestSpawnForAllUserAsync(int elemId) => StartCoroutine(RequestSpawnForAllUserTask(elemId));
+        public static void RequestSpawnForAllUserAsync(int elemId) => instance.StartCoroutine(RequestSpawnForAllUserTask(elemId));
 
-        protected virtual IEnumerator DeleteByElementIdTask(int elemId)
+        protected static IEnumerator DeleteByElementIdTask(int elemId)
         {
-            var targets = m_store.GetLatestActions().Where((t) => t.elemId == elemId);
+            var targets = instance.m_store.GetLatestActions().Where((t) => t.elemId == elemId).ToArray();
             foreach (var target in targets)
             {
                 yield return new WaitForSeconds(0.25f);
+
                 var action = SpawnableStore.SpawnAction.GetDeleteAction(target.@public);
-                m_packet.action = action;
-                NetworkClient.SendWS(m_packet.Marshall());
+                ProcessSpawnAction(action, out var instanceRef);
             }
         }
 
-        public virtual void DeleteByElementIdAsync(int elemId) => StartCoroutine(DeleteByElementIdTask(elemId));
+        public static void DeleteByElementIdAsync(int elemId) => instance.StartCoroutine(DeleteByElementIdTask(elemId));
 
-        public virtual void SyncState(State state)
+        public static void SyncLatestActions(SpawnableStore.SpawnAction[] latestActions)
         {
-            foreach (var action in state.latestActions)
+            foreach (var action in latestActions)
                 ProcessSpawnAction(action, out var instanceRef);
         }
 
         protected virtual void OnEnable()
         {
-            Registry.Register(m_shopId, this);
-
             NetworkClient.RegisterOnMessage(m_packet.msgId, (from, to, bytes) =>
             {
+                m_packet.UnMarshall(bytes);
                 ProcessSpawnAction(m_packet.action, out var instanceRef);
             });
 
@@ -144,9 +134,9 @@ namespace TLab.SFU.Network
             NetworkClient.UnRegisterOnJoin(OnJoin, OnJoin);
             NetworkClient.UnRegisterOnExit(OnExit, OnExit);
             NetworkClient.UnRegisterOnMessage(m_packet.msgId);
-
-            Registry.UnRegister(m_shopId);
         }
+
+        protected virtual void Awake() => m_instance = this;
 
         public virtual void OnJoin()
         {

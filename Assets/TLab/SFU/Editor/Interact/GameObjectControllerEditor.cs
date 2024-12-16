@@ -40,12 +40,12 @@ namespace TLab.SFU.Interact.Editor
             });
 
             target.RequireComponent<GameObjectGrabbable>((c) => {
-                c.enableCollision = true;
+                c.collision.enabled = true;
                 EditorUtility.SetDirty(c);
             });
 
             target.RequireComponent<GameObjectRotatable>((c) => {
-                c.enableCollision = true;
+                c.collision.enabled = true;
                 EditorUtility.SetDirty(c);
             });
 
@@ -88,7 +88,7 @@ namespace TLab.SFU.Interact.Editor
 
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button("Auto Fit" + nameof(ScaleLogic) + " Lim"))
+            if (GUILayout.Button("Auto Fit " + nameof(ScaleLogic) + " Lim"))
             {
                 m_controller.AutoFitScaleLogicLim();
                 EditorUtility.SetDirty(m_controller);

@@ -166,7 +166,7 @@ namespace TLab.SFU.Interact.Editor
             if (meshRenderer != null)
             {
                 var selectable = obj.RequireComponent<PointableOutline>();
-                selectable.outlineMat = meshRenderer.sharedMaterials[meshRenderer.sharedMaterials.Length - 1];
+                selectable.material = meshRenderer.sharedMaterials[meshRenderer.sharedMaterials.Length - 1];
 
                 EditorUtility.SetDirty(selectable);
             }

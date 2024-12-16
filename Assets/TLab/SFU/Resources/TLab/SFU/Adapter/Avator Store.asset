@@ -15,4 +15,4 @@ MonoBehaviour:
   m_store:
   - name: default
     prefab: {fileID: 3478780567771759180, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
-    distribute: {fileID: 3478780567771759180, guid: 0bbff4a54e89e1e42b954ba7e52b7dfc, type: 3}
+    distribute: {fileID: 3118547808489908775, guid: 57b1aa246c907a946b73b81c1986e9a6, type: 3}

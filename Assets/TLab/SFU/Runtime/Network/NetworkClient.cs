@@ -6,16 +6,13 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
-using TLab.SFU.Network.Json;
 using static System.BitConverter;
 using static TLab.SFU.ComponentExtension;
 
 namespace TLab.SFU.Network
 {
-    using SpawnableShopRegistry = Registry<string, SpawnableShop>;
-
     [AddComponentMenu("TLab/SFU/Network Client (TLab)")]
-    public class NetworkClient : MonoBehaviour, INetworkEventHandler
+    public class NetworkClient : MonoBehaviour, ISfuClientEventHandler
     {
         private string THIS_NAME => "[" + this.GetType().Name + "] ";
 
@@ -37,7 +34,8 @@ namespace TLab.SFU.Network
 
         private Dictionary<string, Coroutine> m_coroutines = new Dictionary<string, Coroutine>();
 
-        public static NetworkClient instance;
+        private static NetworkClient m_instance;
+        public static NetworkClient instance => m_instance;
 
         private static RigidbodyMode m_rbMode = RigidbodyMode.None;
         public static RigidbodyMode rbMode => m_rbMode;
@@ -45,8 +43,8 @@ namespace TLab.SFU.Network
         public delegate void OnMessageCallback(int from, int to, byte[] bytes);
         private static Hashtable m_messageCallbacks = new Hashtable();
 
-        private static List<(UnityAction, UnityAction<int>)> m_onJoin = new List<(UnityAction, UnityAction<int>)>();
         private static List<(UnityAction, UnityAction<int>)> m_onExit = new List<(UnityAction, UnityAction<int>)>();
+        private static List<(UnityAction, UnityAction<int>)> m_onJoin = new List<(UnityAction, UnityAction<int>)>();
 
         public const int MESSAGE_HEADER_SIZE = 4;   // msgId (4)
 
@@ -131,10 +129,10 @@ namespace TLab.SFU.Network
                 this.messageType = messageType;
             }
 
-            public MSG_Join(MessageType messageType, int requestAvatorId) : this(messageType)
+            public MSG_Join(MessageType messageType, int avatorId) : this(messageType)
             {
                 this.messageType = messageType;
-                this.requestAvatorId = requestAvatorId;
+                this.avatorId = avatorId;
             }
 
             public MSG_Join(MessageType messageType, SpawnableStore.SpawnAction avatorAction) : this(messageType)
@@ -143,12 +141,13 @@ namespace TLab.SFU.Network
                 this.avatorAction = avatorAction;
             }
 
-            public MSG_Join(MessageType messageType, SpawnableStore.SpawnAction avatorAction, Address32[] idAvails, RigidbodyMode rbMode, SpawnableShop.State[] latestShopStates, SpawnableStore.SpawnAction[] latestAvatorActions) : this(messageType)
+            public MSG_Join(MessageType messageType, SpawnableStore.SpawnAction avatorAction, Address32[] idAvails, RigidbodyMode rbMode, SpawnableStore.SpawnAction[] latestAvatorActions, SpawnableStore.SpawnAction[] latestSpawnableActions) : this(messageType)
             {
                 this.idAvails = idAvails;
                 this.rbMode = rbMode;
-                this.latestShopStates = latestShopStates;
+                this.avatorAction = avatorAction;
                 this.latestAvatorActions = latestAvatorActions;
+                this.latestSpawnableActions = latestSpawnableActions;
             }
 
             public MSG_Join(byte[] bytes) : base(bytes) { }
@@ -156,7 +155,7 @@ namespace TLab.SFU.Network
             public MessageType messageType;
 
             // Request0
-            public int requestAvatorId;
+            public int avatorId;
 
             // Response0, Broadcast
             public SpawnableStore.SpawnAction avatorAction;
@@ -164,8 +163,8 @@ namespace TLab.SFU.Network
             // Response0
             public Address32[] idAvails;
             public RigidbodyMode rbMode;
-            public SpawnableShop.State[] latestShopStates;
             public SpawnableStore.SpawnAction[] latestAvatorActions;
+            public SpawnableStore.SpawnAction[] latestSpawnableActions;
         }
 
         [Serializable, Message(typeof(MSG_UpdateRigidbodyMode))]
@@ -207,6 +206,7 @@ namespace TLab.SFU.Network
         #endregion MESSAGE
 
         public static SpawnableStore.SpawnAction[] GetLatestAvatorActionArray() => m_latestAvatorActions.Values.ToArray();
+        public static SpawnableStore.SpawnAction[] GetLatestSpawnableActionArray() => SpawnableProvider.GetLatestActionArray();
 
         public static Dictionary<int, SpawnableStore.SpawnAction> GetLatestAvatorActions() => new Dictionary<int, SpawnableStore.SpawnAction>(m_latestAvatorActions);
 
@@ -308,8 +308,6 @@ namespace TLab.SFU.Network
             return false;
         }
 
-        private void SyncSpawnableShopState(SpawnableShop.State shopState) => SpawnableShopRegistry.GetByKey(shopState.storeId)?.SyncState(shopState);
-
         private void OnSyncWorldComplete(SpawnableStore.SpawnAction avatorAction)
         {
             m_onJoin.ForEach((c) => c.Item1.Invoke());
@@ -344,15 +342,13 @@ namespace TLab.SFU.Network
             yield break;
         }
 
-        private void SyncWorldAsync(SpawnableStore.SpawnAction avatorAction, SpawnableStore.SpawnAction[] latestAvatorActions, SpawnableShop.State[] latestShopStates)
+        private void SyncWorldAsync(SpawnableStore.SpawnAction avatorAction, SpawnableStore.SpawnAction[] latestAvatorActions, SpawnableStore.SpawnAction[] latestSpawnableActions)
         {
             var objectGroups = new List<NetworkObjectGroup>() { m_objectGroup };
 
             m_objectGroup.InitAllObjects(false);
 
             latestAvatorActions.Foreach((avatorAction) => {
-                Debug.Log(THIS_NAME + "latestAvatorAction:" + avatorAction.elemId);
-
                 if (ProcessAvatorAction(avatorAction, out var result))
                 {
                     if (result.action == SpawnableStore.SpawnAction.Action.Spawn)
@@ -360,12 +356,10 @@ namespace TLab.SFU.Network
                 }
             });
 
-            latestShopStates.Foreach((shopState) => SyncSpawnableShopState(shopState));
+            SpawnableProvider.SyncLatestActions(latestSpawnableActions);
 
             RegisterCoroutine(nameof(SyncWorldTask), StartCoroutine(SyncWorldTask(avatorAction, objectGroups.ToArray())));
         }
-
-        private SpawnableShop.State[] GetLatestShotStateArray() => SpawnableShopRegistry.values.Select((t) => t.GetLatestState()).ToArray();
 
         private IEnumerator ConnectTask()
         {
@@ -385,19 +379,24 @@ namespace TLab.SFU.Network
                 {
                     case MSG_Join.MessageType.Request0:
                         {
-                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Request0));
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Request0) + $":{from}");
 
-                            var avatorAction = SpawnableStore.SpawnAction.GetRequestSpawnAction(receive.avatorAction.elemId, from, receive.avatorAction.transform);
+                            if (!m_anchor.Get(from, out var anchor))
+                                return;
 
-                            var latestShopStates = GetLatestShotStateArray();
+                            var avatorAction = SpawnableStore.SpawnAction.GetRequestSpawnAction(receive.avatorId, from, anchor);
+
                             var latestAvatorActions = GetLatestAvatorActionArray();
+                            var latestSpawnableActions = GetLatestSpawnableActionArray();
 
-                            SendWS(from, new MSG_Join(MSG_Join.MessageType.Response0, avatorAction, UniqueNetworkId.Generate(from, 5), RigidbodyMode.Recv, latestShopStates, latestAvatorActions).Marshall());
+                            Debug.Log(THIS_NAME + $"{MSG_Join.MessageType.Request0}:avatorAction:{JsonUtility.ToJson(avatorAction)}");
+
+                            SendWS(from, new MSG_Join(MSG_Join.MessageType.Response0, avatorAction, UniqueNetworkId.Generate(from, 5), RigidbodyMode.Recv, latestAvatorActions, latestSpawnableActions).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.Response0:
                         {
-                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response0));
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response0) + $":{from}:{receive.rbMode}");
 
                             UniqueNetworkId.AddAvailables(receive.idAvails);
 
@@ -408,28 +407,30 @@ namespace TLab.SFU.Network
                             avatorAction.action = SpawnableStore.SpawnAction.Action.Spawn;
                             if (UniqueNetworkId.GetAvailable(out var address)) avatorAction.@public = address;
 
-                            SyncWorldAsync(avatorAction, receive.latestAvatorActions, receive.latestShopStates);
+                            Debug.Log(THIS_NAME + $"{MSG_Join.MessageType.Response0}:avatorAction:{JsonUtility.ToJson(avatorAction)}");
+
+                            SyncWorldAsync(avatorAction, receive.latestAvatorActions, receive.latestSpawnableActions);
 
                             SendWS(from, new MSG_Join(MSG_Join.MessageType.Request1).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.Request1:
                         {
-                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Request1));
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Request1) + $":{from}");
 
                             SendWS(from, new MSG_Join(MSG_Join.MessageType.Response1).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.Response1:
                         {
-                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response1));
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response1) + $":{from}");
 
                             // Currently, nothing to do ...
                         }
                         break;
                     case MSG_Join.MessageType.Finish:
                         {
-                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Finish));
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Finish) + $":{JsonUtility.ToJson(receive.avatorAction)}");
 
                             ProcessAvatorAction(receive.avatorAction, out var result);
 
@@ -490,45 +491,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        private void OnJoin(string @string)
-        {
-            m_onLog.Invoke(@string);
-            RegisterCoroutine(nameof(ConnectTask), StartCoroutine(ConnectTask()));
-        }
-
-        private void OnCreate(string @string)
-        {
-            m_onLog.Invoke(@string);
-            m_adapter.Join(this, OnJoin);
-        }
-
-        public static void Join() => instance.m_adapter.GetInfo(instance, (@string) =>
-        {
-            instance.m_onLog.Invoke(@string);
-
-            var response = new RoomInfos(@string);
-
-            if (response.infos.Length == 0)
-                instance.m_adapter.Create(instance, instance.OnCreate);
-            else
-            {
-                instance.m_onLog.Invoke(@string);
-                instance.m_adapter.Init(instance.m_adapter.config, response.infos[0].id, instance.m_adapter.sharedKey, instance.m_adapter.masterKey);
-                instance.m_adapter.Join(instance, instance.OnJoin);
-            }
-        });
-
-        private void OnExit(string @string)
-        {
-            m_onLog.Invoke(@string);
-            m_onExit.ForEach((c) => c.Item1.Invoke());
-        }
-
-        public static void Exit()
-        {
-            m_rtcClient?.HangUp();
-            instance.m_adapter.Exit(instance, instance.OnExit);
-        }
+        public static void ConnectAsync() => instance.RegisterCoroutine(nameof(ConnectTask), instance.StartCoroutine(instance.ConnectTask()));
 
         #region WS
 
@@ -572,19 +535,24 @@ namespace TLab.SFU.Network
 
         #endregion RTC
 
-        private void Awake() => instance = this;
+        private void Awake()
+        {
+            if (m_instance != this)
+            {
+                m_instance = this;
+                DontDestroyOnLoad(this);
+            }
+        }
 
-        private void OnDestroy()
+        public static void HangUpAll()
         {
             CloseRTC();
             CloseWS();
         }
 
-        private void OnApplicationQuit()
-        {
-            CloseRTC();
-            CloseWS();
-        }
+        private void OnDestroy() => HangUpAll();
+
+        private void OnApplicationQuit() => HangUpAll();
 
         public void OnMessage(int from, int to, byte[] bytes)
         {
@@ -611,13 +579,13 @@ namespace TLab.SFU.Network
                 UniqueNetworkId.AddAvailables(UniqueNetworkId.Generate(0, 5));
 
                 if (m_anchor.Get(0, out var anchor))
-                    ProcessAvatorAction(SpawnableStore.SpawnAction.GetSpawnAction(m_avatorConfig.avatorId, UniqueNetworkId.Generate(0), anchor), out var result);
+                {
+                    var address = UniqueNetworkId.Generate(0);
+                    ProcessAvatorAction(SpawnableStore.SpawnAction.GetSpawnAction(m_avatorConfig.avatorId, address, anchor), out var result);
+                }
             }
             else
-            {
-                if (m_anchor.Get(userId, out var anchor))
-                    SendWS(0, new MSG_Join(MSG_Join.MessageType.Request0, m_avatorConfig.avatorId).Marshall());
-            }
+                SendWS(0, new MSG_Join(MSG_Join.MessageType.Request0, m_avatorConfig.avatorId).Marshall());
         }
 
         public void OnClose() => m_onExit.ForEach((c) => c.Item1.Invoke());

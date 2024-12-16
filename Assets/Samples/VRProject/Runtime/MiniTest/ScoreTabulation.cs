@@ -5,7 +5,7 @@ using TLab.SFU.Network;
 
 namespace TLab.VRProjct
 {
-    public class ScoreTabulation : MonoBehaviour, INetworkEventHandler, INetworkClientEventHandler
+    public class ScoreTabulation : MonoBehaviour, ISfuClientEventHandler, INetworkClientEventHandler
     {
         private Dictionary<int, int> m_scores = new Dictionary<int, int>();
 
@@ -33,9 +33,7 @@ namespace TLab.VRProjct
         public int GetScore(int index)
         {
             if (m_scores.ContainsKey(index))
-            {
                 return m_scores[index];
-            }
 
             return 0;
         }

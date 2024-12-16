@@ -54,26 +54,26 @@ namespace TLab.SFU.Network
     [Serializable]
     public struct RigidbodyState
     {
-        public static bool operator ==(RigidbodyState a, RigidbodyState b) => (a.active == b.active) && (a.gravity == b.gravity);
-        public static bool operator !=(RigidbodyState a, RigidbodyState b) => (a.active != b.active) || (a.gravity != b.gravity);
+        public static bool operator ==(RigidbodyState a, RigidbodyState b) => (a.used == b.used) && (a.gravity == b.gravity);
+        public static bool operator !=(RigidbodyState a, RigidbodyState b) => (a.used != b.used) || (a.gravity != b.gravity);
 
-        [SerializeField, HideInInspector] private bool m_active;
+        [SerializeField, HideInInspector] private bool m_used;
 
         [SerializeField, HideInInspector] private bool m_gravity;
 
-        public bool active => m_active;
+        public bool used => m_used;
 
-        public bool gravity => m_active && m_gravity;
+        public bool gravity => m_used && m_gravity;
 
-        public RigidbodyState(bool active, bool gravity)
+        public RigidbodyState(bool used, bool gravity)
         {
-            m_active = active;
+            m_used = used;
             m_gravity = gravity;
         }
 
-        public void Update(bool active, bool gravity)
+        public void Update(bool used, bool gravity)
         {
-            m_active = active;
+            m_used = used;
             m_gravity = gravity;
         }
 
