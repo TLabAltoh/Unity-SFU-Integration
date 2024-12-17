@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_store:
   - name: lung
-    prefab: {fileID: 7321942756653076973, guid: 7c4bf96ac9366ab42aa3e9965d981704, type: 3}
-    distribute: {fileID: 6240247021979521686, guid: 467b620a8b19ab94d9d5a0f930e0411c, type: 3}
+    prefab: {fileID: 3410485209735884181, guid: 467b620a8b19ab94d9d5a0f930e0411c, type: 3}
+    distribute: {fileID: 6618602484663080095, guid: 7c4bf96ac9366ab42aa3e9965d981704, type: 3}

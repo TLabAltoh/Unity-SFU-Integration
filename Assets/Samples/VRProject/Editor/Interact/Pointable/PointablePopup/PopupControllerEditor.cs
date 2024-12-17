@@ -25,7 +25,6 @@ namespace TLab.SFU.Interact.Editor
                 pointablePopup.material = pointableOutline.material;
                 pointablePopup.controller = controller;
                 pointablePopup.index = index;
-                pointablePopup.collision.enabled = false;
                 DestroyImmediate(pointableOutline);
                 EditorUtility.SetDirty(pointablePopup);
                 Debug.Log(NAME + "Convert 2 " + nameof(PointablePopup) + " " + index.ToString());
@@ -57,10 +56,7 @@ namespace TLab.SFU.Interact.Editor
             }
 
             if (pointableOutline != null)
-            {
-                pointablePopup.collision.enabled = false;
                 EditorUtility.SetDirty(pointableOutline);
-            }
 
             Debug.Log(NAME + BAR);
         }

@@ -543,9 +543,11 @@ namespace TLab.SFU.Network
             return isDirty;
         }
 
+        public virtual bool SkipApplyCurrentTransform() => !Const.Send.HasFlag(m_direction) || !initialized || (m_interpolationState.current > 0);
+
         public override void SyncViaWebRTC(int to, bool force = false, bool request = false, bool immediate = false)
         {
-            if (!Const.Send.HasFlag(m_direction) || !initialized || (m_interpolationState.current > 0))
+            if (SkipApplyCurrentTransform())
                 return;
 
             if (ApplyCurrentTransform(out var position, out var rotation, out var localScale) || force)
@@ -569,7 +571,7 @@ namespace TLab.SFU.Network
 
         public override void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false)
         {
-            if (!Const.Send.HasFlag(m_direction) || !initialized || (m_interpolationState.current > 0))
+            if (SkipApplyCurrentTransform())
                 return;
 
             if (ApplyCurrentTransform(out var position, out var rotation, out var localScale) || force)

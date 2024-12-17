@@ -99,12 +99,10 @@ namespace TLab.SFU.Interact
                     deltaQuaternion = Quaternion.identity * m_firstHand.pointer.rotation * Quaternion.Inverse(m_firstHandQuaternionStart);
                 }
 
-                //if (m_rigidbody)
-                //    m_rigidbody.MoveRotation(deltaQuaternion * m_thisQuaternionStart);
-                //else
-                //    m_transform.rotation = deltaQuaternion * m_thisQuaternionStart;
-
-                m_transform.rotation = deltaQuaternion * m_thisQuaternionStart;
+                if (m_rigidbody)
+                    m_rigidbody.rotation = deltaQuaternion * m_thisQuaternionStart;
+                else
+                    m_transform.rotation = deltaQuaternion * m_thisQuaternionStart;
             }
         }
 

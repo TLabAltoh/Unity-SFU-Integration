@@ -86,6 +86,9 @@ namespace TLab.SFU.Network
             var users = NetworkClient.GetLatestAvatorActionArray().Select((t) => t.userId);
             foreach (var user in users)
             {
+                if (user is not 0)
+                    continue;
+
                 yield return new WaitForSeconds(0.25f);
 
                 var skip = instance.m_store.GetLatestActions().Any((t) => (user == t.userId) && (elemId == t.elemId));

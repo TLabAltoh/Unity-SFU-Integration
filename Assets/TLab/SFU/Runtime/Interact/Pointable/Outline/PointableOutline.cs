@@ -158,10 +158,8 @@ namespace TLab.SFU.Interact
         }
 
 #if UNITY_EDITOR
-        protected override void OnValidate()
+        protected void OnValidate()
         {
-            base.OnValidate();
-
 #if DEBUG_OUTLINE
             if (m_material != null)
             {

@@ -102,12 +102,10 @@ namespace TLab.SFU.Interact
 
                 var newPos = Vector3.Lerp(newPos0, newPos1, 0.5f);
 
-                //if (m_rigidbody)
-                //    m_rigidbody.MovePosition(newPos);
-                //else
-                //    m_transform.position = newPos;
-
-                m_transform.position = newPos;
+                if (m_rigidbody)
+                    m_rigidbody.position = newPos;
+                else
+                    m_transform.position = newPos;
             }
         }
 
@@ -123,7 +121,7 @@ namespace TLab.SFU.Interact
                     newPos = m_firstHand.pointer.TransformPoint(m_firstHandPositionOffset);
 
                 if (m_rigidbody)
-                    m_rigidbody.MovePosition(newPos);
+                    m_rigidbody.position = newPos;
                 else
                     m_transform.position = newPos;
             }

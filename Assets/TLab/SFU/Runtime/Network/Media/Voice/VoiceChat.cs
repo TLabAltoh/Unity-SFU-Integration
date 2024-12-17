@@ -26,8 +26,6 @@ namespace TLab.SFU.Network
 
         private WebRTCClient m_rtcClient;
 
-        private static bool m_awaked = false;
-
         public const int VOICE_BUFFER_SIZE = 1024;
         public const int CHANNEL = 1;
         public const int LENGTH_SECOUND = 1;

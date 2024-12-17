@@ -310,8 +310,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1170828935}
   - {fileID: 1636750535}
+  - {fileID: 1170828935}
   - {fileID: 1129820337}
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -349,9 +349,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87dcdfb393da40c4594e21b3bf323e31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_collision:
-    enabled: 0
-    collider: {fileID: 0}
+  m_surface: {fileID: 0}
   m_hoverEvent:
     onHovered:
       m_PersistentCalls:
@@ -386,9 +384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 111d5f948e4c35041b8f5089cd53212d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_collision:
-    enabled: 1
-    collider: {fileID: 1170828937}
+  m_surface: {fileID: 1170828938}
   m_hoverEvent:
     onHovered:
       m_PersistentCalls:
@@ -735,6 +731,7 @@ GameObject:
   - component: {fileID: 1170828935}
   - component: {fileID: 1170828937}
   - component: {fileID: 1170828936}
+  - component: {fileID: 1170828938}
   m_Layer: 0
   m_Name: Collider
   m_TagString: Untagged
@@ -755,7 +752,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 491790985}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1170828936
 MonoBehaviour:
@@ -783,6 +780,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.9952335, y: 1.9961478, z: 0.044487562}
   m_Center: {x: 0.0030523539, y: -0.002338469, z: -0.0016472517}
+--- !u!114 &1170828938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1170828934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8e2abc5ca50cf245a8c13436f130aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_collider: {fileID: 1170828937}
 --- !u!1 &1265592582
 GameObject:
   m_ObjectHideFlags: 0
@@ -1562,7 +1572,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8515272842325198034, guid: dee9e51ba5a456b4c8e2cefe2f644bba, type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8515272842325198034, guid: dee9e51ba5a456b4c8e2cefe2f644bba, type: 3}
       propertyPath: m_AnchorMax.x
@@ -1855,4 +1865,3 @@ MonoBehaviour:
   sensitivity: 1
   panSensitivity: 0.5
   mouseWheelZoomSpeed: 1
-  m_controllers: []

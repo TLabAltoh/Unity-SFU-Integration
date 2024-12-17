@@ -39,16 +39,8 @@ namespace TLab.SFU.Interact.Editor
                 EditorUtility.SetDirty(c);
             });
 
-            target.RequireComponent<GameObjectGrabbable>((c) => {
-                c.collision.enabled = true;
-                EditorUtility.SetDirty(c);
-            });
-
-            target.RequireComponent<GameObjectRotatable>((c) => {
-                c.collision.enabled = true;
-                EditorUtility.SetDirty(c);
-            });
-
+            target.RequireComponent<GameObjectGrabbable>((c) => EditorUtility.SetDirty(c));
+            target.RequireComponent<GameObjectRotatable>((c) => EditorUtility.SetDirty(c));
             target.RequireComponent<RayInteractable>((c) => EditorUtility.SetDirty(c));
         }
 

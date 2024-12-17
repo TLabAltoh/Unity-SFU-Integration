@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using UnityEngine.Events;
 
 namespace TLab.SFU.Interact
@@ -26,18 +25,10 @@ namespace TLab.SFU.Interact
         }
     }
 
-    [System.Serializable]
-    public class Collision
-    {
-        public bool enabled = false;
-        public Collider collider;
-    }
-
     [AddComponentMenu("TLab/SFU/Interactable (TLab)")]
     public class Interactable : MonoBehaviour
     {
-        [Header("Raycat")]
-        [SerializeField] protected Collision m_collision = new Collision();
+        [SerializeField] protected ColliderSurface m_surface;
 
         [Header("Interaction Event")]
         [SerializeField] protected InteractionEvent.Hover m_hoverEvent = new InteractionEvent.Hover();
@@ -55,7 +46,7 @@ namespace TLab.SFU.Interact
 
         public List<Interactor> selecteds => m_selecteds;
 
-        public Collision collision => m_collision;
+        public ColliderSurface surface => m_surface;
 
         public virtual bool IsHovered() => m_hovereds.Count > 0;
 
@@ -123,32 +114,28 @@ namespace TLab.SFU.Interact
 
         #region RAYCAST
 
+        public virtual bool SkipRaycast() => !this.gameObject.activeInHierarchy || m_surface == null;
+
         public virtual bool Raycast(Ray ray, out RaycastHit hit, float maxDistance)
         {
-            if (!m_collision.enabled || m_collision.collider == null || !m_collision.collider.enabled)
+            if (SkipRaycast())
             {
                 hit = new RaycastHit();
                 return false;
             }
 
-            return m_collision.collider.Raycast(ray, out hit, maxDistance);
+            return m_surface.Raycast(ray, out hit, maxDistance);
         }
 
         public virtual bool Spherecast(Vector3 point, out RaycastHit hit, float maxDistance)
         {
-            if (!m_collision.enabled || m_collision.collider == null || !m_collision.collider.enabled)
+            if (SkipRaycast())
             {
                 hit = new RaycastHit();
                 return false;
             }
 
-            var closestPoint = m_collision.collider.ClosestPoint(point);
-            hit = new RaycastHit();
-
-            hit.distance = (point - closestPoint).magnitude;
-            hit.point = closestPoint;
-
-            return hit.distance < maxDistance;
+            return m_surface.Spherecast(point, out hit, maxDistance);
         }
 
         #endregion RAYCAST
@@ -160,20 +147,5 @@ namespace TLab.SFU.Interact
         protected virtual void Start() { }
 
         protected virtual void Update() { }
-
-#if UNITY_EDITOR
-        protected virtual void OnValidate()
-        {
-            if (m_collision.collider == null)
-            {
-                var collider = GetComponent<Collider>();
-                if (collider != null)
-                {
-                    m_collision.collider = collider;
-                    EditorUtility.SetDirty(this);
-                }
-            }
-        }
-#endif
     }
 }

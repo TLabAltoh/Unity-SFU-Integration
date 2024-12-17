@@ -282,6 +282,8 @@ namespace TLab.SFU.Interact
                 NetworkClient.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.ForceRelease).Marshall());
         }
 
+        public override bool SkipApplyCurrentTransform() => base.SkipApplyCurrentTransform() || m_grabState.others;
+
         private void CreateCombinedMeshCollider()
         {
             var meshColliders = GetComponentsInTargets<MeshCollider>(divideTargets);
@@ -326,7 +328,7 @@ namespace TLab.SFU.Interact
                 CreateCombinedMeshCollider();
         }
 
-        public void Devide()
+        public void Divide()
         {
             if (!m_enableDivide)
                 return;
