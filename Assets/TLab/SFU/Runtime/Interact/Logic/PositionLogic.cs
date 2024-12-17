@@ -12,21 +12,24 @@ namespace TLab.SFU.Interact
         [Range(0.01f, 1f)]
         private float m_lerp = 0.1f;
 
-        private Interactor m_mainHand;
-        private Interactor m_subHand;
+        private Interactor m_firstHand;
+        private Interactor m_secondHand;
 
-        private Transform m_targetTransform;
-        private Rigidbody m_targetRigidbody;
+        private Transform m_transform;
+        private Rigidbody m_rigidbody;
 
-        private Vector3 m_mainPositionOffset;
-        private Vector3 m_subPositionOffset;
+        private Vector3 m_firstHandPositionOffset;
+        private Vector3 m_secondHandPositionOffset;
 
         public bool enabled
         {
             get => m_enabled;
             set
             {
-                m_enabled = value;
+                if (m_enabled != value)
+                {
+                    m_enabled = value;
+                }
             }
         }
 
@@ -35,7 +38,10 @@ namespace TLab.SFU.Interact
             get => m_smooth;
             set
             {
-                m_smooth = value;
+                if (m_smooth != value)
+                {
+                    m_smooth = value;
+                }
             }
         }
 
@@ -44,84 +50,89 @@ namespace TLab.SFU.Interact
             get => m_lerp;
             set
             {
-                m_lerp = Mathf.Clamp(0.01f, 1f, value);
+                if (m_lerp != value)
+                {
+                    m_lerp = Mathf.Clamp(0.01f, 1f, value);
+                }
             }
         }
 
-        public void OnMainHandGrabbed(Interactor interactor)
+        public void OnFirstHandEnter(Interactor interactor)
         {
-            m_mainHand = interactor;
+            m_firstHand = interactor;
 
-            m_mainPositionOffset = m_mainHand.pointer.InverseTransformPoint(m_targetTransform.position);
+            m_firstHandPositionOffset = m_firstHand.pointer.InverseTransformPoint(m_transform.position);
         }
 
-        public void OnSubHandGrabbed(Interactor interactor)
+        public void OnSecondHandEnter(Interactor interactor)
         {
-            m_subHand = interactor;
+            m_secondHand = interactor;
 
-            m_subPositionOffset = m_subHand.pointer.InverseTransformPoint(m_targetTransform.position);
+            m_secondHandPositionOffset = m_secondHand.pointer.InverseTransformPoint(m_transform.position);
         }
 
-        public void OnMainHandReleased(Interactor interactor)
+        public void OnFirstHandExit(Interactor interactor)
         {
-            if (m_mainHand == interactor)
-                m_mainHand = null;
+            if (m_firstHand == interactor)
+                m_firstHand = null;
         }
 
-        public void OnSubHandReleased(Interactor interactor)
+        public void OnSecondHandExit(Interactor interactor)
         {
-            if (m_subHand == interactor)
-                m_subHand = null;
+            if (m_secondHand == interactor)
+                m_secondHand = null;
         }
 
         public void UpdateTwoHandLogic()
         {
-            if (m_enabled && m_mainHand != null && m_subHand != null)
+            if (m_enabled && m_firstHand != null && m_secondHand != null)
             {
-                Vector3 updatedPositionMain, updatedPositionSub;
+                Vector3 newPos0, newPos1;
 
                 if (m_smooth)
                 {
-                    updatedPositionMain = Vector3.Lerp(m_targetTransform.position, m_mainHand.pointer.TransformPoint(m_mainPositionOffset), m_lerp);
-                    updatedPositionSub = Vector3.Lerp(m_targetTransform.position, m_subHand.pointer.TransformPoint(m_subPositionOffset), m_lerp);
+                    newPos0 = Vector3.Lerp(m_transform.position, m_firstHand.pointer.TransformPoint(m_firstHandPositionOffset), m_lerp);
+                    newPos1 = Vector3.Lerp(m_transform.position, m_secondHand.pointer.TransformPoint(m_secondHandPositionOffset), m_lerp);
                 }
                 else
                 {
-                    updatedPositionMain = m_mainHand.pointer.TransformPoint(m_mainPositionOffset);
-                    updatedPositionSub = m_subHand.pointer.TransformPoint(m_subPositionOffset);
+                    newPos0 = m_firstHand.pointer.TransformPoint(m_firstHandPositionOffset);
+                    newPos1 = m_secondHand.pointer.TransformPoint(m_secondHandPositionOffset);
                 }
 
-                var updatedPosition = Vector3.Lerp(updatedPositionMain, updatedPositionSub, 0.5f);
+                var newPos = Vector3.Lerp(newPos0, newPos1, 0.5f);
 
-                if (m_targetRigidbody)
-                    m_targetRigidbody.MovePosition(updatedPosition);
-                else
-                    m_targetTransform.position = updatedPosition;
+                //if (m_rigidbody)
+                //    m_rigidbody.MovePosition(newPos);
+                //else
+                //    m_transform.position = newPos;
+
+                m_transform.position = newPos;
             }
         }
 
         public void UpdateOneHandLogic()
         {
-            if (m_enabled && m_mainHand != null)
+            if (m_enabled && m_firstHand != null)
             {
-                Vector3 updatedPosition;
+                Vector3 newPos;
 
                 if (m_smooth)
-                    updatedPosition = Vector3.Lerp(m_targetTransform.position, m_mainHand.pointer.TransformPoint(m_mainPositionOffset), m_lerp);
+                    newPos = Vector3.Lerp(m_transform.position, m_firstHand.pointer.TransformPoint(m_firstHandPositionOffset), m_lerp);
                 else
-                    updatedPosition = m_mainHand.pointer.TransformPoint(m_mainPositionOffset);
+                    newPos = m_firstHand.pointer.TransformPoint(m_firstHandPositionOffset);
 
-                if (m_targetRigidbody)
-                    m_targetRigidbody.MovePosition(updatedPosition);
+                if (m_rigidbody)
+                    m_rigidbody.MovePosition(newPos);
                 else
-                    m_targetTransform.position = updatedPosition;
+                    m_transform.position = newPos;
             }
         }
 
-        public void Start(Transform targetTransform, Rigidbody targetRigidbody = null)
+        public void Start(Transform transform, Rigidbody rigidbody = null)
         {
-            m_targetTransform = targetTransform;
-            m_targetRigidbody = targetRigidbody;
+            m_transform = transform;
+            m_rigidbody = rigidbody;
 
             enabled = m_enabled;
         }

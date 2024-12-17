@@ -56,8 +56,6 @@ namespace TLab.SFU.Network
 
         private static MSG_SyncRequest m_packet = new MSG_SyncRequest(new Address64());
 
-        private static bool m_msgCallbackRegisted = false;
-
         public State state => m_state;
 
         public NetworkId networkId => m_networkId;
@@ -101,7 +99,6 @@ namespace TLab.SFU.Network
         protected virtual void OnSyncRequestComplete(int from)
         {
             m_state = (m_state == State.Waiting0) ? State.Waiting1 : m_state;
-            //Debug.Log(THIS_NAME + $"{nameof(OnSyncRequestComplete)}:{gameObject.name}");
         }
 
         public bool started => m_state != State.None;
@@ -171,16 +168,17 @@ namespace TLab.SFU.Network
                 Move2Waiting0();
         }
 
-        public virtual void OnSyncRequest(int from)
-        {
-            Debug.Log(THIS_NAME + $"{nameof(OnSyncRequest)}:{gameObject.name}");
-        }
+        public virtual void OnSyncRequest(int from) { }
 
         public virtual void SyncViaWebRTC(int to, bool frce = false, bool request = false, bool immediate = false) { }
 
         public virtual void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false) { }
 
-        protected virtual void Register() => Registry.Register(m_networkId.id, this);
+        protected virtual void Register()
+        {
+            RegisterOnMessage();
+            Registry.Register(m_networkId.id, this);
+        }
 
         protected virtual void UnRegister() => Registry.UnRegister(m_networkId.id);
 
@@ -191,15 +189,6 @@ namespace TLab.SFU.Network
                 m_packet.UnMarshall(bytes);
                 Registry.GetByKey(m_packet.networkId)?.OnSyncRequest(from);
             });
-        }
-
-        protected virtual void Awake()
-        {
-            if (!m_msgCallbackRegisted)
-            {
-                RegisterOnMessage();
-                m_msgCallbackRegisted = true;
-            }
         }
 
         protected virtual void Start() { }

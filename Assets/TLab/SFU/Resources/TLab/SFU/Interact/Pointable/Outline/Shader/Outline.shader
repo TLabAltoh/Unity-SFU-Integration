@@ -80,7 +80,9 @@ Shader "TLab/SFU/Pointable/Outline"
                 layer0.a *= layer0.a;
                 layer0.a *= (1. - effect.a);
                 layer0.rgb *= layer0.a;
-                return effect + layer0;
+                fixed4 col = effect + layer0;
+                col.a = 1.0;
+                return col;
             }
             ENDCG
         }

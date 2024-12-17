@@ -27,18 +27,6 @@ namespace TLab.SFU.Network
             public SerializableTransform transform;
         }
 
-        public struct RigidbodyVelocity
-        {
-            public Vector3 velocity;
-            public Vector3 angularVelocity;
-
-            public void Update(Vector3 velocity, Vector3 angularVelocity)
-            {
-                this.velocity = velocity;
-                this.angularVelocity = angularVelocity;
-            }
-        }
-
         #endregion STRUCT
 
         #region MESSAGE
@@ -174,6 +162,10 @@ namespace TLab.SFU.Network
         [Range(0.00001f, 360.0f)] public float rotAngleThreshold = 0.01f;
         public float scaleThreshold = 0.01f;
 
+        [Header("Attenuation")]
+        [Range(0f, 1f)] public float velocityAttenuation = 0.85f;
+        [Range(0f, 1f)] public float angularVelocityAttenuation = 0.85f;
+
         [Header("Interpolation")]
 
         [SerializeField] protected InterpolationMode m_interpolationMode = InterpolationMode.None;
@@ -181,9 +173,11 @@ namespace TLab.SFU.Network
 
         protected Rigidbody m_rb;
 
+        protected RigidbodyInterpolation m_rbInterpolation;
+
         protected RigidbodyState m_rbState;
 
-        protected RigidbodyVelocity m_rbVel;
+        private SerializableTransform m_prev;
 
         protected NetworkRigidbodyTransformState m_networkState;
 
@@ -228,32 +222,50 @@ namespace TLab.SFU.Network
             switch (NetworkClient.rbMode)
             {
                 case NetworkClient.RigidbodyMode.Send:
+                    if (m_rb != null)
+                    {
+                        m_rb.isKinematic = false;
+                        m_rb.interpolation = m_rbInterpolation;
+                    }
+
                     EnableRigidbody(true);
                     break;
                 case NetworkClient.RigidbodyMode.Recv:
+                    if (m_rb != null)
+                    {
+                        m_rb.isKinematic = true;
+                        m_rb.interpolation = RigidbodyInterpolation.None;
+                    }
+
                     EnableRigidbody(false, true);
                     break;
             }
         }
 
-        public virtual void EnableRigidbody(bool active, bool force = false)
+        public virtual void EnableRigidbody(bool enable, bool force = false)
         {
             if (!m_rbState.used)
                 return;
 
-            if (active && m_rbState.gravity)
+            if (enable && m_rbState.gravity)
             {
-                m_rb.isKinematic = false;
                 m_rb.useGravity = true;
 
-                m_rb.velocity = m_rbVel.velocity;
-                m_rb.angularVelocity = m_rbVel.angularVelocity;
+                var deltaRot = transform.rotation * Quaternion.Inverse(m_prev.rotation.ToQuaternion());
+                deltaRot.ToAngleAxis(out var magnitude, out var axis);
+
+                magnitude *= Mathf.Deg2Rad;
+
+                m_rb.angularVelocity = angularVelocityAttenuation * (1.0f / Time.deltaTime) * magnitude * axis;
+
+                m_rb.velocity = velocityAttenuation * (transform.position - m_prev.position) / Time.deltaTime;
             }
             else
             {
-                m_rb.isKinematic = true;
                 m_rb.useGravity = false;
-                m_rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+                m_rb.velocity = Vector3.zero;
+                m_rb.angularVelocity = Vector3.zero;
             }
         }
 
@@ -267,17 +279,8 @@ namespace TLab.SFU.Network
         protected void UpdateTransform(in Vector3 position, in Quaternion rotation, in Vector3 localScale)
         {
             this.transform.localScale = new Vector3(localScale.x, localScale.y, localScale.z);
-
-            if ((NetworkClient.rbMode == NetworkClient.RigidbodyMode.Send) && (m_rb != null))
-            {
-                m_rb.MovePosition(new Vector3(position.x, position.y, position.z));
-                m_rb.MoveRotation(new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w));
-            }
-            else
-            {
-                this.transform.position = new Vector3(position.x, position.y, position.z);
-                this.transform.rotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
-            }
+            this.transform.position = new Vector3(position.x, position.y, position.z);
+            this.transform.rotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
         }
 
         protected void UpdateTransform(in SerializableTransform target) => UpdateTransform(target.position, target.rotation.ToQuaternion(), target.localScale);
@@ -385,7 +388,7 @@ namespace TLab.SFU.Network
             if (m_parent != null)
             {
                 var positionDelta = m_parent.transform.InverseTransformPoint(position);
-                var rotationDelta = Quaternion.Inverse(m_parent.transform.rotation) * rotation;
+                var rotationDelta = rotation * Quaternion.Inverse(m_parent.transform.rotation);
 
                 ApplyTransformPosition(position);
                 ApplyTransformRotation(rotation);
@@ -477,7 +480,7 @@ namespace TLab.SFU.Network
             if (m_parent != null)
             {
                 var positionDelta = m_parent.transform.InverseTransformPoint(this.transform.position);
-                var rotationDelta = Quaternion.Inverse(m_parent.transform.rotation) * this.transform.rotation;
+                var rotationDelta = this.transform.rotation * Quaternion.Inverse(m_parent.transform.rotation);
 
                 position = m_delta.position;
                 rotation = m_delta.rotation;
@@ -596,6 +599,8 @@ namespace TLab.SFU.Network
             {
                 m_rbState.Update(true, m_rb.useGravity);
 
+                m_rbInterpolation = m_rb.interpolation;
+
                 EnableRigidbody(false, true);
             }
             else
@@ -620,6 +625,13 @@ namespace TLab.SFU.Network
             });
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            CachePrevPosAndRot();
+        }
+
         protected override void Start()
         {
             base.Start();
@@ -629,17 +641,17 @@ namespace TLab.SFU.Network
             InitRigidbody();
         }
 
-        protected virtual void UpdateRigidbodyVelocityHistory()
+        protected virtual void CachePrevPosAndRot()
         {
-            if ((m_rb != null) && (NetworkClient.rbMode == NetworkClient.RigidbodyMode.Send))
-                m_rbVel.Update(m_rb.velocity, m_rb.angularVelocity);
+            m_prev.position = transform.position;
+            m_prev.rotation = transform.rotation.ToVec();
         }
 
         protected override void Update()
         {
             InterpolateTransform();
 
-            UpdateRigidbodyVelocityHistory();
+            CachePrevPosAndRot();
 
             SyncViaWebRTC(NetworkClient.userId);
         }

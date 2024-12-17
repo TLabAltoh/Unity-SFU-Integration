@@ -1,31 +1,38 @@
+using System.Collections.Generic;
 using UnityEngine;
+using Unity.WebRTC;
 
 namespace TLab.SFU.Network
 {
+    using Registry = Registry<int, VoiceChat>;
+
     [AddComponentMenu("TLab/SFU/Voice Chat (TLab)")]
     [RequireComponent(typeof(AudioSource))]
-    public class VoiceChat : MonoBehaviour
+    public class VoiceChat : NetworkObject
     {
-        public static VoiceChat instance;
+        [System.Serializable, Message(typeof(MSG_VoiceOpenNortification))]
+        public class MSG_VoiceOpenNortification : Message { }
 
-        [SerializeField] private WebRTCClient.ClientType m_type = WebRTCClient.ClientType.Whip;
+        [SerializeField] private int m_frequency = 16000;
 
         private AudioSource m_microphoneSource;
         private AudioClip m_microphoneClip;
         private string m_microphoneName;
         private bool m_recording = false;
 
+        private static bool m_dpsBufferInitialized = false;
+
+        private Queue<int> m_requests = new Queue<int>();
+
         private WebRTCClient m_rtcClient;
+
+        private static bool m_awaked = false;
 
         public const int VOICE_BUFFER_SIZE = 1024;
         public const int CHANNEL = 1;
         public const int LENGTH_SECOUND = 1;
 
-        [HideInInspector] public int m_frequency = 16000;
-
         private string THIS_NAME => "[" + GetType().Name + "] ";
-
-        public AudioSource microphoneSource => m_microphoneSource;
 
         private string GetMicrophone()
         {
@@ -59,16 +66,25 @@ namespace TLab.SFU.Network
             return true;
         }
 
-        public void Whep()
+        public override void Init(in Address32 @public, bool self)
         {
-            // TODO:
+            base.Init(@public, self);
+
+            m_microphoneSource = GetComponent<AudioSource>();
+
+            if (!self)
+                OnSyncRequestComplete(m_group.owner);
+            else
+                Whip($"stream#voice#{m_group.owner}");
         }
 
-        public void Whip()
+        public void Whep(string stream)
         {
-            if (m_rtcClient == null)
-                return;
+            m_rtcClient = WebRTCClient.Whep(this, NetworkClient.adapter, stream, null, (OnWhepOpen, OnWhepOpen), (OnWhepClose, OnWhepClose), OnError, new RTCDataChannelInit(), false, true, OnTrack);
+        }
 
+        public void Whip(string stream)
+        {
             m_recording = StartRecording();
             if (!m_recording)
                 return;
@@ -79,8 +95,60 @@ namespace TLab.SFU.Network
             m_microphoneSource.loop = true;
             m_microphoneSource.Play();
 
-            WebRTCClient.Whip(this, NetworkClient.adapter, "voice", null, null, microphoneSource);
+            m_rtcClient = WebRTCClient.Whip(this, NetworkClient.adapter, stream, null, (OnWhipOpen, OnWhipOpen), (OnWhipClose, OnWhipClose), OnError, new RTCDataChannelInit(), null, m_microphoneSource);
         }
+
+        private void OnTrack(MediaStreamTrackEvent t)
+        {
+            Debug.Log($"{THIS_NAME}: OnTrack {t.Track.Id}");
+        }
+
+        private void OnWhipOpen()
+        {
+            Debug.Log($"{THIS_NAME}: {nameof(OnWhipOpen)} !");
+
+            foreach (var user in m_requests)
+                NetworkClient.SendWS(new MSG_VoiceOpenNortification().Marshall());
+
+            m_requests.Clear();
+        }
+
+        private void OnWhepOpen()
+        {
+            Debug.Log($"{THIS_NAME}: {nameof(OnWhepOpen)} !");
+        }
+
+        private void OnWhipClose()
+        {
+            Debug.Log($"{THIS_NAME}: {nameof(OnWhipClose)} !");
+        }
+
+        private void OnWhepClose()
+        {
+            Debug.Log($"{THIS_NAME}: {nameof(OnWhepClose)} !");
+        }
+
+        private void OnWhipOpen(int from)
+        {
+
+        }
+
+        private void OnWhepOpen(int from)
+        {
+
+        }
+
+        private void OnWhipClose(int from)
+        {
+
+        }
+
+        private void OnWhepClose(int from)
+        {
+
+        }
+
+        private void OnError() { }
 
         public void Pause(bool active) => m_rtcClient?.Pause(active);
 
@@ -89,21 +157,56 @@ namespace TLab.SFU.Network
             var cnf = AudioSettings.GetConfiguration();
             cnf.dspBufferSize = VOICE_BUFFER_SIZE;
             if (!AudioSettings.Reset(cnf))
+                Debug.LogError(THIS_NAME + $"Failed changing {nameof(AudioSettings)}");
+        }
+
+        protected void OnVoiceRequest(int from)
+        {
+            if (m_rtcClient.connected)
+                NetworkClient.SendWS(new MSG_VoiceOpenNortification().Marshall());
+            else
+                m_requests.Enqueue(from);
+        }
+
+        protected void OnVoice(int from) => Whep($"stream#voice#{m_group.owner}");
+
+        public override void OnSyncRequest(int from)
+        {
+            base.OnSyncRequest(from);
+
+            Registry.GetByKey(NetworkClient.userId)?.OnVoiceRequest(from);
+
+            // No response
+        }
+
+        protected override void RegisterOnMessage()
+        {
+            base.RegisterOnMessage();
+
+            if (!m_dpsBufferInitialized)
             {
-                Debug.LogError(THIS_NAME + "Failed changing Audio Settings");
+                InitializeDPSBuffer();
+                m_dpsBufferInitialized = true;
             }
+
+            NetworkClient.RegisterOnMessage<MSG_VoiceOpenNortification>((from, to, bytes) =>
+            {
+                Registry.GetByKey(to)?.OnVoice(from);
+            });
         }
 
-        private void Awake()
+        protected override void Register()
         {
-            instance = this;
+            base.Register();
 
-            InitializeDPSBuffer();
+            Registry.Register(m_group.owner, this);
         }
 
-        private void Start()
+        protected override void UnRegister()
         {
-            m_microphoneSource = GetComponent<AudioSource>();
+            Registry.UnRegister(m_group.owner);
+
+            base.UnRegister();
         }
     }
 }

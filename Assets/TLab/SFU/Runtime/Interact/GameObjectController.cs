@@ -83,9 +83,9 @@ namespace TLab.SFU.Interact
 
         public bool locked => m_locked;
 
-        public Interactor mainHand => m_firstHand;
+        public Interactor firstHand => m_firstHand;
 
-        public Interactor subHand => m_secondHand;
+        public Interactor secondHand => m_secondHand;
 
         public PositionLogic position => m_position;
 
@@ -116,32 +116,32 @@ namespace TLab.SFU.Interact
         }
 #endif
 
-        private void MainHandGrabbStart()
+        private void OnFirstHandEnter()
         {
-            m_position.OnMainHandGrabbed(m_firstHand);
-            m_rotation.OnMainHandGrabbed(m_firstHand);
-            m_scale.OnMainHandGrabbed(m_firstHand);
+            m_position.OnFirstHandEnter(m_firstHand);
+            m_rotation.OnFirstHandEnter(m_firstHand);
+            m_scale.OnFirstHandEnter(m_firstHand);
         }
 
-        private void SubHandGrabbStart()
+        private void OnSecondHandEnter()
         {
-            m_position.OnSubHandGrabbed(m_secondHand);
-            m_rotation.OnSubHandGrabbed(m_secondHand);
-            m_scale.OnSubHandGrabbed(m_secondHand);
+            m_position.OnSecondHandEnter(m_secondHand);
+            m_rotation.OnSecondHandEnter(m_secondHand);
+            m_scale.OnSecondHandEnter(m_secondHand);
         }
 
-        private void MainHandGrabbEnd()
+        private void OnFirstHandExit()
         {
-            m_position.OnMainHandReleased(m_firstHand);
-            m_rotation.OnMainHandReleased(m_firstHand);
-            m_scale.OnMainHandReleased(m_firstHand);
+            m_position.OnFirstHandExit(m_firstHand);
+            m_rotation.OnFirstHandExit(m_firstHand);
+            m_scale.OnFirstHandExit(m_firstHand);
         }
 
-        private void SubHandGrabbEnd()
+        private void OnSecondHandExit()
         {
-            m_position.OnSubHandReleased(m_secondHand);
-            m_rotation.OnSubHandReleased(m_secondHand);
-            m_scale.OnSubHandReleased(m_secondHand);
+            m_position.OnSecondHandExit(m_secondHand);
+            m_rotation.OnSecondHandExit(m_secondHand);
+            m_scale.OnSecondHandExit(m_secondHand);
         }
 
         #region MESSAGE
@@ -212,24 +212,35 @@ namespace TLab.SFU.Interact
 
         public override void OnRigidbodyModeChange()
         {
-            Debug.Log(nameof(OnRigidbodyModeChange) + $":{NetworkClient.rbMode}:{name}");
-
             switch (NetworkClient.rbMode)
             {
                 case NetworkClient.RigidbodyMode.Send:
+                    if (m_rbState.used)
+                    {
+                        m_rb.isKinematic = false;
+                        m_rb.interpolation = m_rbInterpolation;
+                    }
+
                     if (m_grabState.free)
                         EnableRigidbody(true);
                     break;
                 case NetworkClient.RigidbodyMode.Recv:
+                    if (m_rbState.used)
+                    {
+                        m_rb.isKinematic = true;
+                        m_rb.interpolation = RigidbodyInterpolation.None;
+                    }
+
                     EnableRigidbody(false, true);
                     break;
             }
         }
 
-        public override void EnableRigidbody(bool active, bool force = false)
+        public override void EnableRigidbody(bool enable, bool force = false)
         {
-            if (force || (NetworkClient.rbMode == NetworkClient.RigidbodyMode.Send))
-                base.EnableRigidbody(active);
+            var sender = NetworkClient.rbMode == NetworkClient.RigidbodyMode.Send;
+            if (force || sender)
+                base.EnableRigidbody(enable);
         }
 
         public void GrabbLock(int index)
@@ -396,7 +407,7 @@ namespace TLab.SFU.Interact
 
                 m_firstHand = interactor;
 
-                MainHandGrabbStart();
+                OnFirstHandEnter();
 
                 return HandType.First;
             }
@@ -404,7 +415,7 @@ namespace TLab.SFU.Interact
             {
                 m_secondHand = interactor;
 
-                SubHandGrabbStart();
+                OnSecondHandEnter();
 
                 return HandType.Second;
             }
@@ -416,14 +427,14 @@ namespace TLab.SFU.Interact
         {
             if (m_firstHand == interactor)
             {
-                MainHandGrabbEnd();
+                OnFirstHandExit();
 
                 if (m_secondHand != null)
                 {
                     m_firstHand = m_secondHand;
                     m_secondHand = null;
 
-                    MainHandGrabbStart();
+                    OnFirstHandEnter();
 
                     return true;
                 }
@@ -438,11 +449,11 @@ namespace TLab.SFU.Interact
             }
             else if (m_secondHand == interactor)
             {
-                SubHandGrabbEnd();
+                OnSecondHandExit();
 
                 m_secondHand = null;
 
-                MainHandGrabbStart();
+                OnFirstHandEnter();
 
                 return false;
             }

@@ -19,7 +19,7 @@ namespace TLab.SFU.Interact
             {
                 m_hand = interactor;
 
-                m_logics.HandleGrabbed(this);
+                m_logics.HandleEnter(this);
             }
         }
 
@@ -31,7 +31,7 @@ namespace TLab.SFU.Interact
             {
                 m_hand = null;
 
-                m_logics.HandleUnGrabbed(this);
+                m_logics.HandleExit(this);
             }
         }
 

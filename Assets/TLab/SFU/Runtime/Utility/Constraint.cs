@@ -12,6 +12,10 @@ namespace TLab.SFU
 
         [SerializeField] private string m_id;
 
+        [Header("Translation")]
+        [SerializeField] private Vector3 m_positionOffset;
+        [SerializeField] private Vector3 m_rotationOffset;
+
         [SerializeField, Min(0f)] private float m_scale = 1f;
 
         private Constraint m_parent;
@@ -34,8 +38,8 @@ namespace TLab.SFU
         {
             if (Const.Recv.HasFlag(m_direction) && (m_parent != null))
             {
-                transform.position = m_parent.transform.position;
-                transform.rotation = m_parent.transform.rotation;
+                transform.position = m_positionOffset + m_parent.transform.position;
+                transform.rotation = m_parent.transform.rotation * Quaternion.Euler(m_rotationOffset);
                 transform.localScale = m_parent.transform.localScale * scale;
             }
         }

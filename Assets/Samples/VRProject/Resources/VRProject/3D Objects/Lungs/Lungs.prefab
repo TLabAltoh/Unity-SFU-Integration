@@ -126,6 +126,8 @@ MonoBehaviour:
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
+  velocityAttenuation: 0.85
+  angularVelocityAttenuation: 0.85
   m_interpolationMode: 0
   m_interpolationStep: 2
   m_locked: 0
@@ -226,7 +228,8 @@ MonoBehaviour:
     whileSelected:
       m_PersistentCalls:
         m_Calls: []
-  m_interactableChain: []
+  m_interactableChain:
+  - {fileID: 2018724339460216279}
 --- !u!114 &6892175684903734378
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -750,6 +753,8 @@ MonoBehaviour:
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
+  velocityAttenuation: 0.85
+  angularVelocityAttenuation: 0.85
   m_interpolationMode: 0
   m_interpolationStep: 2
   m_locked: 0
@@ -850,7 +855,8 @@ MonoBehaviour:
     whileSelected:
       m_PersistentCalls:
         m_Calls: []
-  m_interactableChain: []
+  m_interactableChain:
+  - {fileID: 7136809713491311061}
 --- !u!114 &1885873426104108467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2608,6 +2614,8 @@ MonoBehaviour:
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
+  velocityAttenuation: 0.85
+  angularVelocityAttenuation: 0.85
   m_interpolationMode: 0
   m_interpolationStep: 2
   m_locked: 0
@@ -2996,6 +3004,8 @@ MonoBehaviour:
   positionThreshold: 0.001
   rotAngleThreshold: 0.01
   scaleThreshold: 0.01
+  velocityAttenuation: 0.85
+  angularVelocityAttenuation: 0.85
   m_interpolationMode: 0
   m_interpolationStep: 2
   m_locked: 0
@@ -3096,7 +3106,8 @@ MonoBehaviour:
     whileSelected:
       m_PersistentCalls:
         m_Calls: []
-  m_interactableChain: []
+  m_interactableChain:
+  - {fileID: 4155748026391256192}
 --- !u!114 &6371114679923899024
 MonoBehaviour:
   m_ObjectHideFlags: 0

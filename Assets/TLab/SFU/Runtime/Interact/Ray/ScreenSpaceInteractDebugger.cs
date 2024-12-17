@@ -27,24 +27,10 @@ namespace TLab.SFU.Interact
         [SerializeField] public float panSensitivity = 0.5f;
         [SerializeField] public float mouseWheelZoomSpeed = 1.0f;
 
-        [Header("Debug In Editor")]
-
-        [SerializeField] private GameObjectController[] m_controllers;
-
         private Vector3 m_prevMousePosition;
         private Quaternion m_prevTransformRotation;
 
         private bool m_isPanning;
-
-#if UNITY_EDITOR
-        public void Grab()
-        {
-            foreach (var controller in m_controllers)
-                controller.OnGrab(this);
-        }
-
-        public void Release() => m_controllers.Foreach((c) => c.OnRelease(this));
-#endif
 
         protected override void UpdateRaycast()
         {

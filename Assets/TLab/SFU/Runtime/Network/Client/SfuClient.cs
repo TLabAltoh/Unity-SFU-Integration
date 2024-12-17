@@ -68,6 +68,10 @@ namespace TLab.SFU.Network
         public static UnityEvent<T> CreateEvent<T>(params UnityAction<T>[] @actions)
         {
             var @event = new UnityEvent<T>();
+
+            if (@actions == null)
+                return @event;
+
             foreach (var @action in @actions)
                 @event.AddListener(@action);
             return @event;
@@ -76,6 +80,10 @@ namespace TLab.SFU.Network
         public static UnityEvent CreateEvent(params UnityAction[] @actions)
         {
             var @event = new UnityEvent();
+
+            if (@actions == null)
+                return @event;
+
             foreach (var @action in @actions)
                 @event.AddListener(@action);
             return @event;
@@ -84,6 +92,10 @@ namespace TLab.SFU.Network
         public static UnityEvent<T0, T1> CreateEvent<T0, T1>(params UnityAction<T0, T1>[] @actions)
         {
             var @event = new UnityEvent<T0, T1>();
+
+            if (@actions == null)
+                return @event;
+
             foreach (var @action in @actions)
                 @event.AddListener(@action);
             return @event;
@@ -92,6 +104,10 @@ namespace TLab.SFU.Network
         public static UnityEvent<T0, T1, T2> CreateEvent<T0, T1, T2>(params UnityAction<T0, T1, T2>[] @actions)
         {
             var @event = new UnityEvent<T0, T1, T2>();
+
+            if (@actions == null)
+                return @event;
+
             foreach (var @action in @actions)
                 @event.AddListener(@action);
             return @event;

@@ -51,7 +51,7 @@ namespace TLab.VRProjct.UI
             m_bgImageTransform = m_bgImage.transform;
             m_stickImageTransform = m_stickImage.transform;
 
-            m_center = m_stickImageTransform.position;
+            m_center = m_stickImageTransform.localPosition;
         }
 
         private void OnValueChanged(Vector2 value)
@@ -82,7 +82,7 @@ namespace TLab.VRProjct.UI
         {
             OnValueChanged(Vector2.zero);
 
-            m_stickImageTransform.position = m_center;
+            m_stickImageTransform.localPosition = m_center;
         }
     }
 }

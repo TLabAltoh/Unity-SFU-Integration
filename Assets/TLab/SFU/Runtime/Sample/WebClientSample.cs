@@ -24,7 +24,7 @@ namespace TLab.SFU.Sample
                 if (m_useAudio && m_adapter.userId == 0)
                 {
                     StartAudio();
-                    m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), null, m_audioSource, null);
+                    m_client = WebRTCClient.Whip(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), null, m_audioSource);
                 }
                 else
                     m_client = WebRTCClient.Whep(this, m_adapter, STREAM, OnMessage, (OnOpen, OnOpen), (OnClose, OnClose), OnError, new RTCDataChannelInit(), false, m_useAudio, OnAddTrack);

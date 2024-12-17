@@ -9,31 +9,38 @@ namespace TLab.SFU.Interact
 
         [SerializeField] private bool m_smooth = false;
 
-        [SerializeField]
-        [Range(0.01f, 1f)]
-        private float m_lerp = 0.1f;
+        [SerializeField, Range(0.01f, 1f)] private float m_lerp = 0.1f;
 
-        //[SerializeField] private bool m_trackX = true;
-        //[SerializeField] private bool m_trackY = true;
-        //[SerializeField] private bool m_trackZ = true;
+        private Interactor m_firstHand;
+        private Interactor m_secondHand;
 
-        private Interactor m_mainHand;
-        private Interactor m_subHand;
+        private Transform m_transform;
+        private Rigidbody m_rigidbody;
 
-        private Transform m_targetTransform;
-        private Rigidbody m_targetRigidbody;
-
-        private Quaternion m_mainQuaternionStart;
+        private Quaternion m_firstHandQuaternionStart;
         private Quaternion m_thisQuaternionStart;
 
-        public bool enabled { get => m_enabled; set => m_enabled = value; }
+        public bool enabled
+        {
+            get => m_enabled;
+            set
+            {
+                if (m_enabled != value)
+                {
+                    m_enabled = value;
+                }
+            }
+        }
 
         public bool smooth
         {
             get => m_smooth;
             set
             {
-                m_smooth = value;
+                if (m_smooth != value)
+                {
+                    m_smooth = value;
+                }
             }
         }
 
@@ -42,73 +49,69 @@ namespace TLab.SFU.Interact
             get => m_lerp;
             set
             {
-                m_lerp = Mathf.Clamp(0.01f, 1f, value);
+                if (m_lerp != value)
+                {
+                    m_lerp = Mathf.Clamp(0.01f, 1f, value);
+                }
             }
         }
 
-        public void OnMainHandGrabbed(Interactor interactor)
+        public void OnFirstHandEnter(Interactor interactor)
         {
-            m_mainHand = interactor;
+            m_firstHand = interactor;
 
-            m_mainQuaternionStart = m_mainHand.pointer.rotation;
-            m_thisQuaternionStart = m_targetTransform.rotation;
+            m_firstHandQuaternionStart = m_firstHand.pointer.rotation;
+            m_thisQuaternionStart = m_transform.rotation;
         }
 
-        public void OnSubHandGrabbed(Interactor interactor)
+        public void OnSecondHandEnter(Interactor interactor)
         {
-            m_subHand = interactor;
+            m_secondHand = interactor;
         }
 
-        public void OnMainHandReleased(Interactor interactor)
+        public void OnFirstHandExit(Interactor interactor)
         {
-            if (m_mainHand == interactor)
-            {
-                m_mainHand = null;
-            }
+            if (m_firstHand == interactor)
+                m_firstHand = null;
         }
 
-        public void OnSubHandReleased(Interactor interactor)
+        public void OnSecondHandExit(Interactor interactor)
         {
-            if (m_subHand == interactor)
-            {
-                m_subHand = null;
-            }
+            if (m_secondHand == interactor)
+                m_secondHand = null;
         }
 
         public void UpdateOneHandLogic()
         {
-            if (m_enabled && m_mainHand != null)
+            if (m_enabled && m_firstHand != null)
             {
                 Quaternion deltaQuaternion;
 
                 if (m_smooth)
                 {
-                    deltaQuaternion = Quaternion.Lerp(
-                        Quaternion.identity * m_targetTransform.rotation * Quaternion.Inverse(m_mainQuaternionStart),
-                        Quaternion.identity * m_mainHand.pointer.rotation * Quaternion.Inverse(m_mainQuaternionStart),
-                        m_lerp);
+                    var newRot0 = Quaternion.identity * m_transform.rotation * Quaternion.Inverse(m_firstHandQuaternionStart);
+                    var newRot1 = Quaternion.identity * m_firstHand.pointer.rotation * Quaternion.Inverse(m_firstHandQuaternionStart);
+                    deltaQuaternion = Quaternion.Lerp(newRot0, newRot1, m_lerp);
                 }
                 else
                 {
                     // https://qiita.com/yaegaki/items/4d5a6af1d1738e102751
-                    deltaQuaternion = Quaternion.identity * m_mainHand.pointer.rotation * Quaternion.Inverse(m_mainQuaternionStart);
+                    deltaQuaternion = Quaternion.identity * m_firstHand.pointer.rotation * Quaternion.Inverse(m_firstHandQuaternionStart);
                 }
 
-                if (m_targetRigidbody != null)
-                {
-                    m_targetRigidbody.MoveRotation(deltaQuaternion * m_thisQuaternionStart);
-                }
-                else
-                {
-                    m_targetTransform.rotation = deltaQuaternion * m_thisQuaternionStart;
-                }
+                //if (m_rigidbody)
+                //    m_rigidbody.MoveRotation(deltaQuaternion * m_thisQuaternionStart);
+                //else
+                //    m_transform.rotation = deltaQuaternion * m_thisQuaternionStart;
+
+                m_transform.rotation = deltaQuaternion * m_thisQuaternionStart;
             }
         }
 
-        public void Start(Transform targetTransform, Rigidbody targetRigidbody = null)
+        public void Start(Transform transform, Rigidbody rigidbody = null)
         {
-            m_targetTransform = targetTransform;
-            m_targetRigidbody = targetRigidbody;
+            m_transform = transform;
+            m_rigidbody = rigidbody;
 
             enabled = m_enabled;
         }

@@ -43,8 +43,8 @@ namespace TLab.SFU.Interact
 
         [SerializeField] private Vector3 m_boundBoxSize = Vector3.one;
 
-        private Transform m_targetTransform;
-        private Rigidbody m_targetRigidbody;
+        private Transform m_transform;
+        private Rigidbody m_rigidbody;
 
         private Vector3 m_linkHandleIniScale;
         private Vector3 m_edgeHandleIniScale;
@@ -59,8 +59,8 @@ namespace TLab.SFU.Interact
         private Vector3 m_diagonalDir;
         private Vector3 m_oppositeCorner;
 
-        private Interactor m_mainHand;
-        private Interactor m_subHand;
+        private Interactor m_firstHand;
+        private Interactor m_secondHand;
 
         private const int REST_INTERVAL = 2;
         private int m_fcnt = 0;
@@ -77,13 +77,12 @@ namespace TLab.SFU.Interact
             get => m_enabled;
             set
             {
-                m_enabled = value;
+                if (m_enabled != value)
+                {
+                    m_enabled = value;
 
-                m_cornerHandles.ForEach((obj) => obj.SetActive(m_enabled && m_useCornerHandle));
-
-                m_edgeHandles.ForEach((obj) => obj.SetActive(m_enabled && m_useEdgeHandle));
-
-                m_linkHandles.ForEach((pair) => pair.handle.SetActive(m_enabled && m_useLinkHandle));
+                    UpdateHandleActive();
+                }
             }
         }
 
@@ -92,7 +91,10 @@ namespace TLab.SFU.Interact
             get => m_smooth;
             set
             {
-                m_smooth = value;
+                if (m_smooth != value)
+                {
+                    m_smooth = value;
+                }
             }
         }
 
@@ -101,7 +103,10 @@ namespace TLab.SFU.Interact
             get => m_lerp;
             set
             {
-                m_lerp = Mathf.Clamp(0.01f, 1f, value);
+                if (m_lerp != value)
+                {
+                    m_lerp = Mathf.Clamp(0.01f, 1f, value);
+                }
             }
         }
 
@@ -110,8 +115,11 @@ namespace TLab.SFU.Interact
             get => m_useLinkHandle;
             set
             {
-                m_useLinkHandle = value;
-                enabled = enabled;
+                if (m_useLinkHandle != value)
+                {
+                    m_useLinkHandle = value;
+                    UpdateHandleActive();
+                }
             }
         }
 
@@ -120,8 +128,11 @@ namespace TLab.SFU.Interact
             get => m_useCornerHandle;
             set
             {
-                m_useCornerHandle = value;
-                enabled = enabled;
+                if (m_useCornerHandle != value)
+                {
+                    m_useCornerHandle = value;
+                    UpdateHandleActive();
+                }
             }
         }
 
@@ -130,8 +141,11 @@ namespace TLab.SFU.Interact
             get => m_useEdgeHandle;
             set
             {
-                m_useEdgeHandle = value;
-                enabled = enabled;
+                if (m_useEdgeHandle != value)
+                {
+                    m_useEdgeHandle = value;
+                    UpdateHandleActive();
+                }
             }
         }
 
@@ -144,8 +158,8 @@ namespace TLab.SFU.Interact
                 {
                     m_scaleXLim = value;
 
-                    if (m_targetTransform != null)
-                        UpdateLocalScale(m_targetTransform.localScale);
+                    if (m_transform != null)
+                        UpdateLocalScale(m_transform.localScale);
                 }
             }
         }
@@ -159,8 +173,8 @@ namespace TLab.SFU.Interact
                 {
                     m_scaleYLim = value;
 
-                    if (m_targetTransform != null)
-                        UpdateLocalScale(m_targetTransform.localScale);
+                    if (m_transform != null)
+                        UpdateLocalScale(m_transform.localScale);
                 }
             }
         }
@@ -174,50 +188,55 @@ namespace TLab.SFU.Interact
                 {
                     m_scaleZLim = value;
 
-                    if (m_targetTransform != null)
-                        UpdateLocalScale(m_targetTransform.localScale);
+                    if (m_transform != null)
+                        UpdateLocalScale(m_transform.localScale);
                 }
             }
         }
 
-        public bool selected { get => m_handleSelected != null; }
+        public bool selected => m_handleSelected != null;
 
-        public void OnMainHandGrabbed(Interactor interactor)
+        private void UpdateHandleActive()
         {
-            m_mainHand = interactor;
+            m_cornerHandles.ForEach((obj) => obj.SetActive(m_enabled && m_useCornerHandle));
+
+            m_edgeHandles.ForEach((obj) => obj.SetActive(m_enabled && m_useEdgeHandle));
+
+            m_linkHandles.ForEach((pair) => pair.handle.SetActive(m_enabled && m_useLinkHandle));
         }
 
-        public void OnSubHandGrabbed(Interactor interactor)
+        public void OnFirstHandEnter(Interactor interactor)
         {
-            m_subHand = interactor;
+            m_firstHand = interactor;
+        }
 
-            if (m_mainHand != null)
+        public void OnSecondHandEnter(Interactor interactor)
+        {
+            m_secondHand = interactor;
+
+            if (m_firstHand != null)
             {
-                m_initialDist = Vector3.Distance(m_mainHand.pointer.position, m_subHand.pointer.position);
+                m_initialDist = Vector3.Distance(m_firstHand.pointer.position, m_secondHand.pointer.position);
 
-                m_initialScaleOnGrabStart = m_targetTransform.localScale;
+                m_initialScaleOnGrabStart = m_transform.localScale;
             }
         }
 
-        public void OnMainHandReleased(Interactor interactor)
+        public void OnFirstHandExit(Interactor interactor)
         {
-            if (m_mainHand == interactor)
-            {
-                m_mainHand = null;
-            }
+            if (m_firstHand == interactor)
+                m_firstHand = null;
         }
 
-        public void OnSubHandReleased(Interactor interactor)
+        public void OnSecondHandExit(Interactor interactor)
         {
-            if (m_subHand == interactor)
-            {
-                m_subHand = null;
-            }
+            if (m_secondHand == interactor)
+                m_secondHand = null;
         }
 
         private void UpdateHandleScale()
         {
-            var lossyScale = m_targetTransform.lossyScale;
+            var lossyScale = m_transform.lossyScale;
             var size = Vector3.one;
             size.x /= lossyScale.x;
             size.y /= lossyScale.y;
@@ -257,29 +276,25 @@ namespace TLab.SFU.Interact
 
         public void UpdateLocalScale(Vector3 newScale)
         {
-            m_targetTransform.localScale = ClampScale(newScale);
+            m_transform.localScale = ClampScale(newScale);
 
             UpdateHandleScale();
         }
 
         public void UpdateTwoHandLogic()
         {
-            if (m_enabled && m_mainHand != null && m_subHand != null && m_fcnt == 0)
+            if (m_enabled && m_firstHand != null && m_secondHand != null && m_fcnt == 0)
             {
-                var currentDist = Vector3.Distance(m_mainHand.pointer.position, m_subHand.pointer.position);
+                var currentDist = Vector3.Distance(m_firstHand.pointer.position, m_secondHand.pointer.position);
 
                 var scaleFactor = currentDist / m_initialDist;
 
                 Vector3 newScale;
 
                 if (m_smooth)
-                {
-                    newScale = Vector3.Lerp(m_targetTransform.localScale, m_initialScaleOnGrabStart * scaleFactor, m_lerp);
-                }
+                    newScale = Vector3.Lerp(m_transform.localScale, m_initialScaleOnGrabStart * scaleFactor, m_lerp);
                 else
-                {
                     newScale = m_initialScaleOnGrabStart * scaleFactor;
-                }
 
                 UpdateLocalScale(newScale);
             }
@@ -288,10 +303,7 @@ namespace TLab.SFU.Interact
             m_fcnt %= REST_INTERVAL;
         }
 
-        public void UpdateOneHandLogic()
-        {
-
-        }
+        public void UpdateOneHandLogic() { }
 
         private Vector3 ClampScale(Vector3 newScale)
         {
@@ -320,11 +332,11 @@ namespace TLab.SFU.Interact
                 scaleFactor.z = Mathf.Abs(scaleFactor.z);
 
                 // Move the offset by the magnified amount
-                var originalRelativePosition = m_targetTransform.InverseTransformDirection(m_initialPositionOnGrabStart - m_oppositeCorner);
+                var originalRelativePosition = m_transform.InverseTransformDirection(m_initialPositionOnGrabStart - m_oppositeCorner);
 
-                var newPosition = m_targetTransform.TransformDirection(Vector3.Scale(originalRelativePosition, scaleFactor)) + m_oppositeCorner;
+                var newPosition = m_transform.TransformDirection(Vector3.Scale(originalRelativePosition, scaleFactor)) + m_oppositeCorner;
 
-                m_targetTransform.position = newPosition;
+                m_transform.position = newPosition;
 
                 var newScale = Vector3.Scale(m_initialScaleOnGrabStart, scaleFactor);
 
@@ -339,43 +351,40 @@ namespace TLab.SFU.Interact
             return updated;
         }
 
-        public void HandleGrabbed(ScaleHandle handle)
+        public void HandleEnter(ScaleHandle handle)
         {
-            if (m_handleSelected == null)
-            {
-                m_handleSelected = handle;
+            if (m_handleSelected != null)
+                return;
 
-                m_initialGrabPoint = handle.handPos;
+            m_handleSelected = handle;
 
-                m_initialScaleOnGrabStart = m_targetTransform.localScale;
+            m_initialGrabPoint = handle.handPos;
 
-                m_initialPositionOnGrabStart = m_targetTransform.position;
+            m_initialScaleOnGrabStart = m_transform.localScale;
 
-                m_oppositeCorner = m_targetTransform.TransformPoint(-handle.transform.localPosition);
+            m_initialPositionOnGrabStart = m_transform.position;
 
-                m_diagonalDir = (handle.transform.position - m_targetTransform.position).normalized;
-            }
+            m_oppositeCorner = m_transform.TransformPoint(-handle.transform.localPosition);
+
+            m_diagonalDir = (handle.transform.position - m_transform.position).normalized;
         }
 
-        public void HandleUnGrabbed(ScaleHandle handle)
+        public void HandleExit(ScaleHandle handle)
         {
             if (m_handleSelected == handle)
-            {
                 m_handleSelected = null;
-            }
         }
 
         private GameObject CreateHandle(Vector3 corner, Quaternion rotation, GameObject handlePrefab)
         {
-            var obj = Object.Instantiate(handlePrefab, m_targetTransform);
+            var obj = Object.Instantiate(handlePrefab, m_transform);
             obj.hideFlags = HideFlags.HideInHierarchy;
             obj.transform.localPosition = corner;
             obj.transform.localRotation = rotation * Quaternion.identity;
 
-            var collider = obj.GetComponent<BoxCollider>();
             var size = m_boundBoxSize;
 
-            var lossyScale = m_targetTransform.lossyScale;
+            var lossyScale = m_transform.lossyScale;
             size.x /= lossyScale.x;
             size.y /= lossyScale.y;
             size.z /= lossyScale.z;
@@ -387,12 +396,12 @@ namespace TLab.SFU.Interact
             return obj;
         }
 
-        IEnumerator Initialize(Transform targetTransform, Rigidbody targetRigidbody = null)
+        IEnumerator Initialize(Transform transform, Rigidbody rigidbody = null)
         {
             yield return null;
 
-            m_targetTransform = targetTransform;
-            m_targetRigidbody = targetRigidbody;
+            m_transform = transform;
+            m_rigidbody = rigidbody;
 
             float halfX = m_boundBoxSize.x * 0.5f;
             float halfY = m_boundBoxSize.y * 0.5f;
@@ -403,17 +412,13 @@ namespace TLab.SFU.Interact
                 m_cornerHandleIniScale = m_cornerHandle.transform.localScale;
 
                 for (float x = -halfX; x <= halfX; x += 2 * halfX)
-                {
                     for (float y = -halfY; y <= halfY; y += 2 * halfY)
-                    {
                         for (float z = -halfZ; z <= halfZ; z += 2 * halfZ)
                         {
                             m_cornerHandles.Add(CreateHandle(new Vector3(x, y, z), Quaternion.identity, m_cornerHandle));
 
                             yield return null;
                         }
-                    }
-                }
             }
 
             if (m_edgeHandle != null)
@@ -421,25 +426,19 @@ namespace TLab.SFU.Interact
                 m_edgeHandleIniScale = m_edgeHandle.transform.localScale;
 
                 for (float x = -halfX; x <= halfX; x += halfX)
-                {
                     for (float y = -halfY; y <= halfY; y += halfY)
-                    {
                         for (float z = -halfZ; z <= halfZ; z += halfZ)
                         {
                             int dirX = (int)(x / Mathf.Abs(halfX));
                             int dirY = (int)(y / Mathf.Abs(halfY));
                             int dirZ = (int)(z / Mathf.Abs(halfZ));
                             if (Mathf.Abs(dirX) + Mathf.Abs(dirY) + Mathf.Abs(dirZ) != 2)
-                            {
                                 continue;
-                            }
 
                             m_edgeHandles.Add(CreateHandle(new Vector3(x, y, z), Quaternion.LookRotation(new Vector3(dirX, dirY, dirZ).normalized), m_edgeHandle));
 
                             yield return null;
                         }
-                    }
-                }
             }
 
             if (m_linkHandle != null)
@@ -447,9 +446,7 @@ namespace TLab.SFU.Interact
                 m_linkHandleIniScale = m_linkHandle.transform.localScale;
 
                 for (float x = -halfX; x <= halfX; x += halfX)
-                {
                     for (float y = -halfY; y <= halfY; y += halfY)
-                    {
                         for (float z = -halfZ; z <= halfZ; z += halfZ)
                         {
                             int dirX = (int)(x / Mathf.Abs(halfX));
@@ -485,8 +482,6 @@ namespace TLab.SFU.Interact
 
                             yield return null;
                         }
-                    }
-                }
             }
 
             UpdateHandleScale();
@@ -494,9 +489,9 @@ namespace TLab.SFU.Interact
             enabled = m_enabled;
         }
 
-        public void Start(Transform targetTransform, Rigidbody targetRigidbody = null)
+        public void Start(Transform transform, Rigidbody rigidbody = null)
         {
-            CoroutineHandler.StartStaticCoroutine(Initialize(targetTransform, targetRigidbody));
+            CoroutineHandler.StartStaticCoroutine(Initialize(transform, rigidbody));
         }
     }
 }
