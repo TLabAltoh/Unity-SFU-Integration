@@ -328,7 +328,6 @@ namespace TLab.SFU
                 {
                     ExecuteEvents.Execute(pointerEvent.pointerDrag, pointerEvent, ExecuteEvents.initializePotentialDrag);
                 }
-
             }
 
             // PointerUp notification

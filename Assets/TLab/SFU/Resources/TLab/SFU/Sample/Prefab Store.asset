@@ -15,4 +15,4 @@ MonoBehaviour:
   m_store:
   - name: lung
     prefab: {fileID: 3410485209735884181, guid: 467b620a8b19ab94d9d5a0f930e0411c, type: 3}
-    distribute: {fileID: 6618602484663080095, guid: 7c4bf96ac9366ab42aa3e9965d981704, type: 3}
+    distribute: {fileID: 820389720391822228, guid: b10c7c54a7e295b4a9906fb933714946, type: 3}

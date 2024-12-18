@@ -7,13 +7,6 @@ namespace TLab.SFU.Interact
     [AddComponentMenu("TLab/SFU/Pointable Canvas (TLab)")]
     public class PointableCanvas : Pointable
     {
-        public enum Surface
-        {
-            Backward,
-            Forward,
-            Both,
-        };
-
         [Header("UI")]
         [SerializeField] private Canvas m_canvas;
 

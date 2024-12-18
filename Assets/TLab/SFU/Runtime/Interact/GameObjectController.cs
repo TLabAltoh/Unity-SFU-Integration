@@ -171,7 +171,7 @@ namespace TLab.SFU.Interact
             {
                 None,
                 GrabLock,
-                ForceRelease,
+                ForceFree,
             };
 
             public Address64 networkId;
@@ -192,6 +192,8 @@ namespace TLab.SFU.Interact
 
         public void GrabbLock(GrabState.Action action)
         {
+            var others = m_grabState.others;
+
             m_grabState.Update(action);
 
             switch (action)
@@ -267,7 +269,7 @@ namespace TLab.SFU.Interact
             }
         }
 
-        public void ForceRelease(bool self)
+        public void ForceFree(bool self)
         {
             if (m_firstHand != null)
             {
@@ -279,10 +281,10 @@ namespace TLab.SFU.Interact
             }
 
             if (self)
-                NetworkClient.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.ForceRelease).Marshall());
+                NetworkClient.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.ForceFree).Marshall());
         }
 
-        public override bool SkipApplyCurrentTransform() => base.SkipApplyCurrentTransform() || m_grabState.others;
+        public override bool SkipApplyCurrentTransform() => base.SkipApplyCurrentTransform() || m_grabState.others || m_grabState.free && (NetworkClient.rbMode == NetworkClient.RigidbodyMode.Recv);
 
         private void CreateCombinedMeshCollider()
         {
@@ -322,7 +324,7 @@ namespace TLab.SFU.Interact
 
             gameObject.Foreach<GameObjectRotatable>((c) => c.Stop());
 
-            GetComponentsInTargets<GameObjectController>(divideTargets).Foreach((c) => c.ForceRelease(true));
+            GetComponentsInTargets<GameObjectController>(divideTargets).Foreach((c) => c.ForceFree(true));
 
             if (!active)
                 CreateCombinedMeshCollider();
@@ -484,8 +486,8 @@ namespace TLab.SFU.Interact
                     case MSG_GrabbLock.Action.GrabLock:
                         Registry.GetByKey(receive.networkId)?.GrabbLock(receive.grabberId);
                         break;
-                    case MSG_GrabbLock.Action.ForceRelease:
-                        Registry.GetByKey(receive.networkId)?.ForceRelease(false);
+                    case MSG_GrabbLock.Action.ForceFree:
+                        Registry.GetByKey(receive.networkId)?.ForceFree(false);
                         break;
                     default:
                         break;

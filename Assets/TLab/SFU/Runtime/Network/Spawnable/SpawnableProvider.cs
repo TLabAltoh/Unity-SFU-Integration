@@ -86,10 +86,7 @@ namespace TLab.SFU.Network
             var users = NetworkClient.GetLatestAvatorActionArray().Select((t) => t.userId);
             foreach (var user in users)
             {
-                if (user is not 0)
-                    continue;
-
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.5f);
 
                 var skip = instance.m_store.GetLatestActions().Any((t) => (user == t.userId) && (elemId == t.elemId));
 
@@ -105,7 +102,7 @@ namespace TLab.SFU.Network
             var targets = instance.m_store.GetLatestActions().Where((t) => t.elemId == elemId).ToArray();
             foreach (var target in targets)
             {
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.5f);
 
                 var action = SpawnableStore.SpawnAction.GetDeleteAction(target.@public);
                 ProcessSpawnAction(action, out var instanceRef);
