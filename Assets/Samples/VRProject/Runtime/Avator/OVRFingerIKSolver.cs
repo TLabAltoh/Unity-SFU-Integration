@@ -1,53 +1,35 @@
 using System;
+using System.Linq;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace TLab.SFU.Avator
+namespace TLab.VRProjct.Avator
 {
-    [CustomEditor(typeof(IKSolver)), CanEditMultipleObjects]
-    public class E_IKSolver : Editor
-    {
-        public override void OnInspectorGUI()
-        {
-            IKSolver solver = (IKSolver)target;
-            if (solver.needResetOption)
-            {
-                GUI.enabled = false;
-            }
-            DrawDefaultInspector();
-            if (solver.needResetOption)
-            {
-                GUI.enabled = true;
-                if (GUILayout.Button("Reset Scene Hierarchy"))
-                {
-                    solver.ResetHierarchy();
-                }
-            }
-        }
-    }
-
-
     [ExecuteInEditMode]
-    public class IKSolver : MonoBehaviour
+    public class OVRFingerIKSolver : MonoBehaviour
     {
         [Serializable]
         public class Bone
         {
             public Transform bone;
-            [HideInInspector]
-            public float length;
-            [HideInInspector]
-            public Vector3 origPos, origScale;
-            [HideInInspector]
-            public Quaternion origRot;
+            public Transform target;
+
+            [HideInInspector] public float length;
+            [HideInInspector] public Vector3 origPos, origScale;
+            [HideInInspector] public Quaternion origRot;
         }
+
+        public enum HandType
+        {
+            Left,
+            Right,
+        };
 
         [Header("Bones - Leaf to Root")]
         [Tooltip("Make sure you assign them in leaf to root order only...")]
-        [SerializeField]
-        public Bone[] bones;
+        [SerializeField] public Bone[] bones;
         [Tooltip("The end point of the leaf bone positioned at tip of the chain to get its orientation...")]
         public Transform endPointOfLastBone;
 
@@ -56,6 +38,7 @@ namespace TLab.SFU.Avator
         public Transform poleTarget;
         [Tooltip("More precision...")]
         public int iterations;
+        public HandType handType;
 
         [Header("EditMode")]
         public bool enable;
@@ -73,6 +56,40 @@ namespace TLab.SFU.Avator
             {
                 Initialize();
             }
+        }
+
+        public void Setup()
+        {
+            this.transform.parent.position = bones[0].bone.position;
+            this.transform.parent.rotation = bones[0].bone.rotation;
+
+            this.transform.position = bones[0].target.position;
+            this.transform.rotation = bones[0].target.rotation;
+
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(this);
+#endif
+
+            for (int i = 0; i < bones.Length; i++)
+            {
+                bones[i].bone.position = bones[i].target.position;
+                bones[i].bone.rotation = bones[i].target.rotation;
+
+#if UNITY_EDITOR
+                EditorUtility.SetDirty(bones[i].bone);
+#endif
+            }
+
+            endPointOfLastBone.position = bones[0].target.position;
+            endPointOfLastBone.rotation = bones[0].target.rotation;
+
+            poleTarget.position = bones[1].target.position;
+            poleTarget.rotation = bones[1].target.rotation;
+
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(endPointOfLastBone);
+            EditorUtility.SetDirty(poleTarget);
+#endif
         }
 
         void Update()
@@ -173,6 +190,27 @@ namespace TLab.SFU.Avator
                 }
             }
             lastTargetPosition = transform.position;
+
+            RotateTarget();
+        }
+
+        public void RotateTarget()
+        {
+            var start2End = bones[0].bone.position - bones.Last().bone.position;
+            var start2Pole = poleTarget.position - bones.Last().bone.position;
+            var angleAxis = Vector3.Cross(start2End, start2Pole).normalized;
+
+            var flipY = (handType == HandType.Right) ? -1 : 1;
+
+            for (int i = 0; i < bones.Length; i++)
+            {
+                // TODO: flip axis
+                var boneForward = flipY * bones[i].bone.up;
+                bones[i].target.right = boneForward;
+                var angle = Vector3.SignedAngle(bones[i].target.forward, angleAxis, boneForward);
+                var rot = Quaternion.AngleAxis(angle, boneForward);
+                bones[i].target.rotation = rot * bones[i].target.rotation;
+            }
         }
 
         /// <summary>

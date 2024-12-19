@@ -100,8 +100,6 @@ namespace TLab.SFU.Network
             {
                 m_packet.UnMarshall(bytes);
 
-                Debug.Log(THIS_NAME + $"{nameof(MSG_SyncRequest)}:{gameObject.name}:{m_packet.networkId.hash}");
-
                 var group = Registry.GetByKey(m_packet.networkId);
                 if (group)
                     group.OnSyncRequest(from);
@@ -110,7 +108,11 @@ namespace TLab.SFU.Network
             });
         }
 
-        private void OnSyncRequest(int from) => m_registry.Foreach((t) => t.OnSyncRequest(from));
+        private void OnSyncRequest(int from)
+        {
+            m_registry.Foreach((t) => t.OnSyncRequest(from));
+            Debug.Log(THIS_NAME + $"{nameof(MSG_SyncRequest)}:{gameObject.name}:{m_packet.networkId.hash}");
+        }
 
         protected virtual void Register() => Registry.Register(m_networkId.id, this);
 

@@ -389,14 +389,14 @@ namespace TLab.SFU.Network
                             var latestAvatorActions = GetLatestAvatorActionArray();
                             var latestSpawnableActions = GetLatestSpawnableActionArray();
 
-                            Debug.Log(THIS_NAME + $"{MSG_Join.MessageType.Request0}:avatorAction:{JsonUtility.ToJson(avatorAction)}");
+                            Debug.Log(THIS_NAME + $"{MSG_Join.MessageType.Request0}");
 
                             SendWS(from, new MSG_Join(MSG_Join.MessageType.Response0, avatorAction, UniqueNetworkId.Generate(from, 5), RigidbodyMode.Recv, latestAvatorActions, latestSpawnableActions).Marshall());
                         }
                         break;
                     case MSG_Join.MessageType.Response0:
                         {
-                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response0) + $":{from}:{receive.rbMode}");
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response0) + $":{from}");
 
                             UniqueNetworkId.AddAvailables(receive.idAvails);
 
@@ -407,7 +407,7 @@ namespace TLab.SFU.Network
                             avatorAction.action = SpawnableStore.SpawnAction.Action.Spawn;
                             if (UniqueNetworkId.GetAvailable(out var address)) avatorAction.@public = address;
 
-                            Debug.Log(THIS_NAME + $"{MSG_Join.MessageType.Response0}:avatorAction:{JsonUtility.ToJson(avatorAction)}");
+                            Debug.Log(THIS_NAME + nameof(MSG_Join.MessageType.Response0) + $":{from}");
 
                             SyncWorldAsync(avatorAction, receive.latestAvatorActions, receive.latestSpawnableActions);
 

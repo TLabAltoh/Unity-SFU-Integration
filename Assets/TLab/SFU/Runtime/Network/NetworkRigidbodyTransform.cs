@@ -38,9 +38,9 @@ namespace TLab.SFU.Network
 
             private const int NETWORK_ID_FIELD_LEN = 8;
 
-            private const int BOOL_FIELD_OFFSET = 0, BOOL_FIELD_LEN = 4;  // request (1) + immediate (1) + rbState.active (1) + rbState.gravity (1)
+            private const int BOOL_FIELD_OFFSET = NETWORK_ID_FIELD_LEN, BOOL_FIELD_LEN = 4;  // request (1) + immediate (1) + rbState.active (1) + rbState.gravity (1)
 
-            private const int TRANSFORM_FIELD_OFFSET = BOOL_FIELD_OFFSET + BOOL_FIELD_LEN, TRANSFORM_FIELD_LEN = 10;    // state ((3 + 4 + 3) * 4)
+            private const int TRANSFORM_FIELD_OFFSET = BOOL_FIELD_OFFSET + BOOL_FIELD_LEN, TRANSFORM_FIELD_LEN = 10;    // ((3 + 4 + 3) * 4)
 
             private const int PAYLOAD_LEN = NETWORK_ID_FIELD_LEN + BOOL_FIELD_LEN + TRANSFORM_FIELD_LEN * sizeof(float);
 
@@ -161,7 +161,7 @@ namespace TLab.SFU.Network
 
         protected RigidbodyState m_rbState;
 
-        private SerializableTransform m_prev;
+        protected SerializableTransform m_prev;
 
         protected NetworkRigidbodyTransformState m_networkState;
 
@@ -575,7 +575,7 @@ namespace TLab.SFU.Network
                 return;
 
             if (ApplyCurrentTransform(out var position, out var rotation, out var localScale) || force)
-                SendRTC(to, position, rotation, localScale, force, request);
+                SendRTC(to, position, rotation, localScale, request, immediate);
         }
 
         public override void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false)
@@ -584,7 +584,7 @@ namespace TLab.SFU.Network
                 return;
 
             if (ApplyCurrentTransform(out var position, out var rotation, out var localScale) || force)
-                SendWS(to, position, rotation, localScale, force, request);
+                SendWS(to, position, rotation, localScale, request, immediate);
         }
 
         protected virtual void InitRigidbody()

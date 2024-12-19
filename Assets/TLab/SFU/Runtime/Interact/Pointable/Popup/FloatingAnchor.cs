@@ -70,7 +70,7 @@ namespace TLab.SFU.Interact
             m_targetOriginalScale = m_target.lossyScale;
 
             if (!m_show)
-                FadeImmidiately(0);
+                FadeImmidiately(1);
         }
 
         protected void Update()

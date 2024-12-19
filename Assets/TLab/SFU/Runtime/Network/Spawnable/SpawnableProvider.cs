@@ -78,7 +78,7 @@ namespace TLab.SFU.Network
                 NetworkClient.SendWS(userId, m_packet.Marshall());
             }
 
-            Debug.Log(THIS_NAME + $"{nameof(RequestSpawn)}:{elemId}:{userId}");
+            Debug.Log(THIS_NAME + $"{nameof(RequestSpawn)}");
         }
 
         protected static IEnumerator RequestSpawnForAllUserTask(int elemId)

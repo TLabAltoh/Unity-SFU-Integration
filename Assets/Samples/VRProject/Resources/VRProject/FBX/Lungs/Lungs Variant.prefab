@@ -19,6 +19,14 @@ PrefabInstance:
       propertyPath: m_show
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5223293052232855558, guid: 365e8b44d8030e1499ffbc76e3d62c59, type: 3}
+      propertyPath: m_show
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7415557505993544353, guid: 365e8b44d8030e1499ffbc76e3d62c59, type: 3}
+      propertyPath: m_show
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8469510113916492860, guid: 365e8b44d8030e1499ffbc76e3d62c59, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -65,7 +73,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9133984214799238790, guid: 365e8b44d8030e1499ffbc76e3d62c59, type: 3}
       propertyPath: m_Name
-      value: Lungs
+      value: Lungs Variant
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 365e8b44d8030e1499ffbc76e3d62c59, type: 3}

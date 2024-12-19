@@ -219,13 +219,13 @@ namespace TLab.SFU.Network
                 var parameterHistrys = m_parameters.Values.Cast<AnimatorControllerParameterHistory>().ToArray();
                 var parameterStates = GetAnimatorControllerParameterStateArray(parameterHistrys);
 
-                SendRTC(to, parameterStates, force, request);
+                SendRTC(to, parameterStates, request, immediate);
 
                 return;
             }
 
             if (ApplyCurrentAnimatorController(out var updatedParameters))
-                SendRTC(to, GetAnimatorControllerParameterStateArray(updatedParameters), force, request);
+                SendRTC(to, GetAnimatorControllerParameterStateArray(updatedParameters), request, immediate);
         }
 
         public override void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false)
@@ -234,13 +234,13 @@ namespace TLab.SFU.Network
             {
                 var parameters = m_parameters.Values.Cast<AnimatorControllerParameterHistory>().ToArray();
 
-                SendWS(to, GetAnimatorControllerParameterStateArray(parameters), force, request);
+                SendWS(to, GetAnimatorControllerParameterStateArray(parameters), request, immediate);
 
                 return;
             }
 
             if (ApplyCurrentAnimatorController(out var updatedParameters))
-                SendWS(to, GetAnimatorControllerParameterStateArray(updatedParameters), force, request);
+                SendWS(to, GetAnimatorControllerParameterStateArray(updatedParameters), request, immediate);
         }
 
         protected virtual bool ApplyParameter(string paramName, int hashCode)

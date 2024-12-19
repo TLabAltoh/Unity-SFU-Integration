@@ -252,7 +252,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7144763428413412796}
   m_Layer: 0
-  m_Name: Finger
+  m_Name: Finger Solver
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

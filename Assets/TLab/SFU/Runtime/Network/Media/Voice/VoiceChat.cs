@@ -160,7 +160,7 @@ namespace TLab.SFU.Network
 
         protected void OnVoiceRequest(int from)
         {
-            if (m_rtcClient.connected)
+            if ((m_rtcClient != null) && (m_rtcClient.connected))
                 NetworkClient.SendWS(new MSG_VoiceOpenNortification().Marshall());
             else
                 m_requests.Enqueue(from);

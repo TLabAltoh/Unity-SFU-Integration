@@ -282,23 +282,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 6821227111203415466}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -317,23 +317,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain: []
@@ -616,6 +616,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_syncDefault: 0
   m_group: {fileID: 374237429642146687}
   m_parent: {fileID: 6999539868603354275}
   positionThreshold: 0.001
@@ -665,23 +666,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 388956674225287}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -700,23 +701,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -735,23 +736,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 388956674225287}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -770,27 +771,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
   - {fileID: 5878908376712030883}
+  m_duration: 0.1
 --- !u!114 &8649797770007763195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -804,11 +806,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_private:
-    m_a0: 4
+    m_a0: 221
     m_a1: 249
-    m_a2: 114
-    m_a3: 129
-    m_hash: 722986089
+    m_a2: 71
+    m_a3: 238
+    m_hash: 408705188
   m_public:
     m_a0: 0
     m_a1: 0
@@ -820,11 +822,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 4
+    m_a4: 221
     m_a5: 249
-    m_a6: 114
-    m_a7: 129
-    m_hash: -1006693267
+    m_a6: 71
+    m_a7: 238
+    m_hash: 1926862241
 --- !u!114 &388956674225287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -886,23 +888,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain: []
@@ -1304,6 +1306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_syncDefault: 0
   m_group: {fileID: 374237429642146687}
   m_parent: {fileID: 6999539868603354275}
   positionThreshold: 0.001
@@ -1353,23 +1356,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 5253582982753940653}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -1388,23 +1391,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -1423,23 +1426,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 5253582982753940653}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -1458,27 +1461,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
   - {fileID: 5878908376712030882}
+  m_duration: 0.1
 --- !u!114 &1503420411427017157
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1492,11 +1496,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_private:
-    m_a0: 104
-    m_a1: 121
-    m_a2: 146
-    m_a3: 202
-    m_hash: -1508126532
+    m_a0: 52
+    m_a1: 19
+    m_a2: 65
+    m_a3: 139
+    m_hash: 210238085
   m_public:
     m_a0: 0
     m_a1: 0
@@ -1508,11 +1512,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 104
-    m_a5: 121
-    m_a6: 146
-    m_a7: 202
-    m_hash: 1476746617
+    m_a4: 52
+    m_a5: 19
+    m_a6: 65
+    m_a7: 139
+    m_hash: -272929857
 --- !u!114 &5253582982753940653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1574,23 +1578,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain: []
@@ -2204,23 +2208,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 1672029263319471389}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -2239,23 +2243,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain: []
@@ -2794,6 +2798,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_syncDefault: 0
   m_group: {fileID: 374237429642146687}
   m_parent: {fileID: 6999539868603354275}
   positionThreshold: 0.001
@@ -2843,23 +2848,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 3520647659548437264}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -2878,23 +2883,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -2913,23 +2918,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 3520647659548437264}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -2948,27 +2953,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
   - {fileID: 5878908376712030908}
+  m_duration: 0.1
 --- !u!114 &3177153722439735308
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2982,11 +2988,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_private:
-    m_a0: 180
-    m_a1: 211
-    m_a2: 15
-    m_a3: 7
-    m_hash: 1502441582
+    m_a0: 186
+    m_a1: 1
+    m_a2: 155
+    m_a3: 203
+    m_hash: -1202862171
   m_public:
     m_a0: 0
     m_a1: 0
@@ -2998,11 +3004,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 180
-    m_a5: 211
-    m_a6: 15
-    m_a7: 7
-    m_hash: -385180390
+    m_a4: 186
+    m_a5: 1
+    m_a6: 155
+    m_a7: 203
+    m_hash: 2079155628
 --- !u!114 &3520647659548437264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3064,23 +3070,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain: []
@@ -3248,6 +3254,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_syncDefault: 0
   m_group: {fileID: 374237429642146687}
   m_parent: {fileID: 0}
   positionThreshold: 0.001
@@ -3300,23 +3307,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 7950668843905888037}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -3335,26 +3342,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain: []
+  m_duration: 0.1
 --- !u!114 &5039171719571728494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3369,23 +3377,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 7950668843905888037}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain:
@@ -3404,23 +3412,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_surface: {fileID: 0}
   m_hoverEvent:
-    onHovered:
+    onHover:
       m_PersistentCalls:
         m_Calls: []
-    onUnHovered:
+    onUnhover:
       m_PersistentCalls:
         m_Calls: []
-    whileHovered:
+    whileHover:
       m_PersistentCalls:
         m_Calls: []
   m_selectEvent:
-    onSelected:
+    onSelect:
       m_PersistentCalls:
         m_Calls: []
-    onUnSelected:
+    onUnselect:
       m_PersistentCalls:
         m_Calls: []
-    whileSelected:
+    whileSelect:
       m_PersistentCalls:
         m_Calls: []
   m_interactableChain: []
@@ -3437,11 +3445,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_private:
-    m_a0: 181
-    m_a1: 61
-    m_a2: 187
-    m_a3: 132
-    m_hash: -1811087051
+    m_a0: 40
+    m_a1: 28
+    m_a2: 129
+    m_a3: 144
+    m_hash: -676605236
   m_public:
     m_a0: 0
     m_a1: 0
@@ -3453,11 +3461,11 @@ MonoBehaviour:
     m_a1: 0
     m_a2: 0
     m_a3: 0
-    m_a4: 181
-    m_a5: 61
-    m_a6: 187
-    m_a7: 132
-    m_hash: 1035367088
+    m_a4: 40
+    m_a5: 28
+    m_a6: 129
+    m_a7: 144
+    m_hash: -1259140603
 --- !u!114 &374237429642146687
 MonoBehaviour:
   m_ObjectHideFlags: 0
