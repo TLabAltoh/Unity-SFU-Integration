@@ -200,11 +200,11 @@ namespace TLab.SFU.Network
             Registry.Register(m_group.owner, this);
         }
 
-        protected override void UnRegister()
+        protected override void Unregister()
         {
-            Registry.UnRegister(m_group.owner);
+            Registry.Unregister(m_group.owner);
 
-            base.UnRegister();
+            base.Unregister();
         }
     }
 }

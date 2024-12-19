@@ -19,7 +19,7 @@ namespace TLab.SFU
             if (!m_registry.ContainsKey(id)) m_registry[id] = @object;
         }
 
-        public static void UnRegister(K id)
+        public static void Unregister(K id)
         {
             if (m_registry.ContainsKey(id)) m_registry.Remove(id);
         }
@@ -63,7 +63,7 @@ namespace TLab.SFU
             if (!m_registry.Contains(value)) m_registry.Add(value);
         }
 
-        public static void UnRegister(T value)
+        public static void Unregister(T value)
         {
             if (m_registry.Contains(value)) m_registry.Remove(value);
         }

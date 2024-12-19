@@ -18,7 +18,7 @@ namespace TLab.SFU.Interact
         {
             base.OnDisable();
 
-            Registry.UnRegister(this);
+            Registry.Unregister(this);
         }
     }
 }

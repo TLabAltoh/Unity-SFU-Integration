@@ -114,7 +114,7 @@ namespace TLab.SFU.Network
 
         protected virtual void Register() => Registry.Register(m_networkId.id, this);
 
-        protected virtual void UnRegister() => Registry.UnRegister(m_networkId.id);
+        protected virtual void Unregister() => Registry.Unregister(m_networkId.id);
 
         public void PostSyncRequest()
         {
@@ -195,7 +195,7 @@ namespace TLab.SFU.Network
             m_coroutine = null;
 
             if (m_networkId)
-                UnRegister();
+                Unregister();
 
             if (m_isPublicIdUsed)
                 UniqueNetworkId.Return(m_public);
@@ -241,7 +241,7 @@ namespace TLab.SFU.Network
         protected virtual void OnDisable()
         {
             if (started && m_networkId)
-                UnRegister();
+                Unregister();
         }
 
         private void OnDestroy() => Shutdown();

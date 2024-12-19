@@ -96,12 +96,12 @@ namespace TLab.SFU.Interact
         {
             if ((m_interactable != null) && m_interactable.IsSelected(this))
             {
-                m_interactable.WhileHovered(this);
+                m_interactable.WhileHover(this);
 
                 if (m_pressed)
-                    m_interactable.WhileSelected(this);
+                    m_interactable.WhileSelect(this);
                 else
-                    m_interactable.UnSelected(this);
+                    m_interactable.OnUnselect(this);
             }
             else
             {
@@ -114,18 +114,18 @@ namespace TLab.SFU.Interact
                 {
                     if (m_interactable == m_candidate)
                     {
-                        m_interactable.WhileHovered(this);
+                        m_interactable.WhileHover(this);
 
                         if (m_onPress)
-                            m_interactable.Selected(this);
+                            m_interactable.OnSelect(this);
                     }
                     else
                     {
                         if (m_interactable != null)
-                            m_interactable.UnHovered(this);
+                            m_interactable.OnUnhover(this);
 
                         m_interactable = m_candidate;
-                        m_interactable.Hovered(this);
+                        m_interactable.OnHover(this);
                     }
                 }
                 else
@@ -138,9 +138,9 @@ namespace TLab.SFU.Interact
             if (m_interactable != null)
             {
                 if (m_interactable.IsSelected(this))
-                    m_interactable.UnSelected(this);
+                    m_interactable.OnUnselect(this);
 
-                m_interactable.UnHovered(this);
+                m_interactable.OnUnhover(this);
                 m_interactable = null;
             }
         }

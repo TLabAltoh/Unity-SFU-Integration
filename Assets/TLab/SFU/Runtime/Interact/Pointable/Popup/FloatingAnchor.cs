@@ -6,7 +6,9 @@ namespace TLab.SFU.Interact
 {
     public class FloatingAnchor : MonoBehaviour
     {
-        [SerializeField] private bool m_hideOnStart;
+        [SerializeField] private bool m_show = true;
+        [SerializeField] private bool m_fitScale = false;
+        [SerializeField, Min(0f)] float m_duration = 0.25f;
         [SerializeField] private Transform m_target;
 
         [Header("Offset")]
@@ -14,60 +16,61 @@ namespace TLab.SFU.Interact
         [SerializeField] private float m_vertical;
         [SerializeField] private float m_horizontal;
 
-        private SerializableTransform m_initial;
+        private Vector3 m_originalLocalScale;
+        private Vector3 m_targetOriginalScale;
 
-        const float DURATION = 0.25f;
+        public bool show
+        {
+            get => m_show;
+            set
+            {
+                if (m_show != value)
+                {
+                    m_show = value;
+
+                    FadeImmidiately(m_show ? 1 : 0);
+                }
+            }
+        }
 
 #if UNITY_EDITOR
-        public void SetTarget(Transform taregt)
-        {
-            m_target = taregt;
-        }
+        public void SetHideOnStart() => m_show = false;
 
-        public void SetHideOnStart() => m_hideOnStart = true;
+        public void SetTarget(Transform taregt) => m_target = taregt;
 #endif
 
-        private void LerpScale(Transform target, SerializableTransform start, SerializableTransform end, float lerpValue)
+        private void LerpScale(Vector3 start, Vector3 end, float lerpValue)
         {
-            target.localScale = Vector3.Lerp(start.localScale, end.localScale, lerpValue);
+            this.transform.localScale = Vector3.Lerp(start, end, lerpValue);
         }
 
-        private IEnumerator FadeTask(SerializableTransform target)
+        private IEnumerator FadeTask(float t)
         {
-            m_initial = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, this.transform.localScale);
-
-            var current = new SerializableTransform(transform.localPosition, transform.localRotation, transform.localScale);
+            var start = transform.localScale;
+            var target = t * m_originalLocalScale;
 
             var time = 0.0f;
-            while (time < DURATION)
+            while (time < m_duration)
             {
                 time += Time.deltaTime;
-                LerpScale(this.transform, current, target, time / DURATION);
+                LerpScale(start, target, time / m_duration);
                 yield return null;
             }
         }
 
-        public void FadeInAsync() => StartCoroutine(FadeTask(m_initial));
+        public void Fade(float t) => StartCoroutine(FadeTask(t));
 
-        public void FadeOutAsync() => StartCoroutine(FadeTask(new SerializableTransform(transform.localPosition, transform.localRotation, Vector3.zero)));
-
-        public void FadeOutImmidiately()
-        {
-            m_initial = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, this.transform.localScale);
-
-            var target = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, Vector3.zero);
-
-            LerpScale(this.transform, m_initial, target, 1.0f);
-        }
+        public void FadeImmidiately(float t) => LerpScale(this.transform.localScale, Vector3.zero, t);
 
         protected void Start()
         {
             transform.parent = null;
 
-            m_initial = new SerializableTransform(this.transform.localPosition, this.transform.localRotation, this.transform.localScale);
+            m_originalLocalScale = transform.localScale;
+            m_targetOriginalScale = m_target.lossyScale;
 
-            if (m_hideOnStart)
-                FadeOutImmidiately();
+            if (!m_show)
+                FadeImmidiately(0);
         }
 
         protected void Update()
@@ -75,6 +78,13 @@ namespace TLab.SFU.Interact
             var camera = Camera.main.transform;
             var diff = camera.position - m_target.position;
             var offset = diff.normalized * m_forward + Vector3.up * m_vertical + Vector3.Cross(diff.normalized, Vector3.up) * m_horizontal;
+
+            if (m_fitScale)
+            {
+                offset.x *= m_target.lossyScale.x / m_targetOriginalScale.x;
+                offset.y *= m_target.lossyScale.y / m_targetOriginalScale.y;
+                offset.z *= m_target.lossyScale.z / m_targetOriginalScale.z;
+            }
 
             transform.position = m_target.position + offset;
             transform.LookAt(camera, Vector3.up);

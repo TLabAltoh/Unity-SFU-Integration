@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-using static System.BitConverter;
 using static TLab.SFU.UnsafeUtility;
 
 namespace TLab.SFU.Network
@@ -21,7 +20,6 @@ namespace TLab.SFU.Network
         public struct NetworkRigidbodyTransformState
         {
             public Address64 id;
-            public int fps;
 
             public RigidbodyState rigidbody;
             public SerializableTransform transform;
@@ -36,25 +34,15 @@ namespace TLab.SFU.Network
         {
             #region CONSTANT
 
+            private const int SEND_HEADER_LEN = 8, RECV_HEADER_LEN = 13;    // SEND: to (4) + msgId (4), RECV: typ (1) + from (4) + to (4) + msgId (4)
+
             private const int NETWORK_ID_FIELD_LEN = 8;
 
-            private const int INT_FIELD_LEN = 4;  // fps (4)
+            private const int BOOL_FIELD_OFFSET = 0, BOOL_FIELD_LEN = 4;  // request (1) + immediate (1) + rbState.active (1) + rbState.gravity (1)
 
-            private const int INT_FIELD_OFFSET = NETWORK_ID_FIELD_LEN;
+            private const int TRANSFORM_FIELD_OFFSET = BOOL_FIELD_OFFSET + BOOL_FIELD_LEN, TRANSFORM_FIELD_LEN = 10;    // state ((3 + 4 + 3) * 4)
 
-            private const int BOOL_FIELD_LEN = 3;  // request (1) + immediate (1) + rbState.active (1) + rbState.gravity (1)
-
-            private const int BOOL_FIELD_OFFSET = INT_FIELD_OFFSET + INT_FIELD_LEN;
-
-            private const int TRANSFORM_FIELD_LEN = 10;    // state ((3 + 4 + 3) * 4)
-
-            private const int TRANSFORM_FIELD_OFFSET = BOOL_FIELD_OFFSET + BOOL_FIELD_LEN;
-
-            private const int PAYLOAD_LEN = NETWORK_ID_FIELD_LEN + INT_FIELD_LEN + BOOL_FIELD_LEN + TRANSFORM_FIELD_LEN * sizeof(float);
-
-            private const int SEND_HEADER_LEN = 8;    // to (4) + msgId (4)
-
-            private const int RECV_HEADER_LEN = 13;    // typ (1) + from (4) + to (4) + msgId (4)
+            private const int PAYLOAD_LEN = NETWORK_ID_FIELD_LEN + BOOL_FIELD_LEN + TRANSFORM_FIELD_LEN * sizeof(float);
 
             #endregion CONSTANT
 
@@ -96,8 +84,6 @@ namespace TLab.SFU.Network
 
                         state.id.CopyTo(payloadPtr);
 
-                        Copy(state.fps, payloadPtr + INT_FIELD_OFFSET);
-
                         Copy(request, payloadPtr + BOOL_FIELD_OFFSET + 0);
                         Copy(immediate, payloadPtr + BOOL_FIELD_OFFSET + 1);
                         Copy(state.rigidbody.used, payloadPtr + BOOL_FIELD_OFFSET + 2);
@@ -119,8 +105,6 @@ namespace TLab.SFU.Network
                         var payloadPtr = bytesPtr + RECV_HEADER_LEN;
 
                         state.id.Copy(payloadPtr);
-
-                        state.fps = ToInt32(bytes, RECV_HEADER_LEN + INT_FIELD_OFFSET);
 
                         request = Get(payloadPtr + BOOL_FIELD_OFFSET + 0);
                         immediate = Get(payloadPtr + BOOL_FIELD_OFFSET + 1);
@@ -183,16 +167,27 @@ namespace TLab.SFU.Network
 
         protected SerializableTransform m_delta;
 
-        protected class InterpolationState
+        public static readonly float INTERPOLATION_BASE_FPS = 30;
+
+        protected struct InterpolationState
         {
-            public int current = -1;
-            public int step = -1;
+            public int current;
+            public int step;
 
             public SerializableTransform start;
             public SerializableTransform target;
+
+            public InterpolationState(int dummy = 0)
+            {
+                this.current = -1;
+                this.step = -1;
+
+                this.start = new SerializableTransform();
+                this.target = new SerializableTransform();
+            }
         }
 
-        protected InterpolationState m_interpolationState = new InterpolationState();
+        protected InterpolationState m_interpolationState = new InterpolationState(0);
 
         public InterpolationMode interpolationMode => m_interpolationMode;
 
@@ -323,7 +318,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        protected virtual void StartInterpolation(in Vector3 position, in Quaternion rotation, in Vector3 localScale, in int fps)
+        protected virtual void StartInterpolation(in Vector3 position, in Quaternion rotation, in Vector3 localScale)
         {
             m_interpolationState.start.position = this.transform.position;
             m_interpolationState.start.rotation = this.transform.rotation.ToVec();
@@ -333,7 +328,7 @@ namespace TLab.SFU.Network
             m_interpolationState.target.rotation = rotation.ToVec();
             m_interpolationState.target.localScale = localScale;
 
-            m_interpolationState.step = Math.Max(1, m_interpolationStep * (int)((1 / Time.deltaTime) / fps));
+            m_interpolationState.step = Math.Max(1, m_interpolationStep * (int)((1 / Time.deltaTime) / INTERPOLATION_BASE_FPS));
             m_interpolationState.current = m_interpolationState.step;
         }
 
@@ -371,7 +366,7 @@ namespace TLab.SFU.Network
                         UpdateTransform(position, rotation.ToQuaternion(), localScale);
                         break;
                     case InterpolationMode.Step:
-                        StartInterpolation(position, rotation.ToQuaternion(), localScale, state.fps);
+                        StartInterpolation(position, rotation.ToQuaternion(), localScale);
                         break;
                 }
             }
@@ -545,28 +540,42 @@ namespace TLab.SFU.Network
 
         public virtual bool SkipApplyCurrentTransform() => !Const.Send.HasFlag(m_direction) || !initialized || (m_interpolationState.current > 0);
 
+        private void SetSendPacket(in Vector3 position, in Vector4 rotation, in Vector3 localScale, bool request = false, bool immediate = false)
+        {
+            m_packet.state.id = m_networkState.id;
+            m_packet.state.rigidbody = m_networkState.rigidbody;
+
+            m_packet.state.transform.position = position;
+            m_packet.state.transform.rotation = rotation;
+            m_packet.state.transform.localScale = localScale;
+
+            m_packet.request = request;
+            m_packet.immediate = immediate;
+        }
+
+        private void SendRTC(int to, in Vector3 position, in Vector4 rotation, in Vector3 localScale, bool request = false, bool immediate = false)
+        {
+            SetSendPacket(position, rotation, localScale, request, immediate);
+            NetworkClient.SendRTC(to, m_packet.Marshall());
+
+            m_synchronised = false;
+        }
+
+        private void SendWS(int to, in Vector3 position, in Vector4 rotation, in Vector3 localScale, bool request = false, bool immediate = false)
+        {
+            SetSendPacket(position, rotation, localScale, request, immediate);
+            NetworkClient.SendWS(to, m_packet.Marshall());
+
+            m_synchronised = false;
+        }
+
         public override void SyncViaWebRTC(int to, bool force = false, bool request = false, bool immediate = false)
         {
             if (SkipApplyCurrentTransform())
                 return;
 
             if (ApplyCurrentTransform(out var position, out var rotation, out var localScale) || force)
-            {
-                m_packet.state.id = m_networkState.id;
-                m_packet.state.fps = (int)(1 / Time.deltaTime);
-                m_packet.state.rigidbody = m_networkState.rigidbody;
-
-                m_packet.state.transform.position = position;
-                m_packet.state.transform.rotation = rotation;
-                m_packet.state.transform.localScale = localScale;
-
-                m_packet.request = request;
-                m_packet.immediate = immediate;
-
-                NetworkClient.SendRTC(to, m_packet.Marshall());
-
-                m_synchronised = false;
-            }
+                SendRTC(to, position, rotation, localScale, force, request);
         }
 
         public override void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false)
@@ -575,22 +584,7 @@ namespace TLab.SFU.Network
                 return;
 
             if (ApplyCurrentTransform(out var position, out var rotation, out var localScale) || force)
-            {
-                m_packet.state.id = m_networkState.id;
-                m_packet.state.fps = (int)(1 / Time.deltaTime);
-                m_packet.state.rigidbody = m_networkState.rigidbody;
-
-                m_packet.state.transform.position = position;
-                m_packet.state.transform.rotation = rotation;
-                m_packet.state.transform.localScale = localScale;
-
-                m_packet.request = request;
-                m_packet.immediate = immediate;
-
-                NetworkClient.SendWS(to, m_packet.Marshall());
-
-                m_synchronised = false;
-            }
+                SendWS(to, position, rotation, localScale, force, request);
         }
 
         protected virtual void InitRigidbody()
@@ -655,7 +649,7 @@ namespace TLab.SFU.Network
 
             CachePrevPosAndRot();
 
-            SyncViaWebRTC(NetworkClient.userId);
+            Sync(NetworkClient.userId);
         }
 
         protected override void Register()
@@ -665,11 +659,11 @@ namespace TLab.SFU.Network
             Registry.Register(m_networkId.id, this);
         }
 
-        protected override void UnRegister()
+        protected override void Unregister()
         {
-            Registry.UnRegister(m_networkId.id);
+            Registry.Unregister(m_networkId.id);
 
-            base.UnRegister();
+            base.Unregister();
         }
     }
 }

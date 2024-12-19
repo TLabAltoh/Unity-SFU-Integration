@@ -10,46 +10,46 @@ namespace TLab.SFU.Interact
 
         [SerializeField] private TextMeshProUGUI m_selectStateDebug;
 
-        public override void Hovered(Interactor interactor)
+        public override void OnHover(Interactor interactor)
         {
-            base.Hovered(interactor);
+            base.OnHover(interactor);
 
-            m_hoverStateDebug.text = "Hovered";
+            m_hoverStateDebug.text = "Hover";
         }
 
-        public override void Selected(Interactor interactor)
+        public override void OnSelect(Interactor interactor)
         {
-            base.Selected(interactor);
+            base.OnSelect(interactor);
 
-            m_selectStateDebug.text = "Selected";
+            m_selectStateDebug.text = "Select";
         }
 
-        public override void UnHovered(Interactor interactor)
+        public override void OnUnhover(Interactor interactor)
         {
-            base.UnHovered(interactor);
+            base.OnUnhover(interactor);
 
-            m_hoverStateDebug.text = "Un Hovered";
+            m_hoverStateDebug.text = "Unhover";
         }
 
-        public override void UnSelected(Interactor interactor)
+        public override void OnUnselect(Interactor interactor)
         {
-            base.UnSelected(interactor);
+            base.OnUnselect(interactor);
 
-            m_selectStateDebug.text = "Un Selected";
+            m_selectStateDebug.text = "Unselect";
         }
 
-        public override void WhileHovered(Interactor interactor)
+        public override void WhileHover(Interactor interactor)
         {
-            base.WhileHovered(interactor);
+            base.WhileHover(interactor);
 
-            m_hoverStateDebug.text = "While Hovered";
+            m_hoverStateDebug.text = "While Hover";
         }
 
-        public override void WhileSelected(Interactor interactor)
+        public override void WhileSelect(Interactor interactor)
         {
-            base.WhileSelected(interactor);
+            base.WhileSelect(interactor);
 
-            m_selectStateDebug.text = "While Selected";
+            m_selectStateDebug.text = "While Select";
         }
     }
 }

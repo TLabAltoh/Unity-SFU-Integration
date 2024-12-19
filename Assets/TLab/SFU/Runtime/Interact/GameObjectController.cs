@@ -540,11 +540,11 @@ namespace TLab.SFU.Interact
             Registry.Register(m_networkId.id, this);
         }
 
-        protected override void UnRegister()
+        protected override void Unregister()
         {
-            Registry.UnRegister(m_networkId.id);
+            Registry.Unregister(m_networkId.id);
 
-            base.UnRegister();
+            base.Unregister();
         }
     }
 }

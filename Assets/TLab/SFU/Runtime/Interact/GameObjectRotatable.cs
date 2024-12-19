@@ -9,6 +9,8 @@ namespace TLab.SFU.Interact
     [RequireComponent(typeof(GameObjectController))]
     public class GameObjectRotatable : Interactable
     {
+        [SerializeField, Min(0f)] float m_duration = 0.1f;
+
         private GameObjectController m_controller;
 
         private Vector3 m_axis;
@@ -16,10 +18,6 @@ namespace TLab.SFU.Interact
         private float m_angle;
 
         private bool m_onShot = false;
-
-        private const float DURATION = 0.1f;
-
-        public static float ZERO_ANGLE = 0.0f;
 
         private bool grabbed => m_controller.grabState.grabbed;
 
@@ -30,15 +28,15 @@ namespace TLab.SFU.Interact
             if (!grabbed)
             {
                 m_axis = -Vector3.one;
-                m_angle = ZERO_ANGLE;
+                m_angle = 0;
 
                 m_onShot = false;
             }
         }
 
-        public override void WhileSelected(Interactor interactor)
+        public override void WhileSelect(Interactor interactor)
         {
-            base.WhileSelected(interactor);
+            base.WhileSelect(interactor);
 
             if (interactor.pressed || !grabbed)
             {
@@ -62,7 +60,7 @@ namespace TLab.SFU.Interact
         {
             base.OnDisable();
 
-            Registry.UnRegister(this);
+            Registry.Unregister(this);
         }
 
         protected override void Start()
@@ -76,15 +74,15 @@ namespace TLab.SFU.Interact
         {
             base.Update();
 
-            if ((m_controller == null || !grabbed) && (!synchronised || m_onShot) && m_angle > ZERO_ANGLE)
+            if ((m_controller == null || !grabbed) && (!synchronised || m_onShot) && m_angle > 0)
             {
                 transform.rotation = Quaternion.AngleAxis(m_angle, m_axis) * transform.rotation;
-                m_angle = Mathf.Clamp(m_angle - DURATION * Time.deltaTime, ZERO_ANGLE, float.MaxValue);
+                m_angle = Mathf.Clamp(m_angle - m_duration * Time.deltaTime, 0, float.MaxValue);
 
                 m_controller?.SyncViaWebRTC(NetworkClient.userId);
             }
             else
-                m_angle = ZERO_ANGLE;
+                m_angle = 0;
 
             m_onShot = false;
         }

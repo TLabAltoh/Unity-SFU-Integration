@@ -11,17 +11,17 @@ namespace TLab.SFU.Interact
         [System.Serializable]
         public class Hover
         {
-            public UnityEvent onHovered;
-            public UnityEvent onUnHovered;
-            public UnityEvent whileHovered;
+            public UnityEvent onHover;
+            public UnityEvent onUnhover;
+            public UnityEvent whileHover;
         }
 
         [System.Serializable]
         public class Select
         {
-            public UnityEvent onSelected;
-            public UnityEvent onUnSelected;
-            public UnityEvent whileSelected;
+            public UnityEvent onSelect;
+            public UnityEvent onUnselect;
+            public UnityEvent whileSelect;
         }
     }
 
@@ -56,60 +56,60 @@ namespace TLab.SFU.Interact
 
         public virtual bool IsSelected(Interactor interactor) => m_selecteds.Contains(interactor);
 
-        public virtual void Hovered(Interactor interactor)
+        public virtual void OnHover(Interactor interactor)
         {
             m_hovereds.Add(interactor);
 
-            m_hoverEvent.onHovered.Invoke();
+            m_hoverEvent.onHover.Invoke();
 
             if (m_interactableChain != null)
-                m_interactableChain.ForEach((s) => s.Hovered(interactor));
+                m_interactableChain.ForEach((s) => s.OnHover(interactor));
         }
 
-        public virtual void WhileHovered(Interactor interactor)
+        public virtual void WhileHover(Interactor interactor)
         {
-            m_hoverEvent.whileHovered.Invoke();
+            m_hoverEvent.whileHover.Invoke();
 
             if (m_interactableChain != null)
-                m_interactableChain.ForEach((s) => s.WhileHovered(interactor));
+                m_interactableChain.ForEach((s) => s.WhileHover(interactor));
         }
 
-        public virtual void UnHovered(Interactor interactor)
+        public virtual void OnUnhover(Interactor interactor)
         {
             m_hovereds.Remove(interactor);
 
-            m_hoverEvent.onUnHovered.Invoke();
+            m_hoverEvent.onUnhover.Invoke();
 
             if (m_interactableChain != null)
-                m_interactableChain.ForEach((s) => s.UnHovered(interactor));
+                m_interactableChain.ForEach((s) => s.OnUnhover(interactor));
         }
 
-        public virtual void Selected(Interactor interactor)
+        public virtual void OnSelect(Interactor interactor)
         {
             m_selecteds.Add(interactor);
 
-            m_selectEvent.onSelected.Invoke();
+            m_selectEvent.onSelect.Invoke();
 
             if (m_interactableChain != null)
-                m_interactableChain.ForEach((s) => s.Selected(interactor));
+                m_interactableChain.ForEach((s) => s.OnSelect(interactor));
         }
 
-        public virtual void WhileSelected(Interactor interactor)
+        public virtual void WhileSelect(Interactor interactor)
         {
-            m_selectEvent.whileSelected.Invoke();
+            m_selectEvent.whileSelect.Invoke();
 
             if (m_interactableChain != null)
-                m_interactableChain.ForEach((s) => s.WhileSelected(interactor));
+                m_interactableChain.ForEach((s) => s.WhileSelect(interactor));
         }
 
-        public virtual void UnSelected(Interactor interactor)
+        public virtual void OnUnselect(Interactor interactor)
         {
             m_selecteds.Remove(interactor);
 
-            m_selectEvent.onUnSelected.Invoke();
+            m_selectEvent.onUnselect.Invoke();
 
             if (m_interactableChain != null)
-                m_interactableChain.ForEach((s) => s.UnSelected(interactor));
+                m_interactableChain.ForEach((s) => s.OnUnselect(interactor));
         }
 
         #region RAYCAST
@@ -142,7 +142,7 @@ namespace TLab.SFU.Interact
 
         protected virtual void OnEnable() => Registry.Register(this);
 
-        protected virtual void OnDisable() => Registry.UnRegister(this);
+        protected virtual void OnDisable() => Registry.Unregister(this);
 
         protected virtual void Start() { }
 

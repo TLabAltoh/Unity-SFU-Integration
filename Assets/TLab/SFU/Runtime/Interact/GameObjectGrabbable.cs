@@ -19,7 +19,7 @@ namespace TLab.SFU.Interact
             // TODO
         }
 
-        public override void Selected(Interactor interactor)
+        public override void OnSelect(Interactor interactor)
         {
             switch (m_controller.OnGrab(interactor))
             {
@@ -33,10 +33,10 @@ namespace TLab.SFU.Interact
                     break;
             }
 
-            base.Selected(interactor);
+            base.OnSelect(interactor);
         }
 
-        public override void UnSelected(Interactor interactor)
+        public override void OnUnselect(Interactor interactor)
         {
             switch (m_controller.GetHandType(interactor))
             {
@@ -52,7 +52,7 @@ namespace TLab.SFU.Interact
                     break;
             }
 
-            base.UnSelected(interactor);
+            base.OnUnselect(interactor);
         }
 
         protected override void OnEnable()
@@ -66,7 +66,7 @@ namespace TLab.SFU.Interact
         {
             base.OnDisable();
 
-            Registry.UnRegister(this);
+            Registry.Unregister(this);
         }
 
         protected override void Start()

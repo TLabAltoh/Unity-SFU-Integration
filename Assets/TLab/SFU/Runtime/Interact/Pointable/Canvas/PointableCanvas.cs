@@ -31,7 +31,7 @@ namespace TLab.SFU.Interact
 
             CanvasModule.UnregisterPointableCanvas(this);
 
-            Registry.UnRegister(this);
+            Registry.Unregister(this);
 
             m_registed = false;
         }

@@ -129,30 +129,30 @@ namespace TLab.SFU.Interact
             SetMaterialDirty();
         }
 
-        public override void Hovered(Interactor interactor)
+        public override void OnHover(Interactor interactor)
         {
-            base.Hovered(interactor);
+            base.OnHover(interactor);
 
             SetAllDirty();
         }
 
-        public override void UnHovered(Interactor interactor)
+        public override void OnUnhover(Interactor interactor)
         {
-            base.UnHovered(interactor);
+            base.OnUnhover(interactor);
 
             SetAllDirty();
         }
 
-        public override void Selected(Interactor interactor)
+        public override void OnSelect(Interactor interactor)
         {
-            base.Selected(interactor);
+            base.OnSelect(interactor);
 
             SetAllDirty();
         }
 
-        public override void UnSelected(Interactor interactor)
+        public override void OnUnselect(Interactor interactor)
         {
-            base.UnSelected(interactor);
+            base.OnUnselect(interactor);
 
             SetAllDirty();
         }

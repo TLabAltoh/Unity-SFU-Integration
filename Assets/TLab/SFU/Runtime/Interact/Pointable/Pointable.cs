@@ -34,46 +34,46 @@ namespace TLab.SFU.Interact
     {
         public event Action<PointerEvent> whenPointerEventRaised;
 
-        public override void Hovered(Interactor interactor)
+        public override void OnHover(Interactor interactor)
         {
-            base.Hovered(interactor);
+            base.OnHover(interactor);
 
             whenPointerEventRaised?.Invoke(
                 new PointerEvent(interactor.identifier, PointerEventType.Hover, interactor.pointer));
         }
 
-        public override void WhileHovered(Interactor interactor)
+        public override void WhileHover(Interactor interactor)
         {
-            base.WhileHovered(interactor);
+            base.WhileHover(interactor);
         }
 
-        public override void UnHovered(Interactor interactor)
+        public override void OnUnhover(Interactor interactor)
         {
-            base.UnHovered(interactor);
+            base.OnUnhover(interactor);
 
             whenPointerEventRaised?.Invoke(
                 new PointerEvent(interactor.identifier, PointerEventType.UnHover, interactor.pointer));
         }
 
-        public override void Selected(Interactor interactor)
+        public override void OnSelect(Interactor interactor)
         {
-            base.Selected(interactor);
+            base.OnSelect(interactor);
 
             whenPointerEventRaised?.Invoke(
                 new PointerEvent(interactor.identifier, PointerEventType.Select, interactor.pointer));
         }
 
-        public override void WhileSelected(Interactor interactor)
+        public override void WhileSelect(Interactor interactor)
         {
-            base.WhileSelected(interactor);
+            base.WhileSelect(interactor);
 
             whenPointerEventRaised?.Invoke(
                 new PointerEvent(interactor.identifier, PointerEventType.Move, interactor.pointer));
         }
 
-        public override void UnSelected(Interactor interactor)
+        public override void OnUnselect(Interactor interactor)
         {
-            base.UnSelected(interactor);
+            base.OnUnselect(interactor);
 
             whenPointerEventRaised?.Invoke(
                 new PointerEvent(interactor.identifier, PointerEventType.UnSelect, interactor.pointer));
@@ -90,7 +90,7 @@ namespace TLab.SFU.Interact
         {
             base.OnDisable();
 
-            Registry.UnRegister(this);
+            Registry.Unregister(this);
         }
     }
 }

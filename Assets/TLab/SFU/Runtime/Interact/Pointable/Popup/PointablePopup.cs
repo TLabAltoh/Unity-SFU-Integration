@@ -22,22 +22,22 @@ namespace TLab.SFU.Interact
 
         public int index { set => m_index = value; }
 
-        public override void Hovered(Interactor interactor)
+        public override void OnHover(Interactor interactor)
         {
-            base.Hovered(interactor);
+            base.OnHover(interactor);
 
             var instance = m_controller.GetFloatingAnchor(m_index);
             if (instance)
-                instance.FadeInAsync();
+                instance.Fade(1);
         }
 
-        public override void UnHovered(Interactor interactor)
+        public override void OnUnhover(Interactor interactor)
         {
-            base.UnHovered(interactor);
+            base.OnUnhover(interactor);
 
             var instance = m_controller.GetFloatingAnchor(m_index);
             if (instance)
-                instance.FadeOutAsync();
+                instance.Fade(0);
         }
     }
 }

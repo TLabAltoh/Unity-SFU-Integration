@@ -11,9 +11,9 @@ namespace TLab.SFU.Interact
 
         public Vector3 handPos => m_hand.pointer.position;
 
-        public override void Selected(Interactor interactor)
+        public override void OnSelect(Interactor interactor)
         {
-            base.Selected(interactor);
+            base.OnSelect(interactor);
 
             if (m_hand == null)
             {
@@ -23,9 +23,9 @@ namespace TLab.SFU.Interact
             }
         }
 
-        public override void UnSelected(Interactor interactor)
+        public override void OnUnselect(Interactor interactor)
         {
-            base.UnSelected(interactor);
+            base.OnUnselect(interactor);
 
             if (m_hand == interactor)
             {
@@ -35,9 +35,9 @@ namespace TLab.SFU.Interact
             }
         }
 
-        public override void WhileSelected(Interactor interactor)
+        public override void WhileSelect(Interactor interactor)
         {
-            base.WhileSelected(interactor);
+            base.WhileSelect(interactor);
         }
 
         public void RegistScalable(ScaleLogic logic)

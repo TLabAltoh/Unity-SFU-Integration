@@ -45,8 +45,19 @@ namespace TLab.SFU.Network
             Initialized,
         }
 
+        public enum SocketType
+        {
+            WebRTC,
+            WebSocket,
+        }
+
         [SerializeField] protected Direction m_direction = Direction.SendRecv;
+        [SerializeField] protected SocketType m_syncDefault = SocketType.WebRTC;
         [SerializeField] protected NetworkObjectGroup m_group;
+
+        private delegate void SyncFunc(int to, bool force = false, bool request = false, bool immediate = false);
+
+        private SyncFunc m_funcSyncDefault;
 
         protected State m_state = State.None;
 
@@ -59,6 +70,8 @@ namespace TLab.SFU.Network
         public State state => m_state;
 
         public NetworkId networkId => m_networkId;
+
+        public SocketType syncDefault => m_syncDefault;
 
         public bool synchronised => m_synchronised;
 
@@ -80,7 +93,7 @@ namespace TLab.SFU.Network
             m_direction = Direction.RecvOnly;
 
             if (m_networkId)
-                UnRegister();
+                Unregister();
 
             m_state = State.Shutdowned;
 
@@ -168,11 +181,13 @@ namespace TLab.SFU.Network
                 Move2Waiting0();
         }
 
-        public virtual void OnSyncRequest(int from) { }
-
-        public virtual void SyncViaWebRTC(int to, bool frce = false, bool request = false, bool immediate = false) { }
+        public virtual void SyncViaWebRTC(int to, bool force = false, bool request = false, bool immediate = false) { }
 
         public virtual void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false) { }
+
+        public virtual void Sync(int to, bool force = false, bool request = false, bool immediate = false) => m_funcSyncDefault.Invoke(to, force, request, immediate);
+
+        public virtual void OnSyncRequest(int from) { }
 
         protected virtual void Register()
         {
@@ -180,7 +195,7 @@ namespace TLab.SFU.Network
             Registry.Register(m_networkId.id, this);
         }
 
-        protected virtual void UnRegister() => Registry.UnRegister(m_networkId.id);
+        protected virtual void Unregister() => Registry.Unregister(m_networkId.id);
 
         protected virtual void RegisterOnMessage()
         {
@@ -191,7 +206,18 @@ namespace TLab.SFU.Network
             });
         }
 
-        protected virtual void Start() { }
+        protected virtual void Start()
+        {
+            switch (m_syncDefault)
+            {
+                case SocketType.WebRTC:
+                    m_funcSyncDefault = SyncViaWebRTC;
+                    break;
+                case SocketType.WebSocket:
+                    m_funcSyncDefault = SyncViaWebSocket;
+                    break;
+            }
+        }
 
         protected virtual void Update() { }
 
@@ -204,7 +230,7 @@ namespace TLab.SFU.Network
         protected virtual void OnDisable()
         {
             if (started && m_networkId)
-                UnRegister();
+                Unregister();
         }
 
         protected virtual void OnDestroy() => Shutdown();

@@ -177,6 +177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 2
+  m_syncDefault: 0
   m_group: {fileID: 7621256556746051558}
   m_frequency: 16000
 --- !u!1 &3478780567771759180
@@ -300,6 +301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_direction: 0
+  m_syncDefault: 0
   m_group: {fileID: 7621256556746051558}
   m_parent: {fileID: 0}
   positionThreshold: 0.001

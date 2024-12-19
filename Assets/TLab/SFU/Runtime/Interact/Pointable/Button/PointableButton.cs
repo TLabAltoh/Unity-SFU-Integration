@@ -10,44 +10,20 @@ namespace TLab.SFU.Interact
 
         [SerializeField] private UnityEvent[] m_onRelease;
 
-        public override void Hovered(Interactor interactor)
+        public override void OnSelect(Interactor interactor)
         {
-            base.Hovered(interactor);
-        }
-
-        public override void Selected(Interactor interactor)
-        {
-            base.Selected(interactor);
+            base.OnSelect(interactor);
 
             foreach (var callback in m_onPress)
-            {
                 callback.Invoke();
-            }
         }
 
-        public override void UnHovered(Interactor interactor)
+        public override void OnUnselect(Interactor interactor)
         {
-            base.UnHovered(interactor);
-        }
-
-        public override void UnSelected(Interactor interactor)
-        {
-            base.UnSelected(interactor);
+            base.OnUnselect(interactor);
 
             foreach (var callback in m_onRelease)
-            {
                 callback.Invoke();
-            }
-        }
-
-        public override void WhileHovered(Interactor interactor)
-        {
-            base.WhileHovered(interactor);
-        }
-
-        public override void WhileSelected(Interactor interactor)
-        {
-            base.WhileSelected(interactor);
         }
     }
 }
