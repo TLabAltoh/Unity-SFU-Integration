@@ -284,7 +284,7 @@ namespace TLab.SFU.Interact
                 NetworkClient.SendWS(new MSG_GrabbLock(m_networkId.id, m_grabState.grabberId, MSG_GrabbLock.Action.ForceFree).Marshall());
         }
 
-        public override bool SkipApplyCurrentTransform() => base.SkipApplyCurrentTransform() || m_grabState.others || m_grabState.free && (NetworkClient.rbMode == NetworkClient.RigidbodyMode.Recv);
+        public override bool SkipApplyCurrentTransform() => base.SkipApplyCurrentTransform() || m_grabState.others || m_grabState.free && ((NetworkClient.rbMode == NetworkClient.RigidbodyMode.Recv) && (m_rbState.used && m_rbState.gravity));
 
         private void CreateCombinedMeshCollider()
         {

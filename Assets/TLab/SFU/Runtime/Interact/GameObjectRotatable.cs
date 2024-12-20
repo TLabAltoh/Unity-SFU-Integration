@@ -1,5 +1,4 @@
 using UnityEngine;
-using TLab.SFU.Network;
 
 namespace TLab.SFU.Interact
 {
@@ -12,6 +11,8 @@ namespace TLab.SFU.Interact
         [SerializeField, Min(0f)] float m_duration = 0.1f;
 
         private GameObjectController m_controller;
+
+        private Rigidbody m_rb;
 
         private Vector3 m_axis;
 
@@ -68,6 +69,8 @@ namespace TLab.SFU.Interact
             base.Start();
 
             m_controller = GetComponent<GameObjectController>();
+
+            m_rb = GetComponent<Rigidbody>();
         }
 
         protected override void Update()
@@ -76,10 +79,12 @@ namespace TLab.SFU.Interact
 
             if ((m_controller == null || !grabbed) && (!synchronised || m_onShot) && m_angle > 0)
             {
-                transform.rotation = Quaternion.AngleAxis(m_angle, m_axis) * transform.rotation;
-                m_angle = Mathf.Clamp(m_angle - m_duration * Time.deltaTime, 0, float.MaxValue);
+                if ((m_rb != null) && m_controller.rbState.used)
+                    m_rb.MoveRotation(Quaternion.AngleAxis(m_angle, m_axis) * m_rb.rotation);
+                else
+                    transform.rotation = Quaternion.AngleAxis(m_angle, m_axis) * transform.rotation;
 
-                m_controller?.SyncViaWebRTC(NetworkClient.userId);
+                m_angle = Mathf.Clamp(m_angle - m_duration * Time.deltaTime, 0, float.MaxValue);
             }
             else
                 m_angle = 0;

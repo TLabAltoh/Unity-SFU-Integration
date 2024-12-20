@@ -4016,23 +4016,23 @@ PrefabInstance:
     - target: {fileID: 249842031496305607, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
       propertyPath: m_ring
       value: 
-      objectReference: {fileID: 5048046723555287764}
+      objectReference: {fileID: 3615357765806664879}
     - target: {fileID: 249842031496305607, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
       propertyPath: m_index
       value: 
-      objectReference: {fileID: 5967521913655875455}
+      objectReference: {fileID: 3969526163180222716}
     - target: {fileID: 249842031496305607, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
       propertyPath: m_pinky
       value: 
-      objectReference: {fileID: 3136554269994233814}
+      objectReference: {fileID: 3610459601578691966}
     - target: {fileID: 249842031496305607, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
       propertyPath: m_thumb
       value: 
-      objectReference: {fileID: 2123805745098792854}
+      objectReference: {fileID: 8692955282032848046}
     - target: {fileID: 249842031496305607, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
       propertyPath: m_middle
       value: 
-      objectReference: {fileID: 5460418647599817528}
+      objectReference: {fileID: 3485509268536303805}
     - target: {fileID: 249842031496305607, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
       propertyPath: m_direction
       value: 1

@@ -72,13 +72,14 @@ namespace TLab.SFU.Network
 
             if (!self)
                 OnSyncRequestComplete(m_group.owner);
-            else
-                Whip($"stream#voice#{m_group.owner}");
+            //else if (m_group.owner == 0)
+            //    Whip($"stream#voice#{m_group.owner}");
         }
 
         public void Whep(string stream)
         {
-            m_rtcClient = WebRTCClient.Whep(this, NetworkClient.adapter, stream, null, (OnWhepOpen, OnWhepOpen), (OnWhepClose, OnWhepClose), OnError, new RTCDataChannelInit(), false, true, OnTrack);
+            //if (m_group.owner == 0)
+            //    m_rtcClient = WebRTCClient.Whep(this, NetworkClient.adapter, stream, null, (OnWhepOpen, OnWhepOpen), (OnWhepClose, OnWhepClose), OnError, new RTCDataChannelInit(), false, true, OnTrack);
         }
 
         public void Whip(string stream)
