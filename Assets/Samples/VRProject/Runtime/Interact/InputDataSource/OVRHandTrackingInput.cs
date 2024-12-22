@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TLab.SFU.Input;
+using Oculus.Interaction;
 using Oculus.Interaction.Input;
 
 namespace TLab.VRProjct
@@ -41,6 +42,12 @@ namespace TLab.VRProjct
         [SerializeField] private KeyCode m_recordKey = KeyCode.Space;
 #endif
 
+        private static OVRHandTrackingInput m_left;
+        private static OVRHandTrackingInput m_right;
+
+        public static OVRHandTrackingInput left => m_left;
+        public static OVRHandTrackingInput right => m_right;
+
         private bool m_skeltonInitialized = false;
 
         private bool m_grabFired = false;
@@ -50,8 +57,6 @@ namespace TLab.VRProjct
         private List<OVRBone> m_fingerBones;
 
         private const string DEFAULT_GESTUR_NAME = "New Gesture";
-
-        private const float AVERAGE = 0.5f;
 
         public bool rayHide
         {
@@ -66,6 +71,8 @@ namespace TLab.VRProjct
                 return active;
             }
         }
+
+        public bool isConnected => m_hand.IsConnected;
 
         private string DetectGesture()
         {
@@ -119,7 +126,20 @@ namespace TLab.VRProjct
         }
 #endif
 
-        void Update()
+        private void Start()
+        {
+            switch (m_hand.Handedness)
+            {
+                case Handedness.Left:
+                    m_left = this;
+                    break;
+                case Handedness.Right:
+                    m_right = this;
+                    break;
+            }
+        }
+
+        private void Update()
         {
 #if UNITY_EDITOR
             if (m_editMode && Input.GetKeyDown(m_recordKey))
@@ -134,7 +154,7 @@ namespace TLab.VRProjct
 
             m_hand.GetPointerPose(out m_pointerPose);
 
-            // Detect Trigger Press
+            // Detect Trigger's Press
 
             bool triggerFired = dataAsset.IsFingerPinching[(int)OVRHand.HandFinger.Index];
             bool prevTriggerFired = m_triggerFired;
@@ -152,7 +172,7 @@ namespace TLab.VRProjct
             else if (!triggerFired && prevTriggerFired)
                 m_onRelease = true;
 
-            // Detect Grab Press
+            // Detect Grabber's Press
 
             if ((m_skeleton != null) && m_skeltonInitialized)
             {

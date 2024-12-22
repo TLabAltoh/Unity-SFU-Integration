@@ -940,6 +940,7 @@ MonoBehaviour:
   m_direction: 2
   m_syncDefault: 0
   m_group: {fileID: 7621256556746051558}
+  m_hand: 0
   m_thumb: {fileID: 3513103554564374}
   m_index: {fileID: 6471357872415400498}
   m_middle: {fileID: 523779046245717872}
@@ -1195,6 +1196,7 @@ MonoBehaviour:
   m_direction: 2
   m_syncDefault: 0
   m_group: {fileID: 7621256556746051558}
+  m_hand: 1
   m_thumb: {fileID: 9201288335031852218}
   m_index: {fileID: 3442309881170167006}
   m_middle: {fileID: 6469575743451914545}

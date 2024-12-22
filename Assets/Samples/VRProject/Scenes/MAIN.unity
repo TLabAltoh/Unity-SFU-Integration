@@ -665,6 +665,28 @@ Material:
     - _outlineColor: {r: 0, g: 1, b: 1, a: 0}
     - _r: {r: 10, g: 10, b: 10, a: 10}
   m_BuildTextureStacks: []
+--- !u!1 &320941630 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7341489592120033134, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+  m_PrefabInstance: {fileID: 1992072395091168998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &320941633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320941630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Hand.L
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!43 &446207094
 Mesh:
   m_ObjectHideFlags: 0
@@ -1012,6 +1034,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 0
   m_id: Pinky.R
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
+--- !u!1 &575113309 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7341489592708943270, guid: c26856fcc0fbd244982fcaa34364e616, type: 3}
+  m_PrefabInstance: {fileID: 1992072395091168998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &575113312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 575113309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Hand.R
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1

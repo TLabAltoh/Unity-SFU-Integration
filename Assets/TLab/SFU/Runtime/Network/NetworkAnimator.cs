@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace TLab.SFU.Network
 {
+    // TODO: 
+    // 1. Add interpolation
+
     using Registry = Registry<Address64, NetworkAnimator>;
 
     [AddComponentMenu("TLab/SFU/Network Animator (TLab)")]

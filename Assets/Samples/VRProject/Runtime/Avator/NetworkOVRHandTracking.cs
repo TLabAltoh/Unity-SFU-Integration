@@ -156,6 +156,9 @@ namespace TLab.VRProjct.Avator
             Step,
         };
 
+        [Header("OVR Hand")]
+        [SerializeField] private OVRHand.Hand m_hand;
+
         [Header("Finger")]
         [SerializeField] private Transform m_thumb;
         [SerializeField] private Transform m_index;
@@ -456,9 +459,23 @@ namespace TLab.VRProjct.Avator
 
         protected override void Update()
         {
-            InterpolateTransform();
+            if (Const.Recv.HasFlag(m_direction))
+                InterpolateTransform();
 
-            Sync(NetworkClient.userId);
+            var isTracked = false;
+            OVRHandTrackingInput hand = null;
+            switch (m_hand)
+            {
+                case OVRHand.Hand.HandLeft:
+                    hand = OVRHandTrackingInput.left;
+                    break;
+                case OVRHand.Hand.HandRight:
+                    hand = OVRHandTrackingInput.right;
+                    break;
+            }
+
+            if (Const.Send.HasFlag(m_direction))
+                Sync(NetworkClient.userId);
         }
 
         protected override void Register()
