@@ -45,7 +45,7 @@ namespace TLab.SFU.Sample
 
         private void StartAudio()
         {
-            var clip = Resources.Load<AudioClip>("Sample/sin_mono");
+            var clip = Resources.Load<AudioClip>("TLab/SFU/Sample/sin_mono");
             if (!clip)
                 Debug.LogError(THIS_NAME + "Audio clip is null !");
             m_audioSource.loop = true;

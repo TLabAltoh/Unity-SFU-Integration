@@ -15,6 +15,10 @@ namespace TLab.SFU.Network
 
         [SerializeField] private int m_frequency = 16000;
 
+        [Header("Test")]
+        [SerializeField] private bool m_useAudioClip = true;
+        [SerializeField] private string m_audioClipName = "TLab/SFU/Sample/sin_mono";
+
         private AudioSource m_audioSource;
         private AudioClip m_microphoneClip;
         private string m_microphoneName;
@@ -91,15 +95,27 @@ namespace TLab.SFU.Network
 
         public void Whip(string stream)
         {
-            m_recording = StartRecording();
-            if (!m_recording)
-                return;
+            if (!m_useAudioClip)
+            {
+                m_recording = StartRecording();
+                if (!m_recording)
+                    return;
 
-            while (!(Microphone.GetPosition(m_microphoneName) > 0)) { }
+                while (!(Microphone.GetPosition(m_microphoneName) > 0)) { }
 
-            m_audioSource.clip = m_microphoneClip;
-            m_audioSource.loop = true;
-            m_audioSource.Play();
+                m_audioSource.clip = m_microphoneClip;
+                m_audioSource.loop = true;
+                m_audioSource.Play();
+            }
+            else
+            {
+                var clip = Resources.Load<AudioClip>(m_audioClipName);
+                if (!clip)
+                    Debug.LogError(THIS_NAME + $"Audio clip:{m_audioClipName} is null !");
+                m_audioSource.loop = true;
+                m_audioSource.clip = clip;
+                m_audioSource.Play();
+            }
 
             m_rtcClient = WebRTCClient.Whip(this, NetworkClient.adapter, stream, null, (OnWhipOpen, OnWhipOpen), (OnWhipClose, OnWhipClose), OnError, new RTCDataChannelInit(), null, m_audioSource);
         }
