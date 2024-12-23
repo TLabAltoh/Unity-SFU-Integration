@@ -144,12 +144,6 @@ MonoBehaviour:
     origPos: {x: 0, y: 3.5520034, z: -3.5479317}
     origScale: {x: 1, y: 1, z: 1}
     origRot: {x: 0.5805286, y: -0, z: -0, w: 0.81423986}
-  - bone: {fileID: 5040397132598047350}
-    target: {fileID: 3119178374641064131}
-    length: 0.894947
-    origPos: {x: 0, y: 3.5520034, z: -3.5479317}
-    origScale: {x: 1, y: 1, z: 1}
-    origRot: {x: 0.5805286, y: -0, z: -0, w: 0.81423986}
   endPointOfLastBone: {fileID: 6014709824999408403}
   poleTarget: {fileID: 7354620613738797421}
   iterations: 10
@@ -3701,12 +3695,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bones:
-  - bone: {fileID: 3136554269994233814}
-    target: {fileID: 3118827362317726907}
-    length: 0.17110904
-    origPos: {x: 0, y: 3.877934, z: -1.7222352}
-    origScale: {x: 1, y: 1, z: 1}
-    origRot: {x: 0.5805286, y: -0, z: -0, w: 0.81423986}
   - bone: {fileID: 5119403684861551603}
     target: {fileID: 3119201443935809269}
     length: 0.9609994
@@ -4384,11 +4372,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3479149544193982416, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
   m_PrefabInstance: {fileID: 1945646071888504939}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &3118827362317726907 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3479063959673969872, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
-  m_PrefabInstance: {fileID: 1945646071888504939}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &3118869060440529537 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3479066076586701546, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
@@ -4412,11 +4395,6 @@ Transform:
 --- !u!4 &3119024123283860905 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3479221069653018050, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
-  m_PrefabInstance: {fileID: 1945646071888504939}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &3119178374641064131 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3479557376569503912, guid: a7eb6e777ab66d5479b2b3cedb284058, type: 3}
   m_PrefabInstance: {fileID: 1945646071888504939}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &3119192733839407389 stripped

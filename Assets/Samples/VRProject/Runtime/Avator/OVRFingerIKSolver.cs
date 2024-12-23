@@ -23,13 +23,13 @@ namespace TLab.VRProjct.Avator
 
         public enum HandType
         {
-            Left,
-            Right,
+            LeftHand,
+            RightHand,
         };
 
         [Header("Bones - Leaf to Root")]
         [Tooltip("Make sure you assign them in leaf to root order only...")]
-        [SerializeField] public Bone[] bones;
+        public Bone[] bones;
         [Tooltip("The end point of the leaf bone positioned at tip of the chain to get its orientation...")]
         public Transform endPointOfLastBone;
 
@@ -46,16 +46,14 @@ namespace TLab.VRProjct.Avator
         [HideInInspector]
         public bool needResetOption = false;
 
-        private Vector3 lastTargetPosition;
-        private bool editorInitialized = false;
+        private Vector3 m_lastTargetPosition;
+        private bool m_editorInitialized = false;
 
         void Start()
         {
-            lastTargetPosition = transform.position;
-            if (Application.isPlaying && !editorInitialized)
-            {
+            m_lastTargetPosition = transform.position;
+            if (Application.isPlaying && !m_editorInitialized)
                 Initialize();
-            }
         }
 
         public void Setup()
@@ -94,7 +92,7 @@ namespace TLab.VRProjct.Avator
 
         void Update()
         {
-            if (Application.isEditor && enable && !editorInitialized)
+            if (Application.isEditor && enable && !m_editorInitialized)
             {
                 if (enable)
                 {
@@ -124,12 +122,10 @@ namespace TLab.VRProjct.Avator
                 }
                 Initialize();
             }
-            if (lastTargetPosition != transform.position)
+            if (m_lastTargetPosition != transform.position)
             {
                 if (Application.isPlaying || (Application.isEditor && enable))
-                {
                     Solve();
-                }
             }
         }
 
@@ -139,34 +135,39 @@ namespace TLab.VRProjct.Avator
             bones[0].origScale = bones[0].bone.localScale;
             bones[0].origRot = bones[0].bone.rotation;
             bones[0].length = Vector3.Distance(endPointOfLastBone.position, bones[0].bone.position);
-            GameObject g = new GameObject();
+
+            var g = new GameObject();
             g.name = bones[0].bone.name;
             g.transform.position = bones[0].bone.position;
             g.transform.up = -(endPointOfLastBone.position - bones[0].bone.position);
             g.transform.parent = bones[0].bone.parent;
+
             bones[0].bone.parent = g.transform;
             bones[0].bone = g.transform;
+
             for (int i = 1; i < bones.Length; i++)
             {
                 bones[i].origPos = bones[i].bone.position;
                 bones[i].origScale = bones[i].bone.localScale;
                 bones[i].origRot = bones[i].bone.rotation;
                 bones[i].length = Vector3.Distance(bones[i - 1].bone.position, bones[i].bone.position);
+
                 g = new GameObject();
                 g.name = bones[i].bone.name;
                 g.transform.position = bones[i].bone.position;
                 g.transform.up = -(bones[i - 1].bone.position - bones[i].bone.position);
                 g.transform.parent = bones[i].bone.parent;
+
                 bones[i].bone.parent = g.transform;
                 bones[i].bone = g.transform;
             }
-            editorInitialized = true;
+            m_editorInitialized = true;
             needResetOption = true;
         }
 
         void Solve()
         {
-            Vector3 rootPoint = bones[bones.Length - 1].bone.position;
+            var rootPoint = bones[bones.Length - 1].bone.position;
             bones[bones.Length - 1].bone.up = -(poleTarget.position - bones[bones.Length - 1].bone.position);
             for (int i = bones.Length - 2; i >= 0; i--)
             {
@@ -185,11 +186,9 @@ namespace TLab.VRProjct.Avator
 
                 bones[bones.Length - 1].bone.position = rootPoint;
                 for (int j = bones.Length - 2; j >= 0; j--)
-                {
                     bones[j].bone.position = bones[j + 1].bone.position + (-bones[j + 1].bone.up * bones[j + 1].length);
-                }
             }
-            lastTargetPosition = transform.position;
+            m_lastTargetPosition = transform.position;
 
             RotateTarget();
         }
@@ -200,7 +199,7 @@ namespace TLab.VRProjct.Avator
             var start2Pole = poleTarget.position - bones.Last().bone.position;
             var angleAxis = Vector3.Cross(start2End, start2Pole).normalized;
 
-            var flipY = (handType == HandType.Right) ? -1 : 1;
+            var flipY = (handType == HandType.RightHand) ? -1 : 1;
 
             for (int i = 0; i < bones.Length; i++)
             {
@@ -220,24 +219,20 @@ namespace TLab.VRProjct.Avator
         {
             for (int i = 0; i < bones.Length; i++)
             {
-                Transform t = bones[i].bone.GetChild(0);
+                var t = bones[i].bone.GetChild(0);
                 bones[i].bone.GetChild(0).parent = bones[i].bone.parent;
                 if (Application.isPlaying)
-                {
                     Destroy(bones[i].bone.gameObject);
-                }
                 else
-                {
                     DestroyImmediate(bones[i].bone.gameObject);
-                }
                 bones[i].bone = t;
                 t.position = bones[i].origPos;
                 t.rotation = bones[i].origRot;
                 t.localScale = bones[i].origScale;
             }
-            lastTargetPosition = Vector3.zero;
+            m_lastTargetPosition = Vector3.zero;
             enable = false;
-            editorInitialized = false;
+            m_editorInitialized = false;
             needResetOption = false;
         }
     }

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TLab.SFU.Input;
-using Oculus.Interaction;
 using Oculus.Interaction.Input;
 
 namespace TLab.VRProjct
@@ -63,11 +62,7 @@ namespace TLab.VRProjct
             get
             {
                 bool active = false;
-                m_rayHideGestures.ForEach((g) =>
-                {
-                    active |= (g == m_currentGesture);
-                });
-
+                m_rayHideGestures.ForEach((g) => active |= (g == m_currentGesture));
                 return active;
             }
         }
@@ -114,7 +109,7 @@ namespace TLab.VRProjct
 #if UNITY_EDITOR
         private void SavePose()
         {
-            Gesture g = new Gesture();
+            var g = new Gesture();
 
             g.name = DEFAULT_GESTUR_NAME;
 

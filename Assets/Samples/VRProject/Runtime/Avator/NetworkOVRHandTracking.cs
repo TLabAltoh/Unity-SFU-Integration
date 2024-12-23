@@ -462,18 +462,6 @@ namespace TLab.VRProjct.Avator
             if (Const.Recv.HasFlag(m_direction))
                 InterpolateTransform();
 
-            var isTracked = false;
-            OVRHandTrackingInput hand = null;
-            switch (m_hand)
-            {
-                case OVRHand.Hand.HandLeft:
-                    hand = OVRHandTrackingInput.left;
-                    break;
-                case OVRHand.Hand.HandRight:
-                    hand = OVRHandTrackingInput.right;
-                    break;
-            }
-
             if (Const.Send.HasFlag(m_direction))
                 Sync(NetworkClient.userId);
         }

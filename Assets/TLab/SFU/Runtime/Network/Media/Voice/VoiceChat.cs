@@ -15,7 +15,7 @@ namespace TLab.SFU.Network
 
         [SerializeField] private int m_frequency = 16000;
 
-        private AudioSource m_microphoneSource;
+        private AudioSource m_audioSource;
         private AudioClip m_microphoneClip;
         private string m_microphoneName;
         private bool m_recording = false;
@@ -23,6 +23,8 @@ namespace TLab.SFU.Network
         private static bool m_dpsBufferInitialized = false;
 
         private Queue<int> m_requests = new Queue<int>();
+
+        private MediaStream m_recvStream;
 
         private WebRTCClient m_rtcClient;
 
@@ -68,7 +70,7 @@ namespace TLab.SFU.Network
         {
             base.Init(@public, self);
 
-            m_microphoneSource = GetComponent<AudioSource>();
+            m_audioSource = GetComponent<AudioSource>();
 
             if (!self)
                 OnSyncRequestComplete(m_group.owner);
@@ -79,7 +81,12 @@ namespace TLab.SFU.Network
         public void Whep(string stream)
         {
             if (m_group.owner == 0)
+            {
+                m_recvStream = new MediaStream();
+                m_recvStream.OnAddTrack = OnAddTrack;
+
                 m_rtcClient = WebRTCClient.Whep(this, NetworkClient.adapter, stream, null, (OnWhepOpen, OnWhepOpen), (OnWhepClose, OnWhepClose), OnError, new RTCDataChannelInit(), false, true, OnTrack);
+            }
         }
 
         public void Whip(string stream)
@@ -90,16 +97,32 @@ namespace TLab.SFU.Network
 
             while (!(Microphone.GetPosition(m_microphoneName) > 0)) { }
 
-            m_microphoneSource.clip = m_microphoneClip;
-            m_microphoneSource.loop = true;
-            m_microphoneSource.Play();
+            m_audioSource.clip = m_microphoneClip;
+            m_audioSource.loop = true;
+            m_audioSource.Play();
 
-            m_rtcClient = WebRTCClient.Whip(this, NetworkClient.adapter, stream, null, (OnWhipOpen, OnWhipOpen), (OnWhipClose, OnWhipClose), OnError, new RTCDataChannelInit(), null, m_microphoneSource);
+            m_rtcClient = WebRTCClient.Whip(this, NetworkClient.adapter, stream, null, (OnWhipOpen, OnWhipOpen), (OnWhipClose, OnWhipClose), OnError, new RTCDataChannelInit(), null, m_audioSource);
         }
 
         private void OnTrack(MediaStreamTrackEvent t)
         {
             Debug.Log($"{THIS_NAME}: OnTrack {t.Track.Id}");
+
+            m_recvStream.AddTrack(t.Track);
+        }
+
+        void OnAddTrack(MediaStreamTrackEvent e)
+        {
+            if (m_audioSource.isPlaying)
+            {
+                m_audioSource.loop = false;
+                m_audioSource.Stop();
+            }
+
+            var track = e.Track as AudioStreamTrack;
+            m_audioSource.SetTrack(track);
+            m_audioSource.loop = true;
+            m_audioSource.Play();
         }
 
         private void OnWhipOpen()
