@@ -40,6 +40,8 @@ git submodule update --init
 
 <details><summary>Oculus Quest or PC</summary>
 
+You may not need to check this as the bellow is the default setting.
+
 - Replace ```StandaloneInputModule``` with ```CanvasModule```
 
 <img src="Media/setup-3.png" width="256"></img>
@@ -47,8 +49,12 @@ git submodule update --init
 - Please confirm that the following setting
 
 <img src="Media/setup-1.png" width="256"></img>  
-<img src="Media/setup-5.png" width="256"></img>  
 <img src="Media/setup-7.png" width="256"></img>  
+
+Gameobject.name: "Canvas Module"  
+<img src="Media/setup-5.png" width="256"></img>  
+
+Gameobject.name: "TVRCameraRig"  
 <img src="Media/setup-9.png" width="256"></img>
 
 
@@ -63,8 +69,12 @@ git submodule update --init
 - Please confirm that the following settings
 
 <img src="Media/setup-2.png" width="256"></img>  
-<img src="Media/setup-6.png" width="256"></img>  
 <img src="Media/setup-8.png" width="256"></img>  
+
+Gameobject.name: "Canvas Module"  
+<img src="Media/setup-6.png" width="256"></img>  
+
+Gameobject.name: "TVRCameraRig"  
 <img src="Media/setup-10.png" width="256"></img>
 
 </details>
@@ -77,7 +87,7 @@ git submodule update --init
 
 ### How to move character
 ```PC```: just same as Unity Editor's Scene View.  
-```Oculus Quest```: Headset's Position Tracking  
+```Oculus Quest```: Headset's position tracking  
 ```Android Mobile```: Joystick at bottom left of screen.
 
 ### Server Setup
