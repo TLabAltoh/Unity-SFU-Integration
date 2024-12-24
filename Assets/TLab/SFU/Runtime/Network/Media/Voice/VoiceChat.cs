@@ -118,6 +118,7 @@ namespace TLab.SFU.Network
             }
 
             m_rtcClient = WebRTCClient.Whip(this, NetworkClient.adapter, stream, null, (OnWhipOpen, OnWhipOpen), (OnWhipClose, OnWhipClose), OnError, new RTCDataChannelInit(), null, m_audioSource);
+            m_rtcClient.ChangeBandwidth(200);
         }
 
         private void OnTrack(MediaStreamTrackEvent t)

@@ -209,10 +209,10 @@ namespace TLab.SFU.Network
             client.CreatePeerConnection(ClientType.Whep, dataChannelCnf);
 
             if (receiveAudio)
-                client.InitReceiver(TrackKind.Audio);
+                client.InitAudioReceiver();
 
             if (receiveVideo)
-                client.InitReceiver(TrackKind.Video);
+                client.InitVideoReceiver();
 
             mono.StartCoroutine(client.CreateOffer());
 
@@ -347,6 +347,29 @@ namespace TLab.SFU.Network
             }
         }
 
+        public void ChangeBandwidth(ulong? bandwidth)
+        {
+            foreach (var transceiver in m_pc.GetTransceivers())
+            {
+                var sender = transceiver.Sender;
+                var parameters = sender.GetParameters();
+                if (bandwidth == null)
+                {
+                    parameters.encodings[0].maxBitrate = null;
+                    parameters.encodings[0].minBitrate = null;
+                }
+                else
+                {
+                    parameters.encodings[0].maxBitrate = bandwidth * 1000;
+                    parameters.encodings[0].minBitrate = bandwidth * 1000;
+                }
+
+                var error = sender.SetParameters(parameters);
+                if (error.errorType != RTCErrorType.None)
+                    Debug.LogErrorFormat("RTCRtpSender.SetParameters failed {0}", error.errorType);
+            }
+        }
+
         public void Pause(bool active)
         {
 #if false
@@ -364,34 +387,33 @@ namespace TLab.SFU.Network
             }
         }
 
-        public RTCRtpCodecCapability[] GetAudioCodecs()
+        private RTCRtpCodecCapability[] ExcludeCodecs(RTCRtpCapabilities capabilities, params string[] excludeCodecTypes)
         {
-            var audioCodecs = new List<RTCRtpCodecCapability>();
-            var excludeCodecTypes = new[] { "audio/CN", "audio/telephone-event" };
-            foreach (var codec in RTCRtpSender.GetCapabilities(TrackKind.Audio).codecs)
+            var codecs = new List<RTCRtpCodecCapability>();
+            foreach (var codec in capabilities.codecs)
             {
                 if (excludeCodecTypes.Count(type => codec.mimeType.Contains(type)) > 0)
                     continue;
 
-                audioCodecs.Add(codec);
+                codecs.Add(codec);
             }
-
-            return audioCodecs.ToArray();
+            return codecs.ToArray();
         }
+
+        public RTCRtpCodecCapability[] GetAudioSenderCodecs() => ExcludeCodecs(RTCRtpSender.GetCapabilities(TrackKind.Audio), "audio/CN", "audio/telephone-event");
+        public RTCRtpCodecCapability[] GetVideoSenderCodecs() => ExcludeCodecs(RTCRtpSender.GetCapabilities(TrackKind.Video), "video/red", "video/ulpfec", "video/rtx");
+
+        public RTCRtpCodecCapability[] GetAudioReceiverCodecs() => ExcludeCodecs(RTCRtpReceiver.GetCapabilities(TrackKind.Audio), "audio/CN", "audio/telephone-event");
+        public RTCRtpCodecCapability[] GetVideoReceiverCodecs() => ExcludeCodecs(RTCRtpReceiver.GetCapabilities(TrackKind.Video), "video/red", "video/ulpfec", "video/rtx");
 
         public void InitAudioSender(AudioSource audioSource)
         {
-            var track = new AudioStreamTrack(audioSource);
-
-            var sender = m_pc.AddTrack(track, m_sMediaStream);
-
+            var sender = m_pc.AddTrack(new AudioStreamTrack(audioSource), m_sMediaStream);
             var transceiver = m_pc.GetTransceivers().First(t => t.Sender == sender);
             transceiver.Direction = RTCRtpTransceiverDirection.SendOnly;
-            var errorType = transceiver.SetCodecPreferences(GetAudioCodecs());
+            var errorType = transceiver.SetCodecPreferences(GetAudioSenderCodecs());
             if (errorType != RTCErrorType.None)
-            {
                 Debug.LogError(THIS_NAME + $"SetCodecPreferences Error: {errorType}");
-            }
         }
 
         public void InitVideoSender(Texture2D videoSource)
@@ -404,10 +426,24 @@ namespace TLab.SFU.Network
 #endif
         }
 
-        public void InitReceiver(TrackKind trackKind)
+        public void InitAudioReceiver()
         {
-            var transceiver = m_pc.AddTransceiver(trackKind);
+            var transceiver = m_pc.AddTransceiver(TrackKind.Audio);
             transceiver.Direction = RTCRtpTransceiverDirection.RecvOnly;
+
+            var errorType = transceiver.SetCodecPreferences(GetAudioReceiverCodecs());
+            if (errorType != RTCErrorType.None)
+                Debug.LogError(THIS_NAME + $"SetCodecPreferences Error: {errorType}");
+        }
+
+        public void InitVideoReceiver()
+        {
+            var transceiver = m_pc.AddTransceiver(TrackKind.Video);
+            transceiver.Direction = RTCRtpTransceiverDirection.RecvOnly;
+
+            var errorType = transceiver.SetCodecPreferences(GetVideoReceiverCodecs());
+            if (errorType != RTCErrorType.None)
+                Debug.LogError(THIS_NAME + $"SetCodecPreferences Error: {errorType}");
         }
 
         private void OnSetLocalSuccess()
