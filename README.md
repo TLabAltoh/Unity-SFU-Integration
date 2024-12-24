@@ -14,7 +14,7 @@ Sample project for implementing ```SFU (Selectable Forwarding Unit)``` network a
 - [x] ```Transform```
   - [x] With Interpolation
   - [x] With out Interpolation
-  - [ ] With ```Rigidbody```
+  - [x] With ```Rigidbody```
 - [x] ```Animator```
   - [ ] With Interpolation
   - [x] With out Interpolation
