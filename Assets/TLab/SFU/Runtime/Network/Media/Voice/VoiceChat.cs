@@ -201,13 +201,22 @@ namespace TLab.SFU.Network
 
         protected void OnVoiceRequest(int from)
         {
+            if (NetworkClient.userId != 0)
+                return;
+
             if ((m_rtcClient != null) && (m_rtcClient.connected))
                 NetworkClient.SendWS(new MSG_VoiceOpenNortification().Marshall());
             else
                 m_requests.Enqueue(from);
         }
 
-        protected void OnVoice(int from) => Whep($"stream#voice#{m_group.owner}");
+        protected void OnVoice(int from)
+        {
+            if (m_rtcClient != null)
+                return;
+
+            Whep($"stream#voice#{m_group.owner}");
+        }
 
         public override void OnSyncRequest(int from)
         {
@@ -230,7 +239,7 @@ namespace TLab.SFU.Network
 
             NetworkClient.RegisterOnMessage<MSG_VoiceOpenNortification>((from, to, bytes) =>
             {
-                Registry.GetByKey(to)?.OnVoice(from);
+                Registry.GetByKey(from)?.OnVoice(from);
             });
         }
 

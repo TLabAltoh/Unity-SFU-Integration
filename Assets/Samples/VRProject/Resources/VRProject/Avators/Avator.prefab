@@ -328,7 +328,7 @@ MonoBehaviour:
   m_group: {fileID: 7621256556746051558}
   m_frequency: 16000
   m_useAudioClip: 1
-  m_audioClipName: TLab/SFU/Sample/sin_mono
+  m_audioClipName: TLab/SFU/Sample/musmus-bgm-034
 --- !u!1 &3085163998931516563
 GameObject:
   m_ObjectHideFlags: 0
