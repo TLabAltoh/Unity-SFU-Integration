@@ -48,7 +48,8 @@ git submodule update --init
 
 <img src="Media/setup-1.png" width="256"></img>  
 <img src="Media/setup-5.png" width="256"></img>  
-<img src="Media/setup-7.png" width="256"></img>
+<img src="Media/setup-7.png" width="256"></img>  
+<img src="Media/setup-9.png" width="256"></img>
 
 
 </details>
@@ -63,7 +64,8 @@ git submodule update --init
 
 <img src="Media/setup-2.png" width="256"></img>  
 <img src="Media/setup-6.png" width="256"></img>  
-<img src="Media/setup-8.png" width="256"></img>
+<img src="Media/setup-8.png" width="256"></img>  
+<img src="Media/setup-10.png" width="256"></img>
 
 </details>
 
