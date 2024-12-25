@@ -46,6 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Ring.L
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -95,6 +96,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Pinky.R
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -144,6 +146,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Pinky.L
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -375,6 +378,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Thumb.L
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -485,6 +489,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Root
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -557,6 +562,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Middle.R
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -606,6 +612,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Index.R
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -655,6 +662,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Thumb.R
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -704,6 +712,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Middle.L
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -753,6 +762,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Index.L
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -802,6 +812,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Ring.R
+  m_activeStateObj: {fileID: 0}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 0, y: 0, z: 0}
   m_scale: 1
@@ -814,7 +825,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1367616435690710, guid: e90019ee7a9966849a7063c6314b8c51, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1732268206786806, guid: e90019ee7a9966849a7063c6314b8c51, type: 3}
       propertyPath: m_Name
@@ -1015,7 +1026,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1340743589949492, guid: 42d1e64a0d52e43429e79382007054e5, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1581749144712736, guid: 42d1e64a0d52e43429e79382007054e5, type: 3}
       propertyPath: m_Name

@@ -24,16 +24,6 @@ namespace TLab.VRProjct.Test.Editor
 
             if (GUILayout.Button("Collider Test"))
                 instance.MeshColliderClosestPoint();
-
-            if (GUILayout.Button("Command Parse Test"))
-            {
-                var (program, argments) = CommandLine.Parse("192.168.3.11 -p 1234 -t 3333");
-
-                Debug.Log($"Program: {program}");
-
-                foreach (var argment in argments)
-                    Debug.Log($"Argments: {argment.Key}, {argment.Value}");
-            }
         }
     }
 }

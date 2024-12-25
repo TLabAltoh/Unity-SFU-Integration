@@ -1,5 +1,4 @@
 using UnityEngine;
-using TLab.SFU.Network;
 
 namespace TLab.SFU
 {
@@ -17,6 +16,9 @@ namespace TLab.SFU
         [SerializeField] private Direction m_direction;
 
         [SerializeField] private string m_id;
+
+        [SerializeField, Interface(typeof(IActiveState))] private Object m_activeStateObj;
+        private IActiveState m_activeState;
 
         [Header("Translation")]
         [SerializeField] private Vector3 m_positionOffset;
@@ -48,10 +50,16 @@ namespace TLab.SFU
         {
             if (m_direction == Direction.Recv)
                 m_parent = Registry.GetByKey(m_id);
+
+            if (m_activeStateObj)
+                m_activeState = (IActiveState)m_activeStateObj;
         }
 
         private void Update()
         {
+            if ((m_activeState != null) && !m_activeState.Active)
+                return;
+
             if ((m_direction == Direction.Recv) && (m_parent != null))
             {
                 transform.position = m_positionOffset + m_parent.transform.position;

@@ -1741,6 +1741,7 @@ GameObject:
   - component: {fileID: 114417840974862690}
   - component: {fileID: 114460394679914766}
   - component: {fileID: 955823806259458316}
+  - component: {fileID: 288431960598374241}
   - component: {fileID: 4330380705842995049}
   - component: {fileID: 2773583570435426456}
   m_Layer: 0
@@ -1900,9 +1901,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_direction: 1
   m_id: Hand.R
+  m_activeStateObj: {fileID: 288431960598374241}
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_rotationOffset: {x: 180, y: 0, z: 0}
   m_scale: 1
+--- !u!114 &288431960598374241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1581749144712736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca3b347c9d3fc9a498b7de7655c7870c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_hand: 1
 --- !u!114 &4330380705842995049
 MonoBehaviour:
   m_ObjectHideFlags: 0
