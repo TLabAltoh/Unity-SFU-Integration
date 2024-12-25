@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6219218985446336005}
   m_Layer: 0
-  m_Name: Pole
+  m_Name: Axis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -77,28 +77,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bones:
   - bone: {fileID: 7144763428843076314}
+    target: {fileID: 0}
     length: 0.17110904
     origPos: {x: 0, y: 3.877934, z: -1.7222352}
     origScale: {x: 1, y: 1, z: 1}
     origRot: {x: 0.5805286, y: -0, z: -0, w: 0.81423986}
   - bone: {fileID: 7144763427269768337}
+    target: {fileID: 0}
     length: 0.9609994
     origPos: {x: 0, y: 3.7444196, z: -2.6739144}
     origScale: {x: 1, y: 1, z: 1}
     origRot: {x: 0.5805286, y: -0, z: -0, w: 0.81423986}
   - bone: {fileID: 7144763429247553862}
+    target: {fileID: 0}
     length: 0.894947
     origPos: {x: 0, y: 3.5520034, z: -3.5479317}
     origScale: {x: 1, y: 1, z: 1}
     origRot: {x: 0.5805286, y: -0, z: -0, w: 0.81423986}
   - bone: {fileID: 7144763427423776457}
+    target: {fileID: 0}
     length: 0.94846445
     origPos: {x: 0, y: 2.986, z: -4.309}
     origScale: {x: 1, y: 1, z: 1}
     origRot: {x: 0.5805286, y: -0, z: -0, w: 0.81423986}
   endPointOfLastBone: {fileID: 7144763428340120699}
-  poleTarget: {fileID: 6219218985446336005}
+  axisTarget: {fileID: 6219218985446336005}
   iterations: 10
+  handType: 0
   enable: 0
   needResetOption: 0
 --- !u!1 &7144763427269768338

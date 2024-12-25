@@ -4,6 +4,10 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
+// This is an attempt to synchronise finger transformation
+// with only 5 fingertip positions and inverse kinematics.
+// This synchronisation may not be accurate in certain situations.
+
 namespace TLab.VRProjct.Avator
 {
     [ExecuteInEditMode]
@@ -33,8 +37,6 @@ namespace TLab.VRProjct.Avator
         public Transform endPointOfLastBone;
 
         [Header("Settings")]
-        [Tooltip("Bend chain towards this target when target is closer than total chain length... Make sure you place it far than total chain length for better accuracy...")]
-        public Transform poleTarget;
         public Transform axisTarget;
         [Tooltip("More precision...")]
         public int iterations;
@@ -49,6 +51,8 @@ namespace TLab.VRProjct.Avator
         private Vector3 m_lastTargetPosition;
         private bool m_editorInitialized = false;
 
+        private const float ENDPOINT_OFFSET = 0.005f, POLE_OFFSET = 0.05f;
+
         private void Start()
         {
             m_lastTargetPosition = transform.position;
@@ -56,7 +60,7 @@ namespace TLab.VRProjct.Avator
                 Initialize();
         }
 
-        public void Setup()
+        public void ResetControls()
         {
             this.transform.parent.position = bones[bones.Length - 1].bone.position;
             this.transform.parent.rotation = bones[bones.Length - 1].bone.rotation;
@@ -81,15 +85,13 @@ namespace TLab.VRProjct.Avator
 #endif
             }
 
-            endPointOfLastBone.position = bones[0].target.position;
-            endPointOfLastBone.rotation = bones[0].target.rotation;
+            var flipY = (handType == HandType.RightHand) ? 1 : -1;
 
-            poleTarget.position = bones[1].target.position;
-            poleTarget.rotation = bones[1].target.rotation;
+            endPointOfLastBone.position = bones[0].target.position + bones[0].target.right * flipY * ENDPOINT_OFFSET;
+            endPointOfLastBone.rotation = bones[0].target.rotation;
 
 #if UNITY_EDITOR
             EditorUtility.SetDirty(endPointOfLastBone);
-            EditorUtility.SetDirty(poleTarget);
 #endif
         }
 
@@ -117,7 +119,7 @@ namespace TLab.VRProjct.Avator
                         enable = false;
                         return;
                     }
-                    if (poleTarget == null)
+                    if (axisTarget == null)
                     {
                         enable = false;
                         return;
@@ -170,13 +172,14 @@ namespace TLab.VRProjct.Avator
 
         private Quaternion LookForward(Vector3 forward, Vector3 left) => Quaternion.LookRotation(forward, Vector3.Cross(forward, left).normalized);
 
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (bones.Length == 0 || axisTarget == null)
                 return;
 
             var root = bones[bones.Length - 1].bone.position;
-            var left = Vector3.Cross(axisTarget.up, (transform.position - root).normalized).normalized;
+            var left = axisTarget.forward;
 
             Gizmos.color = Color.white;
             Gizmos.DrawLine(axisTarget.position, axisTarget.position + left * 0.01f);
@@ -186,32 +189,42 @@ namespace TLab.VRProjct.Avator
 
             Gizmos.color = Color.cyan;
             Gizmos.DrawLine(axisTarget.position, transform.position);
+
+            var poleUp = Vector3.Cross(left, transform.position - root).normalized;
+            var middle = Vector3.Lerp(transform.position, root, 0.25f);
+            var pole = middle + poleUp * POLE_OFFSET;
+            Gizmos.DrawLine(middle, pole);
         }
+#endif
 
         private void Solve()
         {
             var root = bones[bones.Length - 1].bone.position;
-            var left = Vector3.Cross(axisTarget.up, (transform.position - axisTarget.position).normalized).normalized;
+            var left = axisTarget.forward;
 
-            bones[bones.Length - 1].bone.rotation = LookForward(-(poleTarget.position - root).normalized, left);
+            var poleUp = Vector3.Cross(left, transform.position - root).normalized;
+            var middle = Vector3.Lerp(transform.position, root, 0.25f);
+            var pole = middle + poleUp * POLE_OFFSET;
+
+            bones[bones.Length - 1].bone.rotation = LookForward(-(pole - root).normalized, left);
             for (int i = bones.Length - 2; i >= 0; i--)
             {
-                bones[i].bone.position = bones[i + 1].bone.position + -(Vector3.ProjectOnPlane(bones[i + 1].bone.forward, left) * bones[i + 1].length);
-                bones[i].bone.rotation = LookForward(-(poleTarget.position - bones[i].bone.position).normalized, left);
+                bones[i].bone.position = bones[i + 1].bone.position + -(bones[i + 1].bone.forward * bones[i + 1].length);
+                bones[i].bone.rotation = LookForward(-(pole - bones[i].bone.position).normalized, left);
             }
             for (int i = 0; i < iterations; i++)
             {
                 bones[0].bone.rotation = LookForward(-(transform.position - bones[0].bone.position).normalized, left);
-                bones[0].bone.position = transform.position + (Vector3.ProjectOnPlane(bones[0].bone.forward, left) * bones[0].length);
+                bones[0].bone.position = transform.position + (bones[0].bone.forward * bones[0].length);
                 for (int j = 1; j < bones.Length; j++)
                 {
                     bones[j].bone.rotation = LookForward(-(bones[j - 1].bone.position - bones[j].bone.position).normalized, left);
-                    bones[j].bone.position = bones[j - 1].bone.position + (Vector3.ProjectOnPlane(bones[j].bone.forward, left) * bones[j].length);
+                    bones[j].bone.position = bones[j - 1].bone.position + (bones[j].bone.forward * bones[j].length);
                 }
 
                 bones[bones.Length - 1].bone.position = root;
                 for (int j = bones.Length - 2; j >= 0; j--)
-                    bones[j].bone.position = bones[j + 1].bone.position - (Vector3.ProjectOnPlane(bones[j + 1].bone.forward, left) * bones[j + 1].length);
+                    bones[j].bone.position = bones[j + 1].bone.position - (bones[j + 1].bone.forward * bones[j + 1].length);
             }
             m_lastTargetPosition = transform.position;
 
@@ -220,23 +233,13 @@ namespace TLab.VRProjct.Avator
 
         public void RotateTarget()
         {
-            var root = bones[bones.Length - 1].bone.position;
-            var root2Handle = transform.position - root;
-            var root2Pole = poleTarget.position - root;
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+                return;
+#endif
 
-            var left = Vector3.Cross(root2Handle, root2Pole).normalized;
-
-            var flipY = (handType == HandType.RightHand) ? -1 : 1;
-
-            //for (int i = 0; i < bones.Length; i++)
-            //{
-            //    var boneForward = flipY * bones[i].bone.forward;
-            //    bones[i].target.right = boneForward;
-            //    var targetLeft = bones[i].target.forward;
-            //    var angle = Vector3.SignedAngle(targetLeft, left, boneForward);
-            //    var rot = Quaternion.AngleAxis(angle, boneForward);
-            //    bones[i].target.rotation = rot * bones[i].target.rotation;
-            //}
+            for (int i = 0; i < bones.Length; i++)
+                bones[i].target.rotation = bones[i].bone.GetChild(0).rotation;
         }
 
         /// <summary>

@@ -17,8 +17,8 @@ namespace TLab.VRProjct.Avator.Editor
 
             if (!Application.isPlaying)
             {
-                if (GUILayout.Button("Setup"))
-                    solver.Setup();
+                if (GUILayout.Button("Reset Controls"))
+                    solver.ResetControls();
             }
 
             if (solver.needResetOption)
