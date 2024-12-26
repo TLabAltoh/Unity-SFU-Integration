@@ -3,17 +3,21 @@
 Test project for implementing ```SFU (Selectable Forwarding Unit)``` network architecture on the Unity. This project was created for use in Oculus Quest 2, but supports other platforms (PC, Android mobile) to test the connection from multiple clients.
 
 ## Features
-### ```WebRTC```
+### Socket
+- Each protocol's client (```WebRTC``` or ```WebSocket```) inherits ```SfuClient``` class and could calls the ```Connect/Close/Send/OnMessage``` function via the same API.
+#### ```WebRTC (WebRTC Client)```
 - [x] ```DataChannel```  
-- [x] ```Audio```  
+- [x] ```Audio```
 - [ ] ```Video``` (Not tested yet)  
-### ```WebSocket```
+#### ```WebSocket (WebSocket Client)```
 - [x] ```Binary```
 - [ ] ```Text (No plans at the moment.)```
 ### Interactor
 - [x] ```Grab```
 - [x] ```Ray```
 - [ ] ```Poke```
+### NetworkObject
+- [x] Could select default protocol for Synchronise (```WebRTC``` or ```WebSocket```)
 ### Synchronise the unity's component
 - [x] ```Transform (threshold base)```
   - [x] With ```Rigidbody```
@@ -34,6 +38,8 @@ Test project for implementing ```SFU (Selectable Forwarding Unit)``` network arc
 <video src="https://github.com/user-attachments/assets/1ae896ac-47b3-43e1-b7e7-3b4fe41e0ed8" width="512"></video>
 
 <video src="https://github.com/user-attachments/assets/8a4086c6-0927-4b6c-a847-97ae04e98e84" width="512"></video>
+
+<img src="Media/graph.0.drawio.svg" width="512"></img>
 
 ## Get Started
 
@@ -99,7 +105,7 @@ Gameobject.name: "TVRCameraRig"
 - Play ```Assets/Samples/VRProject/Scenes/MAIN.unity``` on the Unity Editor or build app
 
 > [!NOTE]
-> The first joiner is treated as the host, but UI operation is only supported in Oculus / PC mode. The Android mobile client must join after the host joins.
+> The first joiner is treated as the host, but World Space UI operation is only supported in Oculus / PC mode. The Android mobile client must join after the host joins.
 
 ### How to move character
 ```PC```: just same as Unity Editor's Scene View.  
