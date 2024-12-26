@@ -136,3 +136,7 @@ This project has only been tested on a local network and not on a dedicated serv
 
 ### Poor documentation
 All the features are implemented on the sample scene. And the project has continuously do destractive update. So documentation will be made after project architecture is stable.
+
+## Credit
+- [Oculus quest 2](https://skfb.ly/otI9p) by Nosakhae is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
+- [Realistic Human Lungs](https://skfb.ly/oBDWI) by neshallads is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
