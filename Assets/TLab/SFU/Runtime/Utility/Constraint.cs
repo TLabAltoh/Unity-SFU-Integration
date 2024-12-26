@@ -17,6 +17,8 @@ namespace TLab.SFU
 
         [SerializeField] private string m_id;
 
+        [SerializeField] private bool m_pause = false;
+
         [SerializeField, Interface(typeof(IActiveState))] private Object m_activeStateObj;
         private IActiveState m_activeState;
 
@@ -27,6 +29,8 @@ namespace TLab.SFU
         [SerializeField, Min(0f)] private float m_scale = 1f;
 
         private Constraint m_parent;
+
+        public bool pause => m_pause;
 
         public float scale
         {
@@ -55,12 +59,18 @@ namespace TLab.SFU
                 m_activeState = (IActiveState)m_activeStateObj;
         }
 
+        public void Pause(bool active) => m_pause = active;
+
+        private bool IsActive() => !((m_activeState != null) && !m_activeState.Active);
+
+        private bool IsParentPause() => (m_parent != null) && m_parent.pause;
+
         private void Update()
         {
-            if ((m_activeState != null) && !m_activeState.Active)
+            if (!IsActive())
                 return;
 
-            if ((m_direction == Direction.Recv) && (m_parent != null))
+            if ((m_direction == Direction.Recv) && !(m_pause || IsParentPause()))
             {
                 transform.position = m_positionOffset + m_parent.transform.position;
                 transform.rotation = m_parent.transform.rotation * Quaternion.Euler(m_rotationOffset);

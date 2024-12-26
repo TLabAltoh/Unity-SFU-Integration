@@ -5,6 +5,8 @@ namespace TLab.VRProjct
 {
     public class JoystickPlayerController : BasePlayerController
     {
+        [Header("Additional Settings")]
+        [SerializeField] private bool m_diableJumpForce = false;
         [SerializeField] private OnScreenStick m_stick;
 
         protected void DoRotate()
@@ -34,7 +36,7 @@ namespace TLab.VRProjct
             }
 
             var targetMove = forward * m_stick.value.y + right * m_stick.value.x;
-            var targetJump = new Vector3(0.0f, m_currentJumpVelocity, 0.0f);
+            var targetJump = m_diableJumpForce ? Vector3.zero : new Vector3(0.0f, m_currentJumpVelocity, 0.0f);
 
             m_controller.Move((targetMove * m_moveSpeed + targetJump) * Time.deltaTime);
 

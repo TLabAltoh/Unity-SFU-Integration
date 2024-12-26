@@ -25,27 +25,34 @@ namespace TLab.SFU.Network
 
         public static SpawnableStore.SpawnAction[] GetLatestActionArray() => instance.m_store.GetLatestActionArray();
 
-        public static bool ProcessSpawnAction(SpawnableStore.SpawnAction spawnAction, out SpawnableStore.InstanceRef instanceRef)
+        public static void PostSpawnAction(SpawnableStore.SpawnAction spawnAction)
         {
             var request = (spawnAction.action == SpawnableStore.SpawnAction.Action.RequestSpawn);
 
             if (request)
             {
+                var prevAction = spawnAction;
+
                 spawnAction.action = SpawnableStore.SpawnAction.Action.Spawn;
                 if (UniqueNetworkId.GetAvailable(out var @public))
+                {
                     spawnAction.@public = @public;
-                spawnAction.userId = NetworkClient.userId;
+                    spawnAction.userId = NetworkClient.userId;
+                }
+                else
+                {
+                    NetworkClient.RequestIdAvails(1, () => PostSpawnAction(prevAction));
+                    return;
+                }
             }
 
-            bool result = instance.m_store.ProcessSpawnAction(spawnAction, out instanceRef);
+            bool result = instance.m_store.ProcessSpawnAction(spawnAction, out var instanceRef);
 
             if (spawnAction.userId == NetworkClient.userId)
             {
                 m_packet.action = spawnAction;
                 NetworkClient.SendWS(m_packet.Marshall());
             }
-
-            return result;
         }
 
         public static void Spawn(int elemId)
@@ -54,11 +61,14 @@ namespace TLab.SFU.Network
                 return;
 
             if (!UniqueNetworkId.GetAvailable(out var address))
+            {
+                NetworkClient.RequestIdAvails(1, () => Spawn(elemId));
                 return;
+            }
 
             var action = SpawnableStore.SpawnAction.GetSpawnAction(elemId, address, anchor);
 
-            ProcessSpawnAction(action, out var instanceRef);
+            PostSpawnAction(action);
         }
 
         public static void RequestSpawn(int elemId, int userId)
@@ -69,7 +79,7 @@ namespace TLab.SFU.Network
             if (userId == NetworkClient.userId)
             {
                 var action = SpawnableStore.SpawnAction.GetRequestSpawnAction(elemId, userId, anchor);
-                ProcessSpawnAction(action, out var instanceRef);
+                PostSpawnAction(action);
             }
             else
             {
@@ -105,7 +115,7 @@ namespace TLab.SFU.Network
                 yield return new WaitForSeconds(0.5f);
 
                 var action = SpawnableStore.SpawnAction.GetDeleteAction(target.@public);
-                ProcessSpawnAction(action, out var instanceRef);
+                PostSpawnAction(action);
             }
         }
 
@@ -114,7 +124,7 @@ namespace TLab.SFU.Network
         public static void SyncLatestActions(SpawnableStore.SpawnAction[] latestActions)
         {
             foreach (var action in latestActions)
-                ProcessSpawnAction(action, out var instanceRef);
+                PostSpawnAction(action);
         }
 
         protected virtual void OnEnable()
@@ -122,7 +132,7 @@ namespace TLab.SFU.Network
             NetworkClient.RegisterOnMessage(m_packet.msgId, (from, to, bytes) =>
             {
                 m_packet.UnMarshall(bytes);
-                ProcessSpawnAction(m_packet.action, out var instanceRef);
+                PostSpawnAction(m_packet.action);
             });
 
             NetworkClient.RegisterOnJoin(OnJoin, OnJoin);

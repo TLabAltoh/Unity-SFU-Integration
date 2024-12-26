@@ -44,7 +44,7 @@ namespace TLab.SFU.Interact.Editor
             if (GUILayout.Button("Create Outline") && PathUtil.SelectPath(ref m_materialSavePath, "Save Path"))
                 CreateOutline();
 
-            if (GUILayout.Button("Create Outline"))
+            if (GUILayout.Button("Create Pointable"))
                 CreatePointable();
         }
 

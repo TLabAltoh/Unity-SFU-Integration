@@ -1,6 +1,6 @@
 # Unity-SFU-Integration
 
-Sample project for implementing ```SFU (Selectable Forwarding Unit)``` network architecture on the Unity.
+Test project for implementing ```SFU (Selectable Forwarding Unit)``` network architecture on the Unity. This project was created for use in Oculus Quest 2, but supports other platforms (PC, Android mobile) to test the connection from multiple clients.
 
 ## Features
 ### ```WebRTC```
@@ -9,15 +9,23 @@ Sample project for implementing ```SFU (Selectable Forwarding Unit)``` network a
 - [ ] ```Video``` (Not tested yet)  
 ### ```WebSocket```
 - [x] ```Binary```
-- [ ] ```Text```
+- [ ] ```Text (No plans at the moment.)```
+### Interactor
+- [x] ```Grab```
+- [x] ```Ray```
+- [ ] ```Poke```
 ### Synchronise the unity's component
-- [x] ```Transform```
-  - [x] With Interpolation
-  - [x] With out Interpolation
+- [x] ```Transform (threshold base)```
   - [x] With ```Rigidbody```
+  - [x] With ```Interpolation```
+  - [x] Without ```Interpolation```
 - [x] ```Animator```
-  - [ ] With Interpolation
-  - [x] With out Interpolation
+  - [ ] With ```Interpolation```
+  - [x] Without ```Interpolation (Poor test ...)```
+- [x] Avator
+  - [x] ```Headset```
+  - [x] ```Hand/Finger```
+  - [ ] ```Elbows/Knees (Maybe I need to add IK first to support it ...)```
 
 ## Get Started
 
@@ -100,3 +108,13 @@ cd unity-rust-sfu
 build-debug.bat
 run.bat
 ```
+
+## Issue
+### Unstable connection ?
+Very occasionally the connection was disconnected even if there were only 2 clients.
+  
+### Poor test
+This project has only been tested on a local network and not on a dedicated server. The server was hosted on a general Windows PC.
+
+### Poor documentation
+All the features are implemented on the sample scene. And the project has continuously do destractive update. So documentation will be made after project architecture is stable.

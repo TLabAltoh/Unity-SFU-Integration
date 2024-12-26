@@ -43,6 +43,7 @@ namespace TLab.SFU.Network
         public delegate void OnMessageCallback(int from, int to, byte[] bytes);
         private static Hashtable m_messageCallbacks = new Hashtable();
 
+        private static Queue<UnityAction> m_onIdAvails = new Queue<UnityAction>();
         private static List<(UnityAction, UnityAction<int>)> m_onExit = new List<(UnityAction, UnityAction<int>)>();
         private static List<(UnityAction, UnityAction<int>)> m_onJoin = new List<(UnityAction, UnityAction<int>)>();
 
@@ -74,7 +75,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static bool wsEnabled => adapter.regested && wsConnected;
+        public static bool wsActive => adapter.regested && wsConnected;
 
         public static bool rtcConnected
         {
@@ -87,7 +88,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        public static bool rtcEnabled => adapter.regested && rtcConnected;
+        public static bool rtcActive => adapter.regested && rtcConnected;
 
         public static int userId => adapter.userId;
 
@@ -192,6 +193,18 @@ namespace TLab.SFU.Network
 
             public MSG_IdAvails(byte[] bytes) : base(bytes) { }
 
+            public static MSG_IdAvails Request(int length)
+            {
+                var request = new MSG_IdAvails(MessageType.Request, length, new Address32[0]);
+                return request;
+            }
+
+            public static MSG_IdAvails Response(Address32[] avails)
+            {
+                var response = new MSG_IdAvails(MessageType.Response, avails.Length, avails);
+                return response;
+            }
+
             public enum MessageType
             {
                 Request = 0,
@@ -214,6 +227,31 @@ namespace TLab.SFU.Network
         {
             m_rbMode = rbMode;
             Foreach<NetworkRigidbodyTransform>((t) => t.OnRigidbodyModeChange());
+        }
+
+        private static void OnIdAvails()
+        {
+            foreach (var callback in m_onIdAvails)
+                callback.Invoke();
+            m_onIdAvails.Clear();
+        }
+
+        public static void RequestIdAvails(int length, UnityAction callback = null)
+        {
+            if ((callback != null) && !m_onIdAvails.Contains(callback))
+                m_onIdAvails.Enqueue(callback);
+
+            var self = userId == 0;
+            if (self)
+            {
+                UniqueNetworkId.AddAvailables(UniqueNetworkId.Generate(0, length));
+                OnIdAvails();
+            }
+            else
+            {
+                var request = MSG_IdAvails.Request(length);
+                SendWS(0, request.Marshall());
+            }
         }
 
         public static void RegisterOnJoin(UnityAction callback0, UnityAction<int> callback1)
@@ -310,11 +348,11 @@ namespace TLab.SFU.Network
 
         private void OnSyncWorldComplete(SpawnableStore.SpawnAction avatorAction)
         {
-            m_onJoin.ForEach((c) => c.Item1.Invoke());
-
             Debug.Log(THIS_NAME + $"{nameof(OnSyncWorldComplete)}");
 
             ProcessAvatorAction(avatorAction, out var result);
+
+            m_onJoin.ForEach((c) => c.Item1.Invoke());
 
             SendWS(new MSG_Join(MSG_Join.MessageType.Finish, avatorAction).Marshall());
         }
@@ -452,11 +490,12 @@ namespace TLab.SFU.Network
                 switch (receive.messageType)
                 {
                     case MSG_IdAvails.MessageType.Request:
-                        receive.idAvails = UniqueNetworkId.Generate(from, receive.length);
-                        SendWS(receive.Marshall());
+                        var response = MSG_IdAvails.Response(UniqueNetworkId.Generate(from, receive.length));
+                        SendWS(response.Marshall());
                         break;
                     case MSG_IdAvails.MessageType.Response:
                         UniqueNetworkId.AddAvailables(receive.idAvails);
+                        OnIdAvails();
                         break;
                 }
             });
@@ -497,7 +536,7 @@ namespace TLab.SFU.Network
 
         public static Task SendWS(int to, byte[] bytes)
         {
-            if (wsEnabled)
+            if (wsActive)
                 return m_wsClient.Send(to, bytes);
 
             return new Task(() => { });
@@ -519,11 +558,19 @@ namespace TLab.SFU.Network
 
         #region RTC
 
-        public static void SendRTC(int to, byte[] bytes) => m_rtcClient?.Send(to, bytes);
+        public static void SendRTC(int to, byte[] bytes)
+        {
+            if (rtcActive)
+                m_rtcClient.Send(to, bytes);
+        }
 
         public static void SendRTC(byte[] bytes) => SendRTC(userId, bytes);
 
-        public static void SendRTC(int to, string text) => m_rtcClient?.Send(to, text);
+        public static void SendRTC(int to, string text)
+        {
+            if (rtcActive)
+                m_rtcClient.Send(to, text);
+        }
 
         public static void SendRTC(string text) => SendRTC(userId, text);
 
@@ -583,6 +630,8 @@ namespace TLab.SFU.Network
                     var address = UniqueNetworkId.Generate(0);
                     ProcessAvatorAction(SpawnableStore.SpawnAction.GetSpawnAction(m_avatorConfig.avatorId, address, anchor), out var result);
                 }
+
+                m_onJoin.ForEach((t) => t.Item1.Invoke());
             }
             else
                 SendWS(0, new MSG_Join(MSG_Join.MessageType.Request0, m_avatorConfig.avatorId).Marshall());

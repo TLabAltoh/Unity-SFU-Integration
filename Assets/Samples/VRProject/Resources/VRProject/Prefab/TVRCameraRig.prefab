@@ -1295,6 +1295,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181523785971470}
+  - component: {fileID: 4355227707166431170}
   m_Layer: 0
   m_Name: b_r_middle_null
   m_TagString: Untagged
@@ -1317,6 +1318,25 @@ Transform:
   m_Father: {fileID: 183181524798815541}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4355227707166431170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181523785971471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Middle.R
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181523791544202
 GameObject:
   m_ObjectHideFlags: 0
@@ -1515,6 +1535,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181523871979692}
+  - component: {fileID: 8300340483460030599}
   m_Layer: 0
   m_Name: b_l_pinky_null
   m_TagString: Untagged
@@ -1537,6 +1558,25 @@ Transform:
   m_Father: {fileID: 183181524829363740}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8300340483460030599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181523871979693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Pinky.L
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181523872341150
 GameObject:
   m_ObjectHideFlags: 0
@@ -2496,7 +2536,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181524138373712}
-  - component: {fileID: 5591359448582238081}
   m_Layer: 0
   m_Name: Head
   m_TagString: Untagged
@@ -2519,40 +2558,6 @@ Transform:
   m_Father: {fileID: 183181524888327466}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5591359448582238081
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 183181524138373713}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a24ee80b5dfe834a974235962637ebb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_private:
-    m_a0: 0
-    m_a1: 0
-    m_a2: 0
-    m_a3: 0
-    m_hash: 0
-  m_public:
-    m_a0: 0
-    m_a1: 0
-    m_a2: 0
-    m_a3: 0
-    m_hash: 0
-  m_id:
-    m_a0: 0
-    m_a1: 0
-    m_a2: 0
-    m_a3: 0
-    m_a4: 0
-    m_a5: 0
-    m_a6: 0
-    m_a7: 0
-    m_hash: 0
 --- !u!1 &183181524144818715
 GameObject:
   m_ObjectHideFlags: 0
@@ -2593,6 +2598,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181524145936668}
+  - component: {fileID: 6268089688453186311}
   m_Layer: 0
   m_Name: b_l_ring_null
   m_TagString: Untagged
@@ -2615,6 +2621,25 @@ Transform:
   m_Father: {fileID: 183181524418307107}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6268089688453186311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524145936669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Ring.L
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181524149609227
 GameObject:
   m_ObjectHideFlags: 0
@@ -2656,6 +2681,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181523650489952}
+  - component: {fileID: 223349268015784199}
   m_Layer: 0
   m_Name: b_l_thumb_null
   m_TagString: Untagged
@@ -2678,6 +2704,25 @@ Transform:
   m_Father: {fileID: 183181524578664355}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &223349268015784199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524160882953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Thumb.L
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181524161911353
 GameObject:
   m_ObjectHideFlags: 0
@@ -2935,6 +2980,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181524252697870}
+  - component: {fileID: 814160848657450028}
   m_Layer: 0
   m_Name: b_l_middle_null
   m_TagString: Untagged
@@ -2957,6 +3003,25 @@ Transform:
   m_Father: {fileID: 183181525406299586}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &814160848657450028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524252697871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Middle.L
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181524257290296
 GameObject:
   m_ObjectHideFlags: 0
@@ -3947,6 +4012,7 @@ GameObject:
   m_Component:
   - component: {fileID: 183181524548600353}
   - component: {fileID: 183181524548600352}
+  - component: {fileID: 5499298204011437147}
   m_Layer: 0
   m_Name: OculusHand_L
   m_TagString: Untagged
@@ -3992,6 +4058,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5499298204011437147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524548600354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Hand.L
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181524578664356
 GameObject:
   m_ObjectHideFlags: 0
@@ -4036,6 +4121,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181523650489953}
+  - component: {fileID: 5405868759622592522}
   m_Layer: 0
   m_Name: b_l_index_null
   m_TagString: Untagged
@@ -4058,6 +4144,25 @@ Transform:
   m_Father: {fileID: 183181525110551791}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5405868759622592522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524579555532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Index.L
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181524587953395
 GameObject:
   m_ObjectHideFlags: 0
@@ -4210,6 +4315,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181524603922631}
+  - component: {fileID: 7883452881565308143}
   m_Layer: 0
   m_Name: b_r_pinky_null
   m_TagString: Untagged
@@ -4232,6 +4338,25 @@ Transform:
   m_Father: {fileID: 183181523571417162}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7883452881565308143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524603922680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Pinky.R
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181524605229250
 GameObject:
   m_ObjectHideFlags: 0
@@ -5418,6 +5543,7 @@ GameObject:
   - component: {fileID: 183181524888327476}
   - component: {fileID: 183181524888327477}
   - component: {fileID: 183181524888327465}
+  - component: {fileID: 7063162227451375060}
   m_Layer: 7
   m_Name: TVRCameraRig
   m_TagString: Untagged
@@ -5568,6 +5694,35 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &7063162227451375060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524888327456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbfad9cc428147b408e616c7e0f0d09a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_cameraRig: {fileID: 183181524888327471}
+  m_controller: {fileID: 183181524888327465}
+  m_height: 1.6
+  m_constraints:
+  - {fileID: 0}
+  - {fileID: 5499298204011437147}
+  - {fileID: 605723897122164022}
+  - {fileID: 5405868759622592522}
+  - {fileID: 814160848657450028}
+  - {fileID: 8300340483460030599}
+  - {fileID: 6268089688453186311}
+  - {fileID: 223349268015784199}
+  - {fileID: 8643158159974657906}
+  - {fileID: 4355227707166431170}
+  - {fileID: 7883452881565308143}
+  - {fileID: 1442302377723548128}
+  - {fileID: 8693914261352692983}
 --- !u!1 &183181524888327467
 GameObject:
   m_ObjectHideFlags: 0
@@ -5756,6 +5911,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181523650489961}
+  - component: {fileID: 8643158159974657906}
   m_Layer: 0
   m_Name: b_r_index_null
   m_TagString: Untagged
@@ -5778,6 +5934,25 @@ Transform:
   m_Father: {fileID: 183181525142831749}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8643158159974657906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181524921636103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Index.R
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181524923556282
 GameObject:
   m_ObjectHideFlags: 0
@@ -6309,6 +6484,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181523650489955}
+  - component: {fileID: 8693914261352692983}
   m_Layer: 0
   m_Name: b_r_thumb_null
   m_TagString: Untagged
@@ -6331,6 +6507,25 @@ Transform:
   m_Father: {fileID: 183181525072299834}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8693914261352692983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181525072276311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Thumb.R
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181525072299835
 GameObject:
   m_ObjectHideFlags: 0
@@ -6650,6 +6845,7 @@ GameObject:
   m_Component:
   - component: {fileID: 183181525134356713}
   - component: {fileID: 183181525134356712}
+  - component: {fileID: 605723897122164022}
   m_Layer: 0
   m_Name: OculusHand_R
   m_TagString: Untagged
@@ -6695,6 +6891,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &605723897122164022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181525134356714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Hand.R
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181525142831750
 GameObject:
   m_ObjectHideFlags: 0
@@ -7426,6 +7641,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 183181525293129544}
+  - component: {fileID: 1442302377723548128}
   m_Layer: 0
   m_Name: b_r_ring_null
   m_TagString: Untagged
@@ -7448,6 +7664,25 @@ Transform:
   m_Father: {fileID: 183181525154478075}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1442302377723548128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183181525293129545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9cca2ac2eba3049ab227e537177d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_direction: 0
+  m_id: Ring.R
+  m_pause: 1
+  m_activeStateObj: {fileID: 0}
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_rotationOffset: {x: 0, y: 0, z: 0}
+  m_scale: 1
 --- !u!1 &183181525296775826
 GameObject:
   m_ObjectHideFlags: 0
@@ -9560,7 +9795,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_hand: {fileID: 183181525365130270}
-  m_visual: {fileID: 183181525405644657}
   m_dataSource: {fileID: 183181523650489954}
   m_skeleton: {fileID: 183181523872341149}
   m_gestures:
@@ -9674,7 +9908,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_hand: {fileID: 183181523415311875}
-  m_visual: {fileID: 183181524482513895}
   m_dataSource: {fileID: 183181523650489960}
   m_skeleton: {fileID: 183181524722030899}
   m_gestures:

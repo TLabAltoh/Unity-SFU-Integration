@@ -136,6 +136,8 @@ namespace TLab.VRProjct.Avator
 
         private void Initialize()
         {
+            var left = axisTarget.forward;
+
             bones[0].origPos = bones[0].bone.position;
             bones[0].origScale = bones[0].bone.localScale;
             bones[0].origRot = bones[0].bone.rotation;
@@ -144,7 +146,7 @@ namespace TLab.VRProjct.Avator
             var g = new GameObject();
             g.name = bones[0].bone.name;
             g.transform.position = bones[0].bone.position;
-            g.transform.forward = -(endPointOfLastBone.position - bones[0].bone.position).normalized;
+            g.transform.rotation = LookForward(-(endPointOfLastBone.position - bones[0].bone.position).normalized, left);
             g.transform.parent = bones[0].bone.parent;
 
             bones[0].bone.parent = g.transform;
@@ -160,7 +162,7 @@ namespace TLab.VRProjct.Avator
                 g = new GameObject();
                 g.name = bones[i].bone.name;
                 g.transform.position = bones[i].bone.position;
-                g.transform.forward = -(bones[i - 1].bone.position - bones[i].bone.position).normalized;
+                g.transform.rotation = LookForward(-(bones[i - 1].bone.position - bones[i].bone.position).normalized, left);
                 g.transform.parent = bones[i].bone.parent;
 
                 bones[i].bone.parent = g.transform;

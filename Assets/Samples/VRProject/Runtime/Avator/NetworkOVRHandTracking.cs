@@ -166,7 +166,6 @@ namespace TLab.VRProjct.Avator
         [SerializeField] private Transform m_ring;
         [SerializeField] private Transform m_pinky;
 
-
         [Header("Threshold")]
 
         public float positionThreshold = 0.001f;
