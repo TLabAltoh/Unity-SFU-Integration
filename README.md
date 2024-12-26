@@ -41,6 +41,8 @@ Test project for implementing ```SFU (Selectable Forwarding Unit)``` network arc
 
 <img src="Media/graph.0.drawio.svg" width="512"></img>
 
+<img src="Media/graph.1.drawio.svg" width="512"></img>
+
 ## Get Started
 
 ### Project Setup
