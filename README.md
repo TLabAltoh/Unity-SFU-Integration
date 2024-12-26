@@ -117,6 +117,8 @@ build-debug.bat
 run.bat
 ```
 
+[server repository is here](https://github.com/TLabAltoh/unity-rust-sfu.git)
+
 ## Issue
 ### Unstable connection ?
 Very occasionally the connection was disconnected even if there were only 2 clients.
