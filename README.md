@@ -1,6 +1,6 @@
 # Unity-SFU-Integration
 
-Test project for implementing ```SFU (Selectable Forwarding Unit)``` network architecture on the Unity. This project was created for use in Oculus Quest 2, but supports other platforms (PC, Android mobile) to test the connection from multiple clients.
+Test project for implementing ```WebSocket``` / ```WebRTC```'s ```SFU (Selectable Forwarding Unit)``` network architecture on the Unity. This project was created for use in Oculus Quest 2, but supports other platforms (PC, Android mobile) to test the connection from multiple clients.
 
 ## Features
 ### Socket
