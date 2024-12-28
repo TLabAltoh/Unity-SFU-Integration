@@ -15,7 +15,7 @@ Test project for implementing ```WebSocket``` / ```WebRTC```'s ```SFU (Selectabl
 #### ```WebSocket (WebSocket Client)```
 - [x] ```Binary```
 - [ ] ```Text (No plans at the moment.)```
-### Network Event
+#### Network Event
 - [x] ```OnOpen / OnOpen(userId)```
 - [x] ```OnClose / OnClose(userId)```
 - [x] ```OnJoin / OnJoin(userId)```
