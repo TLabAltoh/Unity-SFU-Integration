@@ -16,10 +16,11 @@ Test project for implementing ```WebSocket``` / ```WebRTC```'s ```SFU (Selectabl
 - [x] ```Binary```
 - [ ] ```Text (No plans at the moment.)```
 #### Network Event
-- [x] ```OnOpen / OnOpen(userId)```
-- [x] ```OnClose / OnClose(userId)```
-- [x] ```OnJoin / OnJoin(userId)```
-- [x] ```OnExit / OnExit(userId)```
+- With ```user id```
+  - [x] ```OnOpen```
+  - [x] ```OnClose```
+  - [x] ```OnJoin```
+  - [x] ```OnExit```
 ### Interactor
 - [x] ```Grab```
 - [x] ```Ray```
