@@ -30,8 +30,10 @@ Test project for implementing ```WebSocket``` / ```WebRTC```'s ```SFU (Selectabl
 - [ ] ```Poke```
 ### NetworkObject
 - [x] Could select default protocol for Synchronise (```WebRTC``` or ```WebSocket```)
+### NetworkObjectGroup
+All network-manageable gameobjects (```NetworkObject```s) are listed and managed in the respective ```NetworkObjectGroup```. Thus, pre-existing ```NetworkObject```s and any spawnable gameobjects are managed in their own ```NetworkObjectGroup``` and initialized through the ```NetworkObjectGroup```.
 ### NetworkId
-```NetworkId```s are defined as a combination of ```public id``` and ```private id```. ```public id``` is set additionally when spawning network manageable prefab (```Gameobject```).
+```NetworkId```s are defined as a combination of ```public id``` and ```private id```. ```public id``` is set additionally when spawning network manageable gameobject (like ```Prefab```).
 ### Synchronise the unity's component
 - [x] ```Transform (threshold base)```
   - [x] With ```Rigidbody```
