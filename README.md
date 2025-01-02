@@ -12,6 +12,8 @@ Test project for implementing ```WebSocket``` / ```WebRTC```'s ```SFU (Selectabl
 - [x] ```DataChannel```  
 - [x] ```Audio```
 - [ ] ```Video (Not tested yet)```  
+- [x] ```Trickle-ICE```
+- [ ] ```Vanilla-ICE (No plans at the moment.)```
 #### ```WebSocket (WebSocket Client)```
 - [x] ```Binary```
 - [ ] ```Text (No plans at the moment.)```
