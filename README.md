@@ -83,7 +83,7 @@ You may not need to check this as the bellow is the default setting.
 <img src="Media/setup-1.png" width="256"></img>  
 <img src="Media/setup-7.png" width="256"></img>  
 
-Gameobject.name: "Canvas Module"  
+Gameobject.name: "Canvas (Screen Space)"  
 <img src="Media/setup-5.png" width="256"></img>  
 
 Gameobject.name: "TVRCameraRig"  
@@ -103,7 +103,7 @@ Gameobject.name: "TVRCameraRig"
 <img src="Media/setup-2.png" width="256"></img>  
 <img src="Media/setup-8.png" width="256"></img>  
 
-Gameobject.name: "Canvas Module"  
+Gameobject.name: "Canvas (Screen Space)"  
 <img src="Media/setup-6.png" width="256"></img>  
 
 Gameobject.name: "TVRCameraRig"  
