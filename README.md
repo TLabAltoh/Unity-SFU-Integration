@@ -30,7 +30,7 @@ Each protocol's client (```WebRTC``` or ```WebSocket```) inherits ```SfuClient``
 - [x] Could select default protocol for Synchronise (```WebRTC``` or ```WebSocket```)
 ### NetworkObjectGroup
 All network-manageable gameobjects (```NetworkObject```s) are listed and managed in the respective ```NetworkObjectGroup```. Thus, pre-existing ```NetworkObject```s and any spawnable gameobjects are managed in their own ```NetworkObjectGroup``` and initialized through the ```NetworkObjectGroup```.
-### Synchronise the unity's component
+### Synchronise the unity's component and Avator
 - [x] ```Transform (threshold base)```
   - [x] With ```Rigidbody```
   - [x] With ```Interpolation```
@@ -38,7 +38,7 @@ All network-manageable gameobjects (```NetworkObject```s) are listed and managed
 - [x] ```Animator```
   - [ ] With ```Interpolation```
   - [x] Without ```Interpolation (Poor test ...)```
-- [x] Avator
+- [x] ```Avator```
   - [x] ```Headset```
   - [x] ```Hand/Finger```
   - [ ] ```Elbows/Knees (Maybe I need to add IK first to support it ...)```
