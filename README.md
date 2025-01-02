@@ -24,10 +24,6 @@ Test project for implementing ```WebSocket``` / ```WebRTC```'s ```SFU (Selectabl
 #### Room
 - [x] ```OnJoin```
 - [x] ```OnExit```
-### Interactor
-- [x] ```Grab```
-- [x] ```Ray```
-- [ ] ```Poke```
 ### NetworkObject
 - [x] Could select default protocol for Synchronise (```WebRTC``` or ```WebSocket```)
 ### NetworkObjectGroup
@@ -46,6 +42,10 @@ All network-manageable gameobjects (```NetworkObject```s) are listed and managed
   - [x] ```Headset```
   - [x] ```Hand/Finger```
   - [ ] ```Elbows/Knees (Maybe I need to add IK first to support it ...)```
+### Interactor
+- [x] ```Grab```
+- [x] ```Ray```
+- [ ] ```Poke```
 
 ## Overview
 
