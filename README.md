@@ -4,7 +4,7 @@ Test project for implementing ```WebSocket``` / ```WebRTC```'s ```SFU (Selectabl
 
 ## Features
 ### Socket
-- Each protocol's client (```WebRTC``` or ```WebSocket```) inherits ```SfuClient``` class and could calls the ```Connect/Close/Send/OnMessage``` function via the same API.
+- Each protocol's client (```WebRTC``` or ```WebSocket```) inherits ```SfuClient``` class and could calls the ```Connect```, ```Close```, ````Send```, ```OnMessage``` function via the same API.
 - [x] ```Broadcast```
 - [x] ```Unicast (by user id)```
 - [ ] ```Multicast```
