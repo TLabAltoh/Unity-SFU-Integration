@@ -135,13 +135,13 @@ Gameobject.name: "TVRCameraRig"
 - Clone and run the server repository with the following command.
 
 ```bat
-git clone https://github.com/TLabAltoh/unity-rust-sfu.git
-cd unity-rust-sfu
+git clone https://github.com/TLabAltoh/rust-server-for-multiplayer.git
+cd rust-server-for-multiplayer
 build-debug.bat
 run.bat
 ```
 
-[server repository is here](https://github.com/TLabAltoh/unity-rust-sfu.git)
+[server repository is here](https://github.com/TLabAltoh/rust-server-for-multiplayer.git)
 
 ## Issue
 ### Poor test
