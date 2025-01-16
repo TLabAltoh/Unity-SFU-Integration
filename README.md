@@ -55,9 +55,9 @@ All network-manageable gameobjects (```NetworkObject```s) are listed and managed
 
 <video src="https://github.com/user-attachments/assets/8a4086c6-0927-4b6c-a847-97ae04e98e84" width="512"></video>
 
-<img src="Media/graph.0.drawio.svg" width="512"></img>
+<img src="Media/graph.0.drawio.svg" width="512" style="border-radius:10px"></img>
 
-<img src="Media/graph.1.drawio.svg" width="512"></img>
+<img src="Media/graph.1.drawio.svg" width="512" style="border-radius:10px"></img>
 
 ## Get Started
 
