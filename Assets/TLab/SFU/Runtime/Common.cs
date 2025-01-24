@@ -68,17 +68,17 @@ namespace TLab.SFU
             m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3);
         }
 
-        public unsafe void CopyTo(byte* dstPtr)
+        public unsafe void CopyTo(byte* dst)
         {
-            dstPtr[0] = m_a0;
-            dstPtr[1] = m_a1;
-            dstPtr[2] = m_a2;
-            dstPtr[3] = m_a3;
+            dst[0] = m_a0;
+            dst[1] = m_a1;
+            dst[2] = m_a2;
+            dst[3] = m_a3;
         }
 
         public void Copy(in Address32 from) => Update(from.a0, from.a1, from.a2, from.a3);
 
-        public unsafe void Copy(byte* fromPtr) => Update(fromPtr[0], fromPtr[1], fromPtr[2], fromPtr[3]);
+        public unsafe void Copy(byte* from) => Update(from[0], from[1], from[2], from[3]);
 
         public override int GetHashCode() => m_hash;
 
@@ -194,21 +194,21 @@ namespace TLab.SFU
             m_hash = Cryptography.MD5From(m_a0, m_a1, m_a2, m_a3, m_a4, m_a5, m_a6, m_a7);
         }
 
-        public unsafe void CopyTo(byte* dstPtr)
+        public unsafe void CopyTo(byte* dst)
         {
-            dstPtr[0] = m_a0;
-            dstPtr[1] = m_a1;
-            dstPtr[2] = m_a2;
-            dstPtr[3] = m_a3;
-            dstPtr[4] = m_a4;
-            dstPtr[5] = m_a5;
-            dstPtr[6] = m_a6;
-            dstPtr[7] = m_a7;
+            dst[0] = m_a0;
+            dst[1] = m_a1;
+            dst[2] = m_a2;
+            dst[3] = m_a3;
+            dst[4] = m_a4;
+            dst[5] = m_a5;
+            dst[6] = m_a6;
+            dst[7] = m_a7;
         }
 
         public void Copy(in Address64 from) => Update(from.a0, from.a1, from.a2, from.a3, from.a4, from.a5, from.a6, from.a7);
 
-        public unsafe void Copy(byte* fromPtr) => Update(fromPtr[0], fromPtr[1], fromPtr[2], fromPtr[3], fromPtr[4], fromPtr[5], fromPtr[6], fromPtr[7]);
+        public unsafe void Copy(byte* from) => Update(from[0], from[1], from[2], from[3], from[4], from[5], from[6], from[7]);
 
         public void CopyUpper32(in Address32 from) => UpdateUpper32(from.a0, from.a1, from.a2, from.a3);
 

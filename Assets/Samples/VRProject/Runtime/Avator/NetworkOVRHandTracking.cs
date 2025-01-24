@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Unity.Mathematics;
 using TLab.SFU;
 using TLab.SFU.Network;
 
@@ -18,7 +19,7 @@ namespace TLab.VRProjct.Avator
         {
             public Address64 id;
 
-            public SerializableHandTracking hand;
+            public SerializableHandTracking fingers;
         }
 
         [Serializable]
@@ -48,17 +49,27 @@ namespace TLab.VRProjct.Avator
 
             private const int BOOL_FIELD_OFFSET = NETWORK_ID_FIELD_LEN, BOOL_FIELD_LEN = 2;  // request (1) + immediate (1)
 
-            private const int HAND_FIELD_OFFSET = BOOL_FIELD_OFFSET + BOOL_FIELD_LEN, HAND_FIELD_LEN = 15;    // ((5 * 3) * 4)
+            private const int HAND_FIELD_OFFSET = BOOL_FIELD_OFFSET + BOOL_FIELD_LEN, FINGERS_FIELD_LEN = 15;    // ((5 * 3) * 4)
 
-            private const int PAYLOAD_LEN = NETWORK_ID_FIELD_LEN + BOOL_FIELD_LEN + HAND_FIELD_LEN * sizeof(float);
+#if TLAB_VRPROJ_USE_HALF_FLOAT
+            private const int FINGERS_FIELD_VALUE_SIZE = 2;   // 16 bit
+#else
+            private const int FINGERS_FIELD_VALUE_SIZE = sizeof(float);
+#endif
+
+            private const int PAYLOAD_LEN = NETWORK_ID_FIELD_LEN + BOOL_FIELD_LEN + FINGERS_FIELD_LEN * FINGERS_FIELD_VALUE_SIZE;
 
             #endregion CONSTANT
 
             public NetworkOVRHandTrackingState state;
 
-            private static byte[] m_packetBuf = new byte[SEND_HEADER_LEN + PAYLOAD_LEN];
+            private static byte[] m_packet = new byte[SEND_HEADER_LEN + PAYLOAD_LEN];
 
-            private static float[] m_handBuf = new float[HAND_FIELD_LEN];
+#if TLAB_VRPROJ_USE_HALF_FLOAT
+            private static half[] m_fingers = new half[FINGERS_FIELD_LEN];
+#else
+            private static float[] m_fingers = new float[FINGERS_FIELD_LEN];
+#endif
 
             public MSG_NetworkOVRHandTracking(NetworkOVRHandTrackingState state) : base()
             {
@@ -69,86 +80,110 @@ namespace TLab.VRProjct.Avator
 
             public override byte[] Marshall()
             {
-                m_handBuf[0] = state.hand.thumb.x;
-                m_handBuf[1] = state.hand.thumb.y;
-                m_handBuf[2] = state.hand.thumb.z;
+#if TLAB_VRPROJ_USE_HALF_FLOAT
+                m_fingers[0] = math.half(state.fingers.thumb.x);
+                m_fingers[1] = math.half(state.fingers.thumb.y);
+                m_fingers[2] = math.half(state.fingers.thumb.z);
 
-                m_handBuf[3] = state.hand.index.x;
-                m_handBuf[4] = state.hand.index.y;
-                m_handBuf[5] = state.hand.index.z;
+                m_fingers[3] = math.half(state.fingers.index.x);
+                m_fingers[4] = math.half(state.fingers.index.y);
+                m_fingers[5] = math.half(state.fingers.index.z);
 
-                m_handBuf[6] = state.hand.middle.x;
-                m_handBuf[7] = state.hand.middle.y;
-                m_handBuf[8] = state.hand.middle.z;
+                m_fingers[6] = math.half(state.fingers.middle.x);
+                m_fingers[7] = math.half(state.fingers.middle.y);
+                m_fingers[8] = math.half(state.fingers.middle.z);
 
-                m_handBuf[9] = state.hand.ring.x;
-                m_handBuf[10] = state.hand.ring.y;
-                m_handBuf[11] = state.hand.ring.z;
+                m_fingers[9] = math.half(state.fingers.ring.x);
+                m_fingers[10] = math.half(state.fingers.ring.y);
+                m_fingers[11] = math.half(state.fingers.ring.z);
 
-                m_handBuf[12] = state.hand.pinky.x;
-                m_handBuf[13] = state.hand.pinky.y;
-                m_handBuf[14] = state.hand.pinky.z;
+                m_fingers[12] = math.half(state.fingers.pinky.x);
+                m_fingers[13] = math.half(state.fingers.pinky.y);
+                m_fingers[14] = math.half(state.fingers.pinky.z);
+#else
+                m_fingers[0] = state.fingers.thumb.x;
+                m_fingers[1] = state.fingers.thumb.y;
+                m_fingers[2] = state.fingers.thumb.z;
+
+                m_fingers[3] = state.fingers.index.x;
+                m_fingers[4] = state.fingers.index.y;
+                m_fingers[5] = state.fingers.index.z;
+
+                m_fingers[6] = state.fingers.middle.x;
+                m_fingers[7] = state.fingers.middle.y;
+                m_fingers[8] = state.fingers.middle.z;
+
+                m_fingers[9] = state.fingers.ring.x;
+                m_fingers[10] = state.fingers.ring.y;
+                m_fingers[11] = state.fingers.ring.z;
+
+                m_fingers[12] = state.fingers.pinky.x;
+                m_fingers[13] = state.fingers.pinky.y;
+                m_fingers[14] = state.fingers.pinky.z;
+#endif
 
                 unsafe
                 {
-                    fixed (byte* m_packetBufPtr = m_packetBuf)
+                    fixed (byte* s = m_packet)
                     {
-                        Copy(msgId, m_packetBufPtr + sizeof(int));
+                        Copy(msgId, s + sizeof(int));
 
-                        var payloadPtr = m_packetBufPtr + SEND_HEADER_LEN;
+                        var p = s + SEND_HEADER_LEN;
 
-                        state.id.CopyTo(payloadPtr);
+                        state.id.CopyTo(p);
 
-                        Copy(request, payloadPtr + BOOL_FIELD_OFFSET + 0);
-                        Copy(immediate, payloadPtr + BOOL_FIELD_OFFSET + 1);
+                        var b = p + BOOL_FIELD_OFFSET;
+                        Copy(request, b + 0);
+                        Copy(immediate, b + 1);
 
-                        Copy(m_handBuf, payloadPtr + HAND_FIELD_OFFSET, HAND_FIELD_LEN);
+                        Copy(m_fingers, p + HAND_FIELD_OFFSET, FINGERS_FIELD_LEN);
                     }
                 }
 
-                return m_packetBuf;
+                return m_packet;
             }
 
             public override void UnMarshall(byte[] bytes)
             {
                 unsafe
                 {
-                    fixed (byte* bytesPtr = bytes)
+                    fixed (byte* s = bytes)
                     {
-                        var payloadPtr = bytesPtr + RECV_HEADER_LEN;
+                        var p = s + RECV_HEADER_LEN;
 
-                        state.id.Copy(payloadPtr);
+                        state.id.Copy(p);
 
-                        request = Get(payloadPtr + BOOL_FIELD_OFFSET + 0);
-                        immediate = Get(payloadPtr + BOOL_FIELD_OFFSET + 1);
+                        var b = p + BOOL_FIELD_OFFSET;
+                        request = Get(b + 0);
+                        immediate = Get(b + 1);
 
-                        Copy(payloadPtr + HAND_FIELD_OFFSET, m_handBuf, HAND_FIELD_LEN * sizeof(float));
+                        Copy(p + HAND_FIELD_OFFSET, m_fingers, FINGERS_FIELD_LEN * FINGERS_FIELD_VALUE_SIZE);
 
-                        state.hand.thumb.x = m_handBuf[0];
-                        state.hand.thumb.y = m_handBuf[1];
-                        state.hand.thumb.z = m_handBuf[2];
+                        state.fingers.thumb.x = m_fingers[0];
+                        state.fingers.thumb.y = m_fingers[1];
+                        state.fingers.thumb.z = m_fingers[2];
 
-                        state.hand.index.x = m_handBuf[3];
-                        state.hand.index.y = m_handBuf[4];
-                        state.hand.index.z = m_handBuf[5];
+                        state.fingers.index.x = m_fingers[3];
+                        state.fingers.index.y = m_fingers[4];
+                        state.fingers.index.z = m_fingers[5];
 
-                        state.hand.middle.x = m_handBuf[6];
-                        state.hand.middle.y = m_handBuf[7];
-                        state.hand.middle.z = m_handBuf[8];
+                        state.fingers.middle.x = m_fingers[6];
+                        state.fingers.middle.y = m_fingers[7];
+                        state.fingers.middle.z = m_fingers[8];
 
-                        state.hand.ring.x = m_handBuf[9];
-                        state.hand.ring.y = m_handBuf[10];
-                        state.hand.ring.z = m_handBuf[11];
+                        state.fingers.ring.x = m_fingers[9];
+                        state.fingers.ring.y = m_fingers[10];
+                        state.fingers.ring.z = m_fingers[11];
 
-                        state.hand.pinky.x = m_handBuf[12];
-                        state.hand.pinky.y = m_handBuf[13];
-                        state.hand.pinky.z = m_handBuf[14];
+                        state.fingers.pinky.x = m_fingers[12];
+                        state.fingers.pinky.y = m_fingers[13];
+                        state.fingers.pinky.z = m_fingers[14];
                     }
                 }
             }
         }
 
-        #endregion MESSAGE
+#endregion MESSAGE
 
         public enum InterpolationMode
         {
@@ -157,7 +192,7 @@ namespace TLab.VRProjct.Avator
         };
 
         [Header("OVR Hand")]
-        [SerializeField] private OVRHand.Hand m_hand;
+        [SerializeField] private OVRHand.Hand m_fingers;
 
         [Header("Finger")]
         [SerializeField] private Transform m_thumb;
@@ -229,13 +264,13 @@ namespace TLab.VRProjct.Avator
             return a;
         }
 
-        protected void UpdateTransform(in SerializableHandTracking hand)
+        protected void UpdateTransform(in SerializableHandTracking fingers)
         {
-            m_thumb.position = hand.thumb;
-            m_index.position = hand.index;
-            m_middle.position = hand.middle;
-            m_ring.position = hand.ring;
-            m_pinky.position = hand.pinky;
+            m_thumb.position = fingers.thumb;
+            m_index.position = fingers.index;
+            m_middle.position = fingers.middle;
+            m_ring.position = fingers.ring;
+            m_pinky.position = fingers.pinky;
         }
 
         protected virtual void GetInterpolatedTransform(in SerializableHandTracking start, in SerializableHandTracking target, out SerializableHandTracking interpolated, float t)
@@ -279,7 +314,7 @@ namespace TLab.VRProjct.Avator
             }
         }
 
-        protected virtual void StartInterpolation(in SerializableHandTracking hand)
+        protected virtual void StartInterpolation(in SerializableHandTracking fingers)
         {
             m_interpolationState.start.thumb = m_thumb.position;
             m_interpolationState.start.index = m_index.position;
@@ -287,11 +322,11 @@ namespace TLab.VRProjct.Avator
             m_interpolationState.start.ring = m_ring.position;
             m_interpolationState.start.pinky = m_pinky.position;
 
-            m_interpolationState.target.thumb = hand.thumb;
-            m_interpolationState.target.index = hand.index;
-            m_interpolationState.target.middle = hand.middle;
-            m_interpolationState.target.ring = hand.ring;
-            m_interpolationState.target.pinky = hand.pinky;
+            m_interpolationState.target.thumb = fingers.thumb;
+            m_interpolationState.target.index = fingers.index;
+            m_interpolationState.target.middle = fingers.middle;
+            m_interpolationState.target.ring = fingers.ring;
+            m_interpolationState.target.pinky = fingers.pinky;
 
             m_interpolationState.step = Math.Max(1, m_interpolationStep * (int)((1 / Time.deltaTime) / INTERPOLATION_BASE_FPS));
             m_interpolationState.current = m_interpolationState.step;
@@ -305,51 +340,51 @@ namespace TLab.VRProjct.Avator
 
         public void SyncFrom(in int from, in bool immediate, in NetworkOVRHandTrackingState state)
         {
-            var hand = new SerializableHandTracking();
-            hand.thumb = this.transform.TransformPoint(state.hand.thumb);
-            hand.index = this.transform.TransformPoint(state.hand.index);
-            hand.middle = this.transform.TransformPoint(state.hand.middle);
-            hand.ring = this.transform.TransformPoint(state.hand.ring);
-            hand.pinky = this.transform.TransformPoint(state.hand.pinky);
+            var fingers = new SerializableHandTracking();
+            fingers.thumb = this.transform.TransformPoint(state.fingers.thumb);
+            fingers.index = this.transform.TransformPoint(state.fingers.index);
+            fingers.middle = this.transform.TransformPoint(state.fingers.middle);
+            fingers.ring = this.transform.TransformPoint(state.fingers.ring);
+            fingers.pinky = this.transform.TransformPoint(state.fingers.pinky);
 
             if (immediate)
-                UpdateTransform(hand);
+                UpdateTransform(fingers);
             else
             {
                 switch (m_interpolationMode)
                 {
                     case InterpolationMode.None:
-                        UpdateTransform(hand);
+                        UpdateTransform(fingers);
                         break;
                     case InterpolationMode.Step:
-                        StartInterpolation(hand);
+                        StartInterpolation(fingers);
                         break;
                 }
             }
 
-            ApplyHandPositionAndDelta(hand);
+            ApplyHandPositionAndDelta(fingers);
 
             m_synchronised = true;
         }
 
-        protected virtual void ApplyHandPositionAndDelta(in SerializableHandTracking hand)
+        protected virtual void ApplyHandPositionAndDelta(in SerializableHandTracking fingers)
         {
             var delta = new SerializableHandTracking();
-            delta.thumb = this.transform.InverseTransformPoint(hand.thumb);
-            delta.index = this.transform.InverseTransformPoint(hand.index);
-            delta.middle = this.transform.InverseTransformPoint(hand.middle);
-            delta.ring = this.transform.InverseTransformPoint(hand.ring);
-            delta.pinky = this.transform.InverseTransformPoint(hand.pinky);
+            delta.thumb = this.transform.InverseTransformPoint(fingers.thumb);
+            delta.index = this.transform.InverseTransformPoint(fingers.index);
+            delta.middle = this.transform.InverseTransformPoint(fingers.middle);
+            delta.ring = this.transform.InverseTransformPoint(fingers.ring);
+            delta.pinky = this.transform.InverseTransformPoint(fingers.pinky);
 
-            ApplyHandPosition(hand);
+            ApplyHandPosition(fingers);
             ApplyHandPositionDelta(delta);
         }
 
-        protected virtual void ApplyHandPosition(in SerializableHandTracking hand) => m_networkState.hand = hand;
+        protected virtual void ApplyHandPosition(in SerializableHandTracking fingers) => m_networkState.fingers = fingers;
 
         protected virtual void ApplyHandPositionDelta(in SerializableHandTracking delta) => m_delta = delta;
 
-        public virtual bool ApplyCurrentPositionAndDelta(out SerializableHandTracking hand)
+        public virtual bool ApplyCurrentPositionAndDelta(out SerializableHandTracking fingers)
         {
             bool isDirty = false;
 
@@ -364,7 +399,7 @@ namespace TLab.VRProjct.Avator
             delta.ring = this.transform.InverseTransformPoint(current.ring);
             delta.pinky = this.transform.InverseTransformPoint(current.pinky);
 
-            hand = m_delta;
+            fingers = m_delta;
 
             var sum = Vector3.Distance(m_delta.thumb, delta.thumb);
             sum += Vector3.Distance(m_delta.index, delta.index);
@@ -377,7 +412,7 @@ namespace TLab.VRProjct.Avator
                 ApplyHandPosition(current);
                 ApplyHandPositionDelta(delta);
 
-                hand = delta;
+                fingers = delta;
 
                 isDirty = true;
             }
@@ -387,27 +422,27 @@ namespace TLab.VRProjct.Avator
 
         public virtual bool SkipApplyCurrentTransform() => !Const.Send.HasFlag(m_direction) || !initialized || (m_interpolationState.current > 0);
 
-        private void SetSendPacket(in SerializableHandTracking hand, bool request = false, bool immediate = false)
+        private void SetSendPacket(in SerializableHandTracking fingers, bool request = false, bool immediate = false)
         {
             m_packet.state.id = m_networkState.id;
 
-            m_packet.state.hand = hand;
+            m_packet.state.fingers = fingers;
 
             m_packet.request = request;
             m_packet.immediate = immediate;
         }
 
-        private void SendRTC(int to, in SerializableHandTracking hand, bool request = false, bool immediate = false)
+        private void SendRTC(int to, in SerializableHandTracking fingers, bool request = false, bool immediate = false)
         {
-            SetSendPacket(hand, request, immediate);
+            SetSendPacket(fingers, request, immediate);
             NetworkClient.SendRTC(to, m_packet.Marshall());
 
             m_synchronised = false;
         }
 
-        private void SendWS(int to, in SerializableHandTracking hand, bool request = false, bool immediate = false)
+        private void SendWS(int to, in SerializableHandTracking fingers, bool request = false, bool immediate = false)
         {
-            SetSendPacket(hand, request, immediate);
+            SetSendPacket(fingers, request, immediate);
             NetworkClient.SendWS(to, m_packet.Marshall());
 
             m_synchronised = false;
@@ -418,8 +453,8 @@ namespace TLab.VRProjct.Avator
             if (SkipApplyCurrentTransform())
                 return;
 
-            if (ApplyCurrentPositionAndDelta(out var hand) || force)
-                SendRTC(to, hand, request, immediate);
+            if (ApplyCurrentPositionAndDelta(out var fingers) || force)
+                SendRTC(to, fingers, request, immediate);
         }
 
         public override void SyncViaWebSocket(int to, bool force = false, bool request = false, bool immediate = false)
@@ -427,8 +462,8 @@ namespace TLab.VRProjct.Avator
             if (SkipApplyCurrentTransform())
                 return;
 
-            if (ApplyCurrentPositionAndDelta(out var hand) || force)
-                SendWS(to, hand, request, immediate);
+            if (ApplyCurrentPositionAndDelta(out var fingers) || force)
+                SendWS(to, fingers, request, immediate);
         }
 
         protected override void RegisterOnMessage()

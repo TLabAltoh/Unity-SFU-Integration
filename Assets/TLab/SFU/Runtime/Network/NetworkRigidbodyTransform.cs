@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Unity.Mathematics;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -42,15 +43,25 @@ namespace TLab.SFU.Network
 
             private const int TRANSFORM_FIELD_OFFSET = BOOL_FIELD_OFFSET + BOOL_FIELD_LEN, TRANSFORM_FIELD_LEN = 10;    // ((3 + 4 + 3) * 4)
 
-            private const int PAYLOAD_LEN = NETWORK_ID_FIELD_LEN + BOOL_FIELD_LEN + TRANSFORM_FIELD_LEN * sizeof(float);
+#if TLAB_SFU_USE_HALF_FLOAT
+            private const int TRANSFORM_FIELD_VALUE_SIZE = 2;   // 16 bit
+#else
+            private const int TRANSFORM_FIELD_VALUE_SIZE = sizeof(float);
+#endif
+
+            private const int PAYLOAD_LEN = NETWORK_ID_FIELD_LEN + BOOL_FIELD_LEN + TRANSFORM_FIELD_LEN * TRANSFORM_FIELD_VALUE_SIZE;
 
             #endregion CONSTANT
 
             public NetworkRigidbodyTransformState state;
 
-            private static byte[] m_packetBuf = new byte[SEND_HEADER_LEN + PAYLOAD_LEN];
+            private static byte[] m_packet = new byte[SEND_HEADER_LEN + PAYLOAD_LEN];
 
-            private static float[] m_transformBuf = new float[TRANSFORM_FIELD_LEN];
+#if TLAB_SFU_USE_HALF_FLOAT
+            private static half[] m_transform = new half[TRANSFORM_FIELD_LEN];
+#else
+            private static float[] m_transform = new float[TRANSFORM_FIELD_LEN];
+#endif
 
             public MSG_SyncRigidbodyTransform(NetworkRigidbodyTransformState state) : base()
             {
@@ -61,70 +72,86 @@ namespace TLab.SFU.Network
 
             public override byte[] Marshall()
             {
-                m_transformBuf[0] = state.transform.position.x;
-                m_transformBuf[1] = state.transform.position.y;
-                m_transformBuf[2] = state.transform.position.z;
+#if TLAB_SFU_USE_HALF_FLOAT
+                m_transform[0] = math.half(state.transform.position.x);
+                m_transform[1] = math.half(state.transform.position.y);
+                m_transform[2] = math.half(state.transform.position.z);
 
-                m_transformBuf[3] = state.transform.rotation.x;
-                m_transformBuf[4] = state.transform.rotation.y;
-                m_transformBuf[5] = state.transform.rotation.z;
-                m_transformBuf[6] = state.transform.rotation.w;
+                m_transform[3] = math.half(state.transform.rotation.x);
+                m_transform[4] = math.half(state.transform.rotation.y);
+                m_transform[5] = math.half(state.transform.rotation.z);
+                m_transform[6] = math.half(state.transform.rotation.w);
 
-                m_transformBuf[7] = state.transform.localScale.x;
-                m_transformBuf[8] = state.transform.localScale.y;
-                m_transformBuf[9] = state.transform.localScale.z;
+                m_transform[7] = math.half(state.transform.localScale.x);
+                m_transform[8] = math.half(state.transform.localScale.y);
+                m_transform[9] = math.half(state.transform.localScale.z);
+#else
+                m_transform[0] = state.transform.position.x;
+                m_transform[1] = state.transform.position.y;
+                m_transform[2] = state.transform.position.z;
+
+                m_transform[3] = state.transform.rotation.x;
+                m_transform[4] = state.transform.rotation.y;
+                m_transform[5] = state.transform.rotation.z;
+                m_transform[6] = state.transform.rotation.w;
+
+                m_transform[7] = state.transform.localScale.x;
+                m_transform[8] = state.transform.localScale.y;
+                m_transform[9] = state.transform.localScale.z;
+#endif
 
                 unsafe
                 {
-                    fixed (byte* m_packetBufPtr = m_packetBuf)
+                    fixed (byte* s = m_packet)
                     {
-                        Copy(msgId, m_packetBufPtr + sizeof(int));
+                        Copy(msgId, s + sizeof(int));
 
-                        var payloadPtr = m_packetBufPtr + SEND_HEADER_LEN;
+                        var p = s + SEND_HEADER_LEN;
 
-                        state.id.CopyTo(payloadPtr);
+                        state.id.CopyTo(p);
 
-                        Copy(request, payloadPtr + BOOL_FIELD_OFFSET + 0);
-                        Copy(immediate, payloadPtr + BOOL_FIELD_OFFSET + 1);
-                        Copy(state.rigidbody.used, payloadPtr + BOOL_FIELD_OFFSET + 2);
-                        Copy(state.rigidbody.gravity, payloadPtr + BOOL_FIELD_OFFSET + 3);
+                        var b = p + BOOL_FIELD_OFFSET;
+                        Copy(request, b + 0);
+                        Copy(immediate, b + 1);
+                        Copy(state.rigidbody.used, b + 2);
+                        Copy(state.rigidbody.gravity, b + 3);
 
-                        Copy(m_transformBuf, payloadPtr + TRANSFORM_FIELD_OFFSET, TRANSFORM_FIELD_LEN);
+                        Copy(m_transform, p + TRANSFORM_FIELD_OFFSET, TRANSFORM_FIELD_LEN);
                     }
                 }
 
-                return m_packetBuf;
+                return m_packet;
             }
 
             public override void UnMarshall(byte[] bytes)
             {
                 unsafe
                 {
-                    fixed (byte* bytesPtr = bytes)
+                    fixed (byte* s = bytes)
                     {
-                        var payloadPtr = bytesPtr + RECV_HEADER_LEN;
+                        var p = s + RECV_HEADER_LEN;
 
-                        state.id.Copy(payloadPtr);
+                        state.id.Copy(p);
 
-                        request = Get(payloadPtr + BOOL_FIELD_OFFSET + 0);
-                        immediate = Get(payloadPtr + BOOL_FIELD_OFFSET + 1);
+                        var b = p + BOOL_FIELD_OFFSET;
+                        request = Get(b + 0);
+                        immediate = Get(b + 1);
+                        state.rigidbody.Update(Get(b + 2), Get(b + 3));
 
-                        state.rigidbody.Update(Get(payloadPtr + BOOL_FIELD_OFFSET + 2), Get(payloadPtr + BOOL_FIELD_OFFSET + 3));
+                        Copy(p + TRANSFORM_FIELD_OFFSET, m_transform, TRANSFORM_FIELD_LEN * TRANSFORM_FIELD_VALUE_SIZE);
 
-                        Copy(payloadPtr + TRANSFORM_FIELD_OFFSET, m_transformBuf, TRANSFORM_FIELD_LEN * sizeof(float));
+                        state.transform.position.x = m_transform[0];
+                        state.transform.position.y = m_transform[1];
+                        state.transform.position.z = m_transform[2];
 
-                        state.transform.position.x = m_transformBuf[0];
-                        state.transform.position.y = m_transformBuf[1];
-                        state.transform.position.z = m_transformBuf[2];
+                        state.transform.rotation.x = m_transform[3];
+                        state.transform.rotation.y = m_transform[4];
+                        state.transform.rotation.z = m_transform[5];
+                        state.transform.rotation.w = m_transform[6];
 
-                        state.transform.rotation.x = m_transformBuf[3];
-                        state.transform.rotation.y = m_transformBuf[4];
-                        state.transform.rotation.z = m_transformBuf[5];
-                        state.transform.rotation.w = m_transformBuf[6];
-
-                        state.transform.localScale.x = m_transformBuf[7];
-                        state.transform.localScale.y = m_transformBuf[8];
-                        state.transform.localScale.z = m_transformBuf[9];
+                        state.transform.localScale.x = m_transform[7];
+                        state.transform.localScale.y = m_transform[8];
+                        state.transform.localScale.z = m_transform[9];
                     }
                 }
             }

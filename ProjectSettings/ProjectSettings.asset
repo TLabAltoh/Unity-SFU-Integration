@@ -645,7 +645,7 @@ PlayerSettings:
   webGLDecompressionFallback: 0
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    Android: 
+    Android: TLAB_SFU_USE_HALF_FLOAT;TLAB_VRPROJ_USE_HALF_FLOAT
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

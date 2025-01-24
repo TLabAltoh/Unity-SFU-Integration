@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using static System.BitConverter;
 
 namespace TLab.SFU
@@ -8,95 +9,107 @@ namespace TLab.SFU
         /// Quote from here: https://github.com/neuecc/MessagePack-CSharp/issues/117
         /// Fastest approach to copy buffers
         /// </summary>
-        /// <param name="srcPtr"></param>
-        /// <param name="dstPtr"></param>
+        /// <param name="src"></param>
+        /// <param name="dst"></param>
         /// <param name="count"></param>
-        public static unsafe void LongCopy(byte* srcPtr, byte* dstPtr, int count)
+        public static unsafe void LongCopy(byte* src, byte* dst, int count)
         {
             while (count >= 8)
             {
-                *(ulong*)dstPtr = *(ulong*)srcPtr;
-                dstPtr += 8;
-                srcPtr += 8;
+                *(ulong*)dst = *(ulong*)src;
+                dst += 8;
+                src += 8;
                 count -= 8;
             }
 
             if (count >= 4)
             {
-                *(uint*)dstPtr = *(uint*)srcPtr;
-                dstPtr += 4;
-                srcPtr += 4;
+                *(uint*)dst = *(uint*)src;
+                dst += 4;
+                src += 4;
                 count -= 4;
             }
 
             if (count >= 2)
             {
-                *(ushort*)dstPtr = *(ushort*)srcPtr;
-                dstPtr += 2;
-                srcPtr += 2;
+                *(ushort*)dst = *(ushort*)src;
+                dst += 2;
+                src += 2;
                 count -= 2;
             }
 
             if (count >= 1)
             {
-                *dstPtr = *srcPtr;
+                *dst = *src;
             }
         }
 
-        public unsafe static bool Get(byte* bufPtr) => *((bool*)&(bufPtr[0]));
+        public unsafe static bool Get(byte* b) => *((bool*)&(b[0]));
         public unsafe static bool Get(byte[] buf, int offset)
         {
-            fixed (byte* bufPtr = buf)
-                return Get(bufPtr + offset);
+            fixed (byte* b = buf)
+                return Get(b + offset);
         }
 
-        public unsafe static void Copy(float[] src, byte* dstPtr, int length, int startIndex = 0)
+        public unsafe static void Copy(float[] src, byte* dst, int length, int startIndex = 0)
         {
-            fixed (float* srcPtr = &(src[0]))
-                LongCopy((byte*)srcPtr + startIndex, dstPtr, length * sizeof(float));
+            fixed (float* s = &(src[0]))
+                LongCopy((byte*)s + startIndex, dst, length * sizeof(float));
         }
 
-        public unsafe static void Copy(byte* srcPtr, float[] dst, int length, int startIndex = 0)
+        public unsafe static void Copy(half[] src, byte* dst, int length, int startIndex = 0)
         {
-            fixed (float* dstPtr = dst)
-                LongCopy(srcPtr, (byte*)dstPtr + startIndex, length);
+            fixed (half* s = &(src[0]))
+                LongCopy((byte*)s + startIndex, dst, length * sizeof(half));
         }
 
-        public unsafe static void Copy(bool z, byte* dstPtr) => dstPtr[0] = *((byte*)(&z));
+        public unsafe static void Copy(byte* src, float[] dst, int length, int startIndex = 0)
+        {
+            fixed (float* d = dst)
+                LongCopy(src, (byte*)d + startIndex, length);
+        }
+
+        public unsafe static void Copy(byte* src, half[] dst, int length, int startIndex = 0)
+        {
+            fixed (half* d = dst)
+                LongCopy(src, (byte*)d + startIndex, length);
+        }
+
+        public unsafe static void Copy(bool z, byte* dst) => dst[0] = *((byte*)(&z));
 
         public unsafe static void Copy(bool z, byte[] dst, int startIndex)
         {
-            fixed (byte* dstPtr = dst)
-                Copy(z, dstPtr + startIndex);
+            fixed (byte* d = dst)
+                Copy(z, d + startIndex);
         }
 
-        public unsafe static void Copy(int i, byte* dstPtr)
+        public unsafe static void Copy(int i, byte* dst)
         {
             var buf = GetBytes(i);
-            fixed (byte* bufPtr = buf)
-                LongCopy(bufPtr, dstPtr, buf.Length);
+            fixed (byte* b = buf)
+                LongCopy(b, dst, buf.Length);
         }
 
         public unsafe static void Copy(int i, byte[] dst, int startIndex = 0)
         {
-            fixed (byte* dstPtr = dst)
-                Copy(i, dstPtr + startIndex);
+            fixed (byte* d = dst)
+                Copy(i, d + startIndex);
         }
 
-        public unsafe static byte[] Padding(int length, byte[] b)
+        public unsafe static byte[] Padding(int length, byte[] bytes)
         {
-            var c = new byte[length + b.Length];
-            fixed (byte* bPtr = b, cPtr = c)
-                LongCopy(bPtr, cPtr + length, b.Length);
-            return c;
+            var padding = new byte[length + bytes.Length];
+            fixed (byte* b = bytes, c = padding)
+                LongCopy(b, c + length, bytes.Length);
+            return padding;
         }
 
-        public unsafe static byte[] Combine(byte[] a, byte[] b)
+        public unsafe static byte[] Combine(byte[] bytes0, byte[] bytes1)
         {
-            var c = Padding(a.Length, b);
-            fixed (byte* aPtr = a, cPtr = c)
-                LongCopy(aPtr, cPtr, a.Length);
-            return c;
+            var padding = Padding(bytes0.Length, bytes1);
+            fixed (byte* a = bytes0, c = padding)
+                LongCopy(a, c, bytes0.Length);
+            return padding;
         }
 
         public unsafe static byte[] Combine(int a, byte[] b) => Combine(GetBytes(a), b);
