@@ -13,7 +13,6 @@ namespace TLab.SFU.Network
         [System.Serializable, Message(typeof(MSG_VoiceOpenNortification))]
         public class MSG_VoiceOpenNortification : Message { }
 
-        [SerializeField] private Config m_config;
         [SerializeField] private int m_frequency = 16000;
 
         [Header("Test")]
@@ -46,7 +45,7 @@ namespace TLab.SFU.Network
             get
             {
                 var self = (m_group.owner == NetworkClient.userId);
-                m_config.GetAudio(out var enable, out var publishOnJoin);
+                NetworkClient.adapter.config.GetAudio(out var enable, out var publishOnJoin);
                 return self && enable && publishOnJoin;
             }
         }
@@ -55,7 +54,7 @@ namespace TLab.SFU.Network
             get
             {
                 var self = (m_group.owner == NetworkClient.userId);
-                m_config.GetAudio(out var enable, out var publishOnJoin);
+                NetworkClient.adapter.config.GetAudio(out var enable, out var publishOnJoin);
                 return self && enable;
             }
         }
