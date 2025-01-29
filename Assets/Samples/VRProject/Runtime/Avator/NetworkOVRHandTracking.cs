@@ -27,11 +27,11 @@ namespace TLab.VRProjct.Avator
         {
             public Address64 id;
 
+            public Vector3 ring;
+            public Vector3 pinky;
             public Vector3 thumb;
             public Vector3 index;
             public Vector3 middle;
-            public Vector3 ring;
-            public Vector3 pinky;
         }
 
         #endregion STRUCT
@@ -183,7 +183,7 @@ namespace TLab.VRProjct.Avator
             }
         }
 
-#endregion MESSAGE
+        #endregion MESSAGE
 
         public enum InterpolationMode
         {
@@ -214,21 +214,19 @@ namespace TLab.VRProjct.Avator
 
         protected NetworkOVRHandTrackingState m_networkState;
 
-        protected SerializableHandTracking m_delta;
-
         public static readonly float INTERPOLATION_BASE_FPS = 30;
 
-        protected struct InterpolationState
+        protected struct InterpolationHandler
         {
-            public int current;
+            public int newFingers;
             public int step;
 
             public SerializableHandTracking start;
             public SerializableHandTracking target;
 
-            public InterpolationState(int dummy = 0)
+            public InterpolationHandler(int dummy = 0)
             {
-                this.current = -1;
+                this.newFingers = -1;
                 this.step = -1;
 
                 this.start = new SerializableHandTracking();
@@ -236,7 +234,7 @@ namespace TLab.VRProjct.Avator
             }
         }
 
-        protected InterpolationState m_interpolationState = new InterpolationState(0);
+        protected InterpolationHandler m_handler = new InterpolationHandler(0);
 
         public InterpolationMode interpolationMode => m_interpolationMode;
 
@@ -256,57 +254,57 @@ namespace TLab.VRProjct.Avator
         public SerializableHandTracking GetCurrent()
         {
             var a = new SerializableHandTracking();
-            a.thumb = m_thumb.position;
-            a.index = m_index.position;
-            a.middle = m_middle.position;
-            a.ring = m_ring.position;
-            a.pinky = m_pinky.position;
+            a.ring = this.transform.InverseTransformPoint(m_ring.position);
+            a.pinky = this.transform.InverseTransformPoint(m_pinky.position);
+            a.thumb = this.transform.InverseTransformPoint(m_thumb.position);
+            a.index = this.transform.InverseTransformPoint(m_index.position);
+            a.middle = this.transform.InverseTransformPoint(m_middle.position);
             return a;
         }
 
-        protected void UpdateTransform(in SerializableHandTracking fingers)
+        protected void UpdateFingers(in SerializableHandTracking fingers)
         {
-            m_thumb.position = fingers.thumb;
-            m_index.position = fingers.index;
-            m_middle.position = fingers.middle;
-            m_ring.position = fingers.ring;
-            m_pinky.position = fingers.pinky;
+            m_ring.position = this.transform.TransformPoint(fingers.ring);
+            m_pinky.position = this.transform.TransformPoint(fingers.pinky);
+            m_thumb.position = this.transform.TransformPoint(fingers.thumb);
+            m_index.position = this.transform.TransformPoint(fingers.index);
+            m_middle.position = this.transform.TransformPoint(fingers.middle);
         }
 
-        protected virtual void GetInterpolatedTransform(in SerializableHandTracking start, in SerializableHandTracking target, out SerializableHandTracking interpolated, float t)
+        protected virtual void GetInterpolatedFingers(in SerializableHandTracking start, in SerializableHandTracking target, out SerializableHandTracking interpolated, float t)
         {
             interpolated = new SerializableHandTracking();
+            interpolated.ring = Vector3.Lerp(start.ring, target.ring, t);
+            interpolated.pinky = Vector3.Lerp(start.pinky, target.pinky, t);
             interpolated.thumb = Vector3.Lerp(start.thumb, target.thumb, t);
             interpolated.index = Vector3.Lerp(start.index, target.index, t);
             interpolated.middle = Vector3.Lerp(start.middle, target.middle, t);
-            interpolated.ring = Vector3.Lerp(start.ring, target.ring, t);
-            interpolated.pinky = Vector3.Lerp(start.pinky, target.pinky, t);
         }
 
         protected virtual void InterpolateTransform()
         {
+            if (m_handler.newFingers > 0)
+                m_handler.newFingers--;
+
+            if (m_handler.newFingers == 0)
+            {
+                UpdateFingers(m_handler.target);
+                StopInterpolation();
+                return;
+            }
+
             switch (m_interpolationMode)
             {
                 case InterpolationMode.None:
                     break;
                 case InterpolationMode.Step:
-                    if (m_interpolationState.current > 0)
-                        m_interpolationState.current--;
-
-                    if (m_interpolationState.current == 0)
+                    if (m_handler.newFingers > 0)
                     {
-                        UpdateTransform(m_interpolationState.target);
-                        StopInterpolation();
-                        return;
-                    }
+                        var t = (float)(m_handler.step - m_handler.newFingers) / m_handler.step;
 
-                    if (m_interpolationState.current > 0)
-                    {
-                        var t = (float)(m_interpolationState.step - m_interpolationState.current) / m_interpolationState.step;
+                        GetInterpolatedFingers(m_handler.start, m_handler.target, out var interpolated, t);
 
-                        GetInterpolatedTransform(m_interpolationState.start, m_interpolationState.target, out var interpolated, t);
-
-                        UpdateTransform(interpolated);
+                        UpdateFingers(interpolated);
 
                         return;
                     }
@@ -314,105 +312,85 @@ namespace TLab.VRProjct.Avator
             }
         }
 
+        protected virtual void Inverse(ref SerializableHandTracking dst)
+        {
+            dst.ring = this.transform.InverseTransformPoint(m_ring.position);
+            dst.pinky = this.transform.InverseTransformPoint(m_pinky.position);
+            dst.thumb = this.transform.InverseTransformPoint(m_thumb.position);
+            dst.index = this.transform.InverseTransformPoint(m_index.position);
+            dst.middle = this.transform.InverseTransformPoint(m_middle.position);
+        }
+
+        protected virtual void Inverse(in SerializableHandTracking src, ref SerializableHandTracking dst)
+        {
+            dst.ring = this.transform.InverseTransformPoint(src.ring);
+            dst.pinky = this.transform.InverseTransformPoint(src.pinky);
+            dst.thumb = this.transform.InverseTransformPoint(src.thumb);
+            dst.index = this.transform.InverseTransformPoint(src.index);
+            dst.middle = this.transform.InverseTransformPoint(src.middle);
+        }
+
         protected virtual void StartInterpolation(in SerializableHandTracking fingers)
         {
-            m_interpolationState.start.thumb = m_thumb.position;
-            m_interpolationState.start.index = m_index.position;
-            m_interpolationState.start.middle = m_middle.position;
-            m_interpolationState.start.ring = m_ring.position;
-            m_interpolationState.start.pinky = m_pinky.position;
+            Inverse(ref m_handler.start);
+            m_handler.target = fingers;
 
-            m_interpolationState.target.thumb = fingers.thumb;
-            m_interpolationState.target.index = fingers.index;
-            m_interpolationState.target.middle = fingers.middle;
-            m_interpolationState.target.ring = fingers.ring;
-            m_interpolationState.target.pinky = fingers.pinky;
-
-            m_interpolationState.step = Math.Max(1, m_interpolationStep * (int)((1 / Time.deltaTime) / INTERPOLATION_BASE_FPS));
-            m_interpolationState.current = m_interpolationState.step;
+            m_handler.step = Math.Max(1, m_interpolationStep * (int)((1 / Time.deltaTime) / INTERPOLATION_BASE_FPS));
+            m_handler.newFingers = m_handler.step;
         }
 
         protected virtual void StopInterpolation()
         {
-            ApplyHandPositionAndDelta(GetCurrent());
-            m_interpolationState.current = -1;
+            ApplyFingers(GetCurrent());
+            m_handler.newFingers = -1;
         }
 
         public void SyncFrom(in int from, in bool immediate, in NetworkOVRHandTrackingState state)
         {
-            var fingers = new SerializableHandTracking();
-            fingers.thumb = this.transform.TransformPoint(state.fingers.thumb);
-            fingers.index = this.transform.TransformPoint(state.fingers.index);
-            fingers.middle = this.transform.TransformPoint(state.fingers.middle);
-            fingers.ring = this.transform.TransformPoint(state.fingers.ring);
-            fingers.pinky = this.transform.TransformPoint(state.fingers.pinky);
-
             if (immediate)
-                UpdateTransform(fingers);
+                UpdateFingers(state.fingers);
             else
             {
                 switch (m_interpolationMode)
                 {
                     case InterpolationMode.None:
-                        UpdateTransform(fingers);
+                        UpdateFingers(state.fingers);
                         break;
                     case InterpolationMode.Step:
-                        StartInterpolation(fingers);
+                        StartInterpolation(state.fingers);
                         break;
                 }
             }
 
-            ApplyHandPositionAndDelta(fingers);
+            ApplyFingers(state.fingers);
 
             m_synchronised = true;
         }
 
-        protected virtual void ApplyHandPositionAndDelta(in SerializableHandTracking fingers)
-        {
-            var delta = new SerializableHandTracking();
-            delta.thumb = this.transform.InverseTransformPoint(fingers.thumb);
-            delta.index = this.transform.InverseTransformPoint(fingers.index);
-            delta.middle = this.transform.InverseTransformPoint(fingers.middle);
-            delta.ring = this.transform.InverseTransformPoint(fingers.ring);
-            delta.pinky = this.transform.InverseTransformPoint(fingers.pinky);
+        protected virtual void ApplyFingers(in SerializableHandTracking fingers) => m_networkState.fingers = fingers;
 
-            ApplyHandPosition(fingers);
-            ApplyHandPositionDelta(delta);
-        }
-
-        protected virtual void ApplyHandPosition(in SerializableHandTracking fingers) => m_networkState.fingers = fingers;
-
-        protected virtual void ApplyHandPositionDelta(in SerializableHandTracking delta) => m_delta = delta;
-
-        public virtual bool ApplyCurrentPositionAndDelta(out SerializableHandTracking fingers)
+        public virtual bool ApplyCurrentFingers(out SerializableHandTracking fingers)
         {
             bool isDirty = false;
 
             m_networkState.id = m_networkId.id;
 
-            var current = GetCurrent();
+            var newFingers = GetCurrent();
 
-            var delta = new SerializableHandTracking();
-            delta.thumb = this.transform.InverseTransformPoint(current.thumb);
-            delta.index = this.transform.InverseTransformPoint(current.index);
-            delta.middle = this.transform.InverseTransformPoint(current.middle);
-            delta.ring = this.transform.InverseTransformPoint(current.ring);
-            delta.pinky = this.transform.InverseTransformPoint(current.pinky);
+            fingers = m_networkState.fingers;
 
-            fingers = m_delta;
-
-            var sum = Vector3.Distance(m_delta.thumb, delta.thumb);
-            sum += Vector3.Distance(m_delta.index, delta.index);
-            sum += Vector3.Distance(m_delta.middle, delta.middle);
-            sum += Vector3.Distance(m_delta.ring, delta.ring);
-            sum += Vector3.Distance(m_delta.pinky, delta.pinky);
+            var sum = 0.0f;
+            sum += Vector3.Distance(fingers.ring, newFingers.ring);
+            sum += Vector3.Distance(fingers.pinky, newFingers.pinky);
+            sum += Vector3.Distance(fingers.thumb, newFingers.thumb);
+            sum += Vector3.Distance(fingers.index, newFingers.index);
+            sum += Vector3.Distance(fingers.middle, newFingers.middle);
 
             if (sum > positionThreshold * 5)
             {
-                ApplyHandPosition(current);
-                ApplyHandPositionDelta(delta);
+                ApplyFingers(newFingers);
 
-                fingers = delta;
+                fingers = newFingers;
 
                 isDirty = true;
             }
@@ -420,7 +398,7 @@ namespace TLab.VRProjct.Avator
             return isDirty;
         }
 
-        public virtual bool SkipApplyCurrentTransform() => !Const.Send.HasFlag(m_direction) || !initialized || (m_interpolationState.current > 0);
+        public virtual bool SkipApplyCurrentTransform() => !Const.Send.HasFlag(m_direction) || !initialized || (m_handler.newFingers > 0);
 
         private void SetSendPacket(in SerializableHandTracking fingers, bool request = false, bool immediate = false)
         {
@@ -453,7 +431,7 @@ namespace TLab.VRProjct.Avator
             if (SkipApplyCurrentTransform())
                 return;
 
-            if (ApplyCurrentPositionAndDelta(out var fingers) || force)
+            if (ApplyCurrentFingers(out var fingers) || force)
                 SendRTC(to, fingers, request, immediate);
         }
 
@@ -462,7 +440,7 @@ namespace TLab.VRProjct.Avator
             if (SkipApplyCurrentTransform())
                 return;
 
-            if (ApplyCurrentPositionAndDelta(out var fingers) || force)
+            if (ApplyCurrentFingers(out var fingers) || force)
                 SendWS(to, fingers, request, immediate);
         }
 
@@ -488,7 +466,7 @@ namespace TLab.VRProjct.Avator
         {
             base.Start();
 
-            ApplyHandPositionAndDelta(GetCurrent());
+            ApplyFingers(GetCurrent());
         }
 
         protected override void Update()

@@ -33,6 +33,7 @@ namespace TLab.VRProjct
                 m_cameraRig.transform.position = newPosition;
 
                 m_controller.height = 0.2f;
+                m_controller.center = Vector3.zero;
             }
             else
                 m_constraints.Foreach((t) => t.Pause(false));

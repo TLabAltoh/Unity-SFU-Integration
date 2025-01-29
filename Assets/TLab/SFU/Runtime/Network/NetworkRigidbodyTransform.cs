@@ -192,11 +192,9 @@ namespace TLab.SFU.Network
 
         protected NetworkRigidbodyTransformState m_networkState;
 
-        protected SerializableTransform m_delta;
-
         public static readonly float INTERPOLATION_BASE_FPS = 30;
 
-        protected struct InterpolationState
+        protected struct InterpolationHandler
         {
             public int current;
             public int step;
@@ -204,7 +202,7 @@ namespace TLab.SFU.Network
             public SerializableTransform start;
             public SerializableTransform target;
 
-            public InterpolationState(int dummy = 0)
+            public InterpolationHandler(int dummy = 0)
             {
                 this.current = -1;
                 this.step = -1;
@@ -214,7 +212,7 @@ namespace TLab.SFU.Network
             }
         }
 
-        protected InterpolationState m_interpolationState = new InterpolationState(0);
+        protected InterpolationHandler m_handler = new InterpolationHandler(0);
 
         public InterpolationMode interpolationMode => m_interpolationMode;
 
@@ -300,9 +298,17 @@ namespace TLab.SFU.Network
 
         protected void UpdateTransform(in Vector3 position, in Quaternion rotation, in Vector3 localScale)
         {
-            this.transform.localScale = new Vector3(localScale.x, localScale.y, localScale.z);
-            this.transform.position = new Vector3(position.x, position.y, position.z);
-            this.transform.rotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+            if (m_parent != null)
+            {
+                this.transform.position = m_parent.transform.TransformPoint(position);
+                this.transform.rotation = m_parent.transform.rotation * rotation;
+            }
+            else
+            {
+                this.transform.position = new(position.x, position.y, position.z);
+                this.transform.rotation = new(rotation.x, rotation.y, rotation.z, rotation.w);
+            }
+            this.transform.localScale = new(localScale.x, localScale.y, localScale.z);
         }
 
         protected void UpdateTransform(in SerializableTransform target) => UpdateTransform(target.position, target.rotation.ToQuaternion(), target.localScale);
@@ -316,26 +322,26 @@ namespace TLab.SFU.Network
 
         protected virtual void InterpolateTransform()
         {
+            if (m_handler.current > 0)
+                m_handler.current--;
+
+            if (m_handler.current == 0)
+            {
+                UpdateTransform(m_handler.target);
+                StopInterpolation();
+                return;
+            }
+
             switch (m_interpolationMode)
             {
                 case InterpolationMode.None:
                     break;
                 case InterpolationMode.Step:
-                    if (m_interpolationState.current > 0)
-                        m_interpolationState.current--;
-
-                    if (m_interpolationState.current == 0)
+                    if (m_handler.current > 0)
                     {
-                        UpdateTransform(m_interpolationState.target);
-                        StopInterpolation();
-                        return;
-                    }
+                        var t = (float)(m_handler.step - m_handler.current) / m_handler.step;
 
-                    if (m_interpolationState.current > 0)
-                    {
-                        var t = (float)(m_interpolationState.step - m_interpolationState.current) / m_interpolationState.step;
-
-                        GetInterpolatedTransform(m_interpolationState.start, m_interpolationState.target, out var position, out var rotation, out var localScale, t);
+                        GetInterpolatedTransform(m_handler.start, m_handler.target, out var position, out var rotation, out var localScale, t);
 
                         UpdateTransform(position, rotation, localScale);
 
@@ -345,52 +351,51 @@ namespace TLab.SFU.Network
             }
         }
 
-        protected virtual void StartInterpolation(in Vector3 position, in Quaternion rotation, in Vector3 localScale)
+        protected virtual void StartInterpolation(in Vector3 position, in Quaternion rotation, in Vector3 localScale, in int step)
         {
-            m_interpolationState.start.position = this.transform.position;
-            m_interpolationState.start.rotation = this.transform.rotation.ToVec();
-            m_interpolationState.start.localScale = this.transform.localScale;
+            if (m_parent != null)
+            {
+                m_handler.start.position = m_parent.transform.InverseTransformPoint(this.transform.position);
+                m_handler.start.rotation = (Quaternion.Inverse(m_parent.transform.rotation) * this.transform.rotation).ToVec();
+            }
+            else
+            {
+                m_handler.start.position = this.transform.position;
+                m_handler.start.rotation = this.transform.rotation.ToVec();
+            }
+            m_handler.start.localScale = this.transform.localScale;
 
-            m_interpolationState.target.position = position;
-            m_interpolationState.target.rotation = rotation.ToVec();
-            m_interpolationState.target.localScale = localScale;
+            m_handler.target.position = position;
+            m_handler.target.rotation = rotation.ToVec();
+            m_handler.target.localScale = localScale;
 
-            m_interpolationState.step = Math.Max(1, m_interpolationStep * (int)((1 / Time.deltaTime) / INTERPOLATION_BASE_FPS));
-            m_interpolationState.current = m_interpolationState.step;
+            m_handler.step = step;
+            m_handler.current = m_handler.step;
         }
+
+        protected virtual void StartInterpolation(in Vector3 position, in Quaternion rotation, in Vector3 localScale) =>
+            StartInterpolation(in position, in rotation, in localScale, Math.Max(1, m_interpolationStep * (int)((1 / Time.deltaTime) / INTERPOLATION_BASE_FPS)));
 
         protected virtual void StopInterpolation()
         {
-            ApplyTransform(this.transform.position, this.transform.rotation, this.transform.localScale);
-            m_interpolationState.current = -1;
+            ApplyNetworkState(this.transform);
+            m_handler.current = -1;
         }
 
         public void SyncFrom(in int from, in bool immediate, in NetworkRigidbodyTransformState state)
         {
-            Vector3 position;
-            Vector4 rotation;
-
-            if (m_parent != null)
-            {
-                position = m_parent.transform.TransformPoint(state.transform.position);
-                rotation = (m_parent.transform.rotation * state.transform.rotation.ToQuaternion()).ToVec();
-            }
-            else
-            {
-                position = state.transform.position;
-                rotation = state.transform.rotation;
-            }
-
             var localScale = state.transform.localScale;
+            var position = state.transform.position;
+            var rotation = state.transform.rotation;
 
             if (immediate)
-                UpdateTransform(position, rotation.ToQuaternion(), localScale);
+                StartInterpolation(position, rotation.ToQuaternion(), localScale, 1);
             else
             {
                 switch (m_interpolationMode)
                 {
                     case InterpolationMode.None:
-                        UpdateTransform(position, rotation.ToQuaternion(), localScale);
+                        StartInterpolation(position, rotation.ToQuaternion(), localScale, 1);
                         break;
                     case InterpolationMode.Step:
                         StartInterpolation(position, rotation.ToQuaternion(), localScale);
@@ -400,44 +405,19 @@ namespace TLab.SFU.Network
 
             m_rbState.Update(state.rigidbody.used, state.rigidbody.gravity);
 
-            ApplyTransform(position, rotation, localScale);
+            ApplyNetworkState(position, rotation, localScale);
 
             m_synchronised = true;
         }
 
-        protected virtual void ApplyTransform(in Vector3 position, in Quaternion rotation, in Vector3 localScale)
-        {
-            if (m_parent != null)
-            {
-                var positionDelta = m_parent.transform.InverseTransformPoint(position);
-                var rotationDelta = Quaternion.Inverse(m_parent.transform.rotation) * rotation;
-
-                ApplyTransformPosition(position);
-                ApplyTransformRotation(rotation);
-                ApplyTransformPositionDelta(positionDelta);
-                ApplyTransformRotationDelta(rotationDelta);
-            }
-            else
-            {
-                ApplyTransformPosition(position);
-                ApplyTransformRotation(rotation);
-            }
-
-            ApplyTransformLocalScale(localScale);
-        }
-
-        protected virtual void ApplyTransform(in Vector3 position, in Vector4 rotation, in Vector3 localScale) => ApplyTransform(position, rotation.ToQuaternion(), localScale);
-
-        protected virtual void ApplyTransform(in Transform state) => ApplyTransform(state.position, state.rotation, state.localScale);
-
-        protected virtual void ApplyTransformPosition(in Vector3 position)
+        protected virtual void ApplyNetworkStatePosition(in Vector3 position)
         {
             m_networkState.transform.position.x = position.x;
             m_networkState.transform.position.y = position.y;
             m_networkState.transform.position.z = position.z;
         }
 
-        protected virtual void ApplyTransformRotation(in Vector4 rotation)
+        protected virtual void ApplyNetworkStateRotation(in Vector4 rotation)
         {
             m_networkState.transform.rotation.x = rotation.x;
             m_networkState.transform.rotation.y = rotation.y;
@@ -445,7 +425,7 @@ namespace TLab.SFU.Network
             m_networkState.transform.rotation.w = rotation.w;
         }
 
-        protected virtual void ApplyTransformRotation(in Quaternion rotation)
+        protected virtual void ApplyNetworkStateRotation(in Quaternion rotation)
         {
             m_networkState.transform.rotation.x = rotation.x;
             m_networkState.transform.rotation.y = rotation.y;
@@ -453,38 +433,32 @@ namespace TLab.SFU.Network
             m_networkState.transform.rotation.w = rotation.w;
         }
 
-        protected virtual void ApplyTransformLocalScale(in Vector3 localScale)
+        protected virtual void ApplyNetworkStateLocalScale(in Vector3 localScale)
         {
-            m_delta.localScale.x = localScale.x;
-            m_delta.localScale.y = localScale.y;
-            m_delta.localScale.z = localScale.z;
-
             m_networkState.transform.localScale.x = localScale.x;
             m_networkState.transform.localScale.y = localScale.y;
             m_networkState.transform.localScale.z = localScale.z;
         }
 
-        protected virtual void ApplyTransformPositionDelta(in Vector3 positionDelta)
+        protected virtual void ApplyNetworkState(in Vector3 position, in Quaternion rotation, in Vector3 localScale)
         {
-            m_delta.position.x = positionDelta.x;
-            m_delta.position.y = positionDelta.y;
-            m_delta.position.z = positionDelta.z;
+            ApplyNetworkStatePosition(position);
+            ApplyNetworkStateRotation(rotation);
+            ApplyNetworkStateLocalScale(localScale);
         }
 
-        protected virtual void ApplyTransformRotationDelta(in Vector4 rotationDelta)
-        {
-            m_delta.rotation.x = rotationDelta.x;
-            m_delta.rotation.y = rotationDelta.y;
-            m_delta.rotation.z = rotationDelta.z;
-            m_delta.rotation.w = rotationDelta.w;
-        }
+        protected virtual void ApplyNetworkState(in Vector3 position, in Vector4 rotation, in Vector3 localScale) => ApplyNetworkState(position, rotation.ToQuaternion(), localScale);
 
-        protected virtual void ApplyTransformRotationDelta(in Quaternion rotationDelta)
+        protected virtual void ApplyNetworkState(in Transform @transform)
         {
-            m_delta.rotation.x = rotationDelta.x;
-            m_delta.rotation.y = rotationDelta.y;
-            m_delta.rotation.z = rotationDelta.z;
-            m_delta.rotation.w = rotationDelta.w;
+            if (m_parent != null)
+            {
+                var rotation = (Quaternion.Inverse(m_parent.transform.rotation) * @transform.rotation).ToVec();
+                var position = m_parent.transform.InverseTransformPoint(@transform.position);
+                ApplyNetworkState(position, rotation, @transform.localScale);
+            }
+            else
+                ApplyNetworkState(@transform.position, @transform.rotation, @transform.localScale);
         }
 
         public virtual bool ApplyCurrentTransform(out Vector3 position, out Vector4 rotation, out Vector3 localScale)
@@ -499,65 +473,45 @@ namespace TLab.SFU.Network
                 isDirty = true;
             }
 
+            position = m_networkState.transform.position;
+            rotation = m_networkState.transform.rotation;
+
+            Vector3 newPosition; Quaternion newRotation;
+
             if (m_parent != null)
             {
-                var positionDelta = m_parent.transform.InverseTransformPoint(this.transform.position);
-                var rotationDelta = Quaternion.Inverse(m_parent.transform.rotation) * this.transform.rotation;
-
-                position = m_delta.position;
-                rotation = m_delta.rotation;
-
-                if (Vector3.Distance(m_delta.position, positionDelta) > positionThreshold)
-                {
-                    ApplyTransformPosition(transform.position);
-                    ApplyTransformPositionDelta(positionDelta);
-
-                    position = positionDelta;
-
-                    isDirty = true;
-                }
-
-                if (Quaternion.Angle(m_delta.rotation.ToQuaternion(), rotationDelta) > rotAngleThreshold)
-                {
-                    ApplyTransformRotation(transform.rotation);
-                    ApplyTransformRotationDelta(rotationDelta);
-
-                    rotation = rotationDelta.ToVec();
-
-                    isDirty = true;
-
-                    Debug.Log($"rotation:{m_delta.rotation.ToQuaternion()}:{rotationDelta}");
-                }
+                newPosition = m_parent.transform.InverseTransformPoint(this.transform.position);
+                newRotation = Quaternion.Inverse(m_parent.transform.rotation) * this.transform.rotation;
             }
             else
             {
-                position = m_networkState.transform.position;
-                rotation = m_networkState.transform.rotation;
+                newPosition = this.transform.position;
+                newRotation = this.transform.rotation;
+            }
 
-                if (Vector3.Distance(m_networkState.transform.position, this.transform.position) > positionThreshold)
-                {
-                    ApplyTransformPosition(this.transform.position);
+            if (Vector3.Distance(position, newPosition) > positionThreshold)
+            {
+                ApplyNetworkStatePosition(newPosition);
 
-                    position = this.transform.position;
+                position = newPosition;
 
-                    isDirty = true;
-                }
+                isDirty = true;
+            }
 
-                if (Quaternion.Angle(m_networkState.transform.rotation.ToQuaternion(), this.transform.rotation) > rotAngleThreshold)
-                {
-                    ApplyTransformRotation(this.transform.rotation);
+            if (Quaternion.Angle(rotation.ToQuaternion(), newRotation) > rotAngleThreshold)
+            {
+                ApplyNetworkStateRotation(newRotation);
 
-                    rotation = this.transform.rotation.ToVec();
+                rotation = newRotation.ToVec();
 
-                    isDirty = true;
-                }
+                isDirty = true;
             }
 
             localScale = m_networkState.transform.localScale;
 
             if (Vector3.Distance(m_networkState.transform.localScale, this.transform.localScale) > scaleThreshold)
             {
-                ApplyTransformLocalScale(this.transform.localScale);
+                ApplyNetworkStateLocalScale(this.transform.localScale);
 
                 localScale = this.transform.localScale;
 
@@ -567,7 +521,7 @@ namespace TLab.SFU.Network
             return isDirty;
         }
 
-        public virtual bool SkipApplyCurrentTransform() => !Const.Send.HasFlag(m_direction) || !initialized || (m_interpolationState.current > 0);
+        public virtual bool SkipApplyCurrentTransform() => !Const.Send.HasFlag(m_direction) || !initialized || (m_handler.current > 0);
 
         private void SetSendPacket(in Vector3 position, in Vector4 rotation, in Vector3 localScale, bool request = false, bool immediate = false)
         {
@@ -661,7 +615,7 @@ namespace TLab.SFU.Network
         {
             base.Start();
 
-            ApplyTransform(this.transform);
+            ApplyNetworkState(this.transform);
 
             InitRigidbody();
         }
