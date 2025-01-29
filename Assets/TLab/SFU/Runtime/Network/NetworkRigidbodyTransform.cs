@@ -273,7 +273,7 @@ namespace TLab.SFU.Network
             {
                 m_rb.useGravity = true;
 
-                var deltaRot = transform.rotation * Quaternion.Inverse(m_prev.rotation.ToQuaternion());
+                var deltaRot = Quaternion.Inverse(m_prev.rotation.ToQuaternion()) * transform.rotation;
                 deltaRot.ToAngleAxis(out var magnitude, out var axis);
 
                 magnitude *= Mathf.Deg2Rad;
@@ -373,7 +373,7 @@ namespace TLab.SFU.Network
             if (m_parent != null)
             {
                 position = m_parent.transform.TransformPoint(state.transform.position);
-                rotation = (state.transform.rotation.ToQuaternion() * m_parent.transform.rotation).ToVec();
+                rotation = (m_parent.transform.rotation * state.transform.rotation.ToQuaternion()).ToVec();
             }
             else
             {
@@ -410,7 +410,7 @@ namespace TLab.SFU.Network
             if (m_parent != null)
             {
                 var positionDelta = m_parent.transform.InverseTransformPoint(position);
-                var rotationDelta = rotation * Quaternion.Inverse(m_parent.transform.rotation);
+                var rotationDelta = Quaternion.Inverse(m_parent.transform.rotation) * rotation;
 
                 ApplyTransformPosition(position);
                 ApplyTransformRotation(rotation);
@@ -502,7 +502,7 @@ namespace TLab.SFU.Network
             if (m_parent != null)
             {
                 var positionDelta = m_parent.transform.InverseTransformPoint(this.transform.position);
-                var rotationDelta = this.transform.rotation * Quaternion.Inverse(m_parent.transform.rotation);
+                var rotationDelta = Quaternion.Inverse(m_parent.transform.rotation) * this.transform.rotation;
 
                 position = m_delta.position;
                 rotation = m_delta.rotation;
@@ -525,6 +525,8 @@ namespace TLab.SFU.Network
                     rotation = rotationDelta.ToVec();
 
                     isDirty = true;
+
+                    Debug.Log($"rotation:{m_delta.rotation.ToQuaternion()}:{rotationDelta}");
                 }
             }
             else

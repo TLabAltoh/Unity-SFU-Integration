@@ -273,13 +273,13 @@ MonoBehaviour:
   m_syncDefault: 0
   m_group: {fileID: 6499821939264720575}
   m_parent: {fileID: 0}
-  positionThreshold: 0.001
-  rotAngleThreshold: 0.01
-  scaleThreshold: 0.01
+  positionThreshold: 0.005
+  rotAngleThreshold: 0.05
+  scaleThreshold: 0.05
   velocityAttenuation: 0.85
   angularVelocityAttenuation: 0.85
-  m_interpolationMode: 0
-  m_interpolationStep: 2
+  m_interpolationMode: 1
+  m_interpolationStep: 10
   m_locked: 0
   m_position:
     m_enabled: 1
@@ -693,13 +693,13 @@ MonoBehaviour:
   m_syncDefault: 0
   m_group: {fileID: 6499821939264720575}
   m_parent: {fileID: 4478498896772477283}
-  positionThreshold: 0.001
-  rotAngleThreshold: 0.01
-  scaleThreshold: 0.01
+  positionThreshold: 0.005
+  rotAngleThreshold: 0.05
+  scaleThreshold: 0.05
   velocityAttenuation: 0.85
   angularVelocityAttenuation: 0.85
   m_interpolationMode: 0
-  m_interpolationStep: 2
+  m_interpolationStep: 10
   m_locked: 0
   m_position:
     m_enabled: 1
@@ -1532,13 +1532,13 @@ MonoBehaviour:
   m_syncDefault: 0
   m_group: {fileID: 6499821939264720575}
   m_parent: {fileID: 4478498896772477283}
-  positionThreshold: 0.001
-  rotAngleThreshold: 0.01
-  scaleThreshold: 0.01
+  positionThreshold: 0.005
+  rotAngleThreshold: 0.05
+  scaleThreshold: 0.05
   velocityAttenuation: 0.85
   angularVelocityAttenuation: 0.85
-  m_interpolationMode: 0
-  m_interpolationStep: 2
+  m_interpolationMode: 1
+  m_interpolationStep: 10
   m_locked: 0
   m_position:
     m_enabled: 1
@@ -2222,13 +2222,13 @@ MonoBehaviour:
   m_syncDefault: 0
   m_group: {fileID: 6499821939264720575}
   m_parent: {fileID: 4478498896772477283}
-  positionThreshold: 0.001
-  rotAngleThreshold: 0.01
-  scaleThreshold: 0.01
+  positionThreshold: 0.005
+  rotAngleThreshold: 0.05
+  scaleThreshold: 0.05
   velocityAttenuation: 0.85
   angularVelocityAttenuation: 0.85
-  m_interpolationMode: 0
-  m_interpolationStep: 2
+  m_interpolationMode: 1
+  m_interpolationStep: 10
   m_locked: 0
   m_position:
     m_enabled: 1
