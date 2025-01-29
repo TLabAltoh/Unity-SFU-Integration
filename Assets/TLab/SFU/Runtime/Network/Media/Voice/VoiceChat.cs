@@ -13,6 +13,7 @@ namespace TLab.SFU.Network
         [System.Serializable, Message(typeof(MSG_VoiceOpenNortification))]
         public class MSG_VoiceOpenNortification : Message { }
 
+        [SerializeField] private Config m_config;
         [SerializeField] private int m_frequency = 16000;
 
         [Header("Test")]
@@ -32,11 +33,32 @@ namespace TLab.SFU.Network
 
         private WebRTCClient m_rtcClient;
 
+        public static VoiceChat self;
+
         public const int VOICE_BUFFER_SIZE = 1024;
         public const int CHANNEL = 1;
         public const int LENGTH_SECOUND = 1;
 
         private string THIS_NAME => "[" + GetType().Name + "] ";
+
+        public bool publishOnJoin
+        {
+            get
+            {
+                var self = (m_group.owner == NetworkClient.userId);
+                m_config.GetAudio(out var enable, out var publishOnJoin);
+                return self && enable && publishOnJoin;
+            }
+        }
+        public bool enable
+        {
+            get
+            {
+                var self = (m_group.owner == NetworkClient.userId);
+                m_config.GetAudio(out var enable, out var publishOnJoin);
+                return self && enable;
+            }
+        }
 
         private string GetMicrophone()
         {
@@ -76,22 +98,26 @@ namespace TLab.SFU.Network
 
             m_audioSource = GetComponent<AudioSource>();
 
+            var id = m_group.owner;
+
+            if (self)
+                VoiceChat.self = this;
+
             if (!self)
-                OnSyncRequestComplete(m_group.owner);
-            else if (m_group.owner == 0)
-                Whip($"stream#voice#{m_group.owner}");
+                OnSyncRequestComplete(id);
+            else if (publishOnJoin)
+                Whip();
         }
 
         public void Whep(string stream)
         {
-            if (m_group.owner == 0)
-            {
-                m_recvStream = new MediaStream();
-                m_recvStream.OnAddTrack = OnAddTrack;
+            m_recvStream = new MediaStream();
+            m_recvStream.OnAddTrack = OnAddTrack;
 
-                m_rtcClient = WebRTCClient.Whep(this, NetworkClient.adapter, stream, null, (OnWhepOpen, OnWhepOpen), (OnWhepClose, OnWhepClose), OnError, new RTCDataChannelInit(), false, true, OnTrack);
-            }
+            m_rtcClient = WebRTCClient.Whep(this, NetworkClient.adapter, stream, null, (OnWhepOpen, OnWhepOpen), (OnWhepClose, OnWhepClose), OnError, new RTCDataChannelInit(), false, true, OnTrack);
         }
+
+        public void Whip() => Whip($"stream#voice#{NetworkClient.userId}");
 
         public void Whip(string stream)
         {
@@ -147,7 +173,7 @@ namespace TLab.SFU.Network
             Debug.Log($"{THIS_NAME}: {nameof(OnWhipOpen)} !");
 
             foreach (var user in m_requests)
-                NetworkClient.SendWS(new MSG_VoiceOpenNortification().Marshall());
+                NetworkClient.SendWS(user, new MSG_VoiceOpenNortification().Marshall());
 
             m_requests.Clear();
         }
@@ -201,11 +227,11 @@ namespace TLab.SFU.Network
 
         protected void OnVoiceRequest(int from)
         {
-            if (NetworkClient.userId != 0)
+            if (!enable)
                 return;
 
             if ((m_rtcClient != null) && (m_rtcClient.connected))
-                NetworkClient.SendWS(new MSG_VoiceOpenNortification().Marshall());
+                NetworkClient.SendWS(from, new MSG_VoiceOpenNortification().Marshall());
             else
                 m_requests.Enqueue(from);
         }
@@ -215,7 +241,8 @@ namespace TLab.SFU.Network
             if (m_rtcClient != null)
                 return;
 
-            Whep($"stream#voice#{m_group.owner}");
+            if (m_group.owner == from)
+                Whep($"stream#voice#{from}");
         }
 
         public override void OnSyncRequest(int from)
@@ -241,6 +268,19 @@ namespace TLab.SFU.Network
             {
                 Registry.GetByKey(from)?.OnVoice(from);
             });
+        }
+
+        protected override void BeforeShutdown()
+        {
+            base.BeforeShutdown();
+
+            HangUp();
+        }
+
+        public void HangUp()
+        {
+            m_rtcClient?.HangUp();
+            m_rtcClient = null;
         }
 
         protected override void Register()
