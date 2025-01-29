@@ -32,10 +32,14 @@ Each protocol's client (```WebRTC``` or ```WebSocket```) inherits ```SfuClient``
 All network-manageable gameobjects (```NetworkObject```s) are listed and managed in the respective ```NetworkObjectGroup```. Thus, pre-existing ```NetworkObject```s and any spawnable gameobjects are managed in their own ```NetworkObjectGroup``` and initialized through the ```NetworkObjectGroup```.
 ### Synchronise the unity's component and Avator
 - [x] ```Transform (threshold base)```
-  - [x] With ```Half-Float```
-  - [x] With ```Rigidbody```
+  - [x] ```16bit Float```
+  - [x] ```32bit Float```
+  - [x] ```Rigidbody```
   - [x] With ```Interpolation```
   - [x] Without ```Interpolation```
+  - [x] ```Nesting synchronisable gameobjects```
+  - [x] ```Updating based on world space transform```
+  - [x] ```Updating based on relative transform```
 - [x] ```Animator```
   - [ ] With ```Interpolation```
   - [x] Without ```Interpolation (Poor test ...)```
