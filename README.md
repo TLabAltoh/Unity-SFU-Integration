@@ -142,8 +142,8 @@ Gameobject.name: "TVRCameraRig"
 ```bat
 git clone https://github.com/TLabAltoh/rust-server-for-multiplayer.git
 cd rust-server-for-multiplayer
-build-debug.bat
-run.bat
+build-*.bat
+run-*.bat
 ```
 
 [server repository is here](https://github.com/TLabAltoh/rust-server-for-multiplayer.git)
