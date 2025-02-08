@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEditor;
 using TLab.SFU.Editor;
@@ -99,7 +98,8 @@ namespace TLab.SFU.Interact.Editor
 
             foreach (var meshFilter in meshFilters)
             {
-                var mesh = meshFilter.sharedMesh;
+                var mesh = Instantiate(meshFilter.sharedMesh);
+                mesh.name = meshFilter.sharedMesh.name;
 
                 var normals = mesh.normals;
                 var vertices = mesh.vertices;
@@ -123,8 +123,7 @@ namespace TLab.SFU.Interact.Editor
                     softEdges[i] = new Color(softEdge.x, softEdge.y, softEdge.z, 0);
                 }
 
-                mesh.name = obj.name;
-
+                mesh.name = mesh.name + "#Outline";
                 mesh.colors = softEdges;
                 meshFilter.sharedMesh = mesh;
                 EditorUtility.SetDirty(meshFilter);
