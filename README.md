@@ -34,7 +34,7 @@ All network-manageable gameobjects (```NetworkObject```s) are listed and managed
 - [x] ```Transform (threshold base)```
   - [x] ```16bit Float```
   - [x] ```32bit Float```
-  - [x] ```Rigidbody```
+  - [x] With ```Rigidbody```
   - [x] With ```Interpolation```
   - [x] Without ```Interpolation```
   - [x] ```Nesting synchronisable gameobjects```
